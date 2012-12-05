@@ -1,0 +1,121 @@
+.TH "LRM::Frame" 3 "Wed Sep 26 2012" "Version 0.01" "Mono Odometer" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+LRM::Frame \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <frame\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBFrame\fP (ros::NodeHandle nh)"
+.br
+.ti -1c
+.RI "virtual \fB~Frame\fP ()"
+.br
+.ti -1c
+.RI "void \fBextract\fP ()"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static void \fBmatch\fP ()"
+.br
+.in -1c
+.SS "Private Member Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBcornerDetector\fP (cv::Mat src, \fBfeature_t\fP \fBfType\fP)"
+.br
+.in -1c
+.SS "Private Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBfeature_t\fP \fBfType\fP"
+.br
+.RI "\fIType of features detected\&. \fP"
+.ti -1c
+.RI "\fBdescriptor_t\fP \fBdType\fP"
+.br
+.RI "\fIType of features descriptors used\&. \fP"
+.ti -1c
+.RI "std::vector< \fBFeature\fP > \fBfeatList\fP"
+.br
+.RI "\fIDetected features list\&. \fP"
+.ti -1c
+.RI "std::vector< \fBDescriptor\fP > \fBdescList\fP"
+.br
+.RI "\fIDetected features descriptors list\&. \fP"
+.ti -1c
+.RI "image_transport::ImageTransport \fBit\fP"
+.br
+.RI "\fIImage node handler\&. \fP"
+.ti -1c
+.RI "image_transport::Subscriber \fBsub\fP"
+.br
+.RI "\fIImage subscriber\&. \fP"
+.ti -1c
+.RI "image_transport::Publisher \fBpub\fP"
+.br
+.RI "\fIImage publisher\&. \fP"
+.in -1c
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "\fBLRM::Frame::Frame\fP (ros::NodeHandlenh)"\fBFrame\fP Constructor: Instantiates a new frame\&. The \fBFrame\fP class subscribes a frame from a camera and process it identifying features and descriptors\&. Also responsible for the match of the features over other frames\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fInh\fP Node handle of the node of the monocular odometer\&. 
+.RE
+.PP
+
+.SS "\fBLRM::Frame::~Frame\fP ()\fC [virtual]\fP"
+.SH "Member Function Documentation"
+.PP 
+.SS "int \fBLRM::Frame::cornerDetector\fP (cv::Matsrc, \fBfeature_t\fPfType)\fC [private]\fP"Method cornerDetector: \fBFeature\fP detection using either Harris or Shi-Tomasi methods for corner detection\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsrc\fP Input image 
+.br
+\fIfType\fP \fBFeature\fP type\&. Either HARRIS or SHI_TOMASI\&. 
+.RE
+.PP
+
+.SS "void \fBLRM::Frame::extract\fP ()"Method extract: The method extract is responsible to detect to extract the features of a input image\&. 
+.SS "static void \fBLRM::Frame::match\fP ()\fC [static]\fP"
+.SH "Member Data Documentation"
+.PP 
+.SS "std::vector<\fBDescriptor\fP> \fBLRM::Frame::descList\fP\fC [private]\fP"
+.PP
+Detected features descriptors list\&. 
+.SS "\fBdescriptor_t\fP \fBLRM::Frame::dType\fP\fC [private]\fP"
+.PP
+Type of features descriptors used\&. 
+.SS "std::vector<\fBFeature\fP> \fBLRM::Frame::featList\fP\fC [private]\fP"
+.PP
+Detected features list\&. 
+.SS "\fBfeature_t\fP \fBLRM::Frame::fType\fP\fC [private]\fP"
+.PP
+Type of features detected\&. 
+.SS "image_transport::ImageTransport \fBLRM::Frame::it\fP\fC [private]\fP"
+.PP
+Image node handler\&. 
+.SS "image_transport::Publisher \fBLRM::Frame::pub\fP\fC [private]\fP"
+.PP
+Image publisher\&. 
+.SS "image_transport::Subscriber \fBLRM::Frame::sub\fP\fC [private]\fP"
+.PP
+Image subscriber\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Mono Odometer from the source code\&.

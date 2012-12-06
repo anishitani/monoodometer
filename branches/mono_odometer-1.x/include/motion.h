@@ -36,6 +36,7 @@ namespace LRM
 class MotionEstimator
 {
 private:
+	cv::Mat inliers;
 
 public:
 	MotionEstimator();
@@ -47,13 +48,14 @@ public:
 			std::vector<cv::Point2f> &norm_prev_pts,
 			std::vector<cv::Point2f> &norm_curr_pts, cv::Mat &Tp, cv::Mat &Tc);
 	cv::Mat compute_F_matrix(std::vector<cv::Point2f> prev_pts,
-			std::vector<cv::Point2f> curr_pts, cv::Mat &outliers);
+			std::vector<cv::Point2f> curr_pts);
 	cv::Mat compute_Rt(cv::Mat E, cv::Mat K,std::vector<cv::Point2f> prev_pts,
 			std::vector<cv::Point2f> curr_pts,
-			std::vector<int> outliers, cv::Mat &R, cv::Mat &t);
+			cv::Mat &R, cv::Mat &t);
 	int cheiralityCheck(cv::Mat P2, cv::Mat K, std::vector<cv::Point2f> pp, std::vector<cv::Point2f> pc);
-	cv::Mat Rodrigues( cv::Vec3d omega, double theta);
+	cv::Mat Rodrigues( cv::Vec3d omega, double theta=-1);
 	double triple_product(cv::Vec3d a,cv::Vec3d b,cv::Vec3d c);
+	cv::Mat skew(cv::Vec3d a);
 };
 
 } /* namespace LRM */

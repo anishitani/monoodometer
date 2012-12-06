@@ -33,10 +33,10 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #add_definitions( -DMAIN_5PT -DNO_TARGETJR )
 
 # creates the five point algorithm
-rosbuild_add_library( five_points five_point_solver/Ematrix_5pt.cc 
-                                  five_point_solver/polydet.cc 
-                                  five_point_solver/polyquotient.cc 
-                                  five_point_solver/sturm.cc )
+#rosbuild_add_library( five_points five_point_solver/Ematrix_5pt.cc 
+#                                  five_point_solver/polydet.cc 
+#                                  five_point_solver/polyquotient.cc 
+#                                  five_point_solver/sturm.cc )
 
 # creates a new library using the odometer, montion, frame and feature sources 
 rosbuild_add_library( odometry_tools src/mono_odometer.cpp src/motion.cpp src/frame.cpp src/feature.cpp )
@@ -51,4 +51,4 @@ rosbuild_add_boost_directories()
 
 # links the odometer library to the project 
 target_link_libraries( feature_test odometry_tools )
-target_link_libraries( ${PROJECT_NAME} odometry_tools five_points )
+target_link_libraries( ${PROJECT_NAME} odometry_tools )

@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+<!-- 
+	<param name="/use_sim_time" value="true"/>
+	
+	<node name="rviz" pkg="rviz" type="rviz"/>
+	 
+ -->
+ 	
+	<node name="motion_test" pkg="mono_odometer" type="motion_test" output="screen">  
+		<param name="base_path" value="/home/nishitani/Dropbox/usp/ros/mono_odometer/dataset/campus2/01/"/>
+		<param name="extension" value=".jpg"/>
+		<param name="database_size" value="506" />
+    </node>
+</launch>

@@ -37,6 +37,7 @@ public:
 	std::vector<cv::KeyPoint>	getFeatList(){ return featList; }
 	cv::Mat						getFeatDescriptors(){ return featDescriptors; }
 	std::vector<cv::DMatch> 	getFeatMatches(){ return featMatches; }
+	ros::Time					getTimestamp(){ return timestamp; }
 
 private:
 	std::vector<cv::KeyPoint>	featList;			///< Detected features' list

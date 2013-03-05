@@ -42,7 +42,7 @@ public:
 	MotionEstimator();
 	virtual ~MotionEstimator();
 
-	void estimate_motion(Frame prev, Frame curr, cv::Mat K = cv::Mat());
+	void estimate_motion(Frame prev, Frame curr, cv::Mat &P, cv::Mat K = cv::Mat());
 	bool feature_point_normalization(std::vector<cv::Point2f> prev_pts,
 			std::vector<cv::Point2f> curr_pts,
 			std::vector<cv::Point2f> &norm_prev_pts,

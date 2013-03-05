@@ -53,10 +53,23 @@ MonoOdometer::MonoOdometer( ros::NodeHandle nh, image_transport::ImageTransport 
 	m_estimator.reset( new MotionEstimator() );
 
 	/*
-	 * Subscriber and Publisher
+	 * Image Subscriber and Publisher
 	 */
-	sub = it.subscribe( image_topic,1,&MonoOdometer::ImageCallback,this );
-	pub = it.advertise( feature_image_topic, 1 );
+	imsub = it.subscribe( image_topic,1,&MonoOdometer::ImageCallback,this );
+	impub = it.advertise( feature_image_topic, 1 );
+
+	/*
+	 * Odometer Subscriber and Publisher
+	 */
+	odompub = nh.advertise<geometry_msgs::PoseStamped>("pose", 1);
+
+	position = cv::Vec3f(0,0,0);
+
+	//TEMPORARY
+//	myfile.open ("/home/nishitani/Dropbox/usp/ros/mono_odometer/points.dat", std::ios::in | std::ios::ate | std::ios::app);
+//	myfile << position.val[0] << ' ' << position.val[1] << ' ' << position.val[2] << std::endl;
+//	myfile.close();
+
 }
 
 MonoOdometer::~MonoOdometer() {
@@ -109,6 +122,8 @@ void MonoOdometer::configROSParam( ros::NodeHandle nh ) {
 	nh.param<bool>("show_tracks",show_tracks,false);
 
 	nh.param<std::string>("calib_filename",calib_filename,"");
+
+	nh.param<std::string>("odom_frame_id", odom_frame_id, std::string("/odom"));
 }
 
 /**
@@ -120,6 +135,8 @@ void MonoOdometer::configROSParam( ros::NodeHandle nh ) {
  * 	 @param[in]	msg		Income message from the defined camera topic.
  */
 void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg) {
+	//TODO: The class frame should contain a frame vector (with all frames)
+	//TODO: Store features and motion inside?
 	queueOfFrames.push_back( Frame( msg ) );
 	if( queueOfFrames.size()<2 ) {
 		// TODO: Easy radius set (ROSLAUNCH)
@@ -133,19 +150,45 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg) {
 
 	int queueLast = queueOfFrames.size()-1;
 
+	//TODO: Create a process method inside MonoOdometer
 	queueOfFrames.back().process( f_handler,queueOfFrames[queueLast-1] );
 
-	m_estimator->estimate_motion(queueOfFrames[queueLast-1],queueOfFrames[queueLast],camera_matrix);
+	//TODO: Merge this matrix somewhere else. Maybe inside this class.
+	cv::Mat P;
+
+	m_estimator->estimate_motion(queueOfFrames[queueLast-1],queueOfFrames[queueLast],P,camera_matrix);
+
+	cv::Matx33f R( P(cv::Range::all(),cv::Range(0,3)) );
+	cv::Vec3f t( P.col(3) );
+	position = R*position+t;
+
+//	myfile.open ("/home/nishitani/Dropbox/usp/ros/mono_odometer/points.dat", std::ios::in | std::ios::ate | std::ios::app);
+//	myfile << position.val[0] << ' ' << position.val[1] << ' ' << position.val[2] << std::endl;
+//	myfile.close();
+
+//	btMatrix3x3 rot_mat(  P.at<float>(0,0), P.at<float>(0,1), P.at<float>(0,2),
+//	          	  	  	  P.at<float>(1,0), P.at<float>(1,1), P.at<float>(1,2),
+//	          	  	  	  P.at<float>(2,0), P.at<float>(2,1), P.at<float>(2,2));
+//	btVector3 t(P.at<float>(0,3), P.at<float>(1,3), P.at<float>(2,3));
+//	transformation *= tf::Transform(rot_mat, t);
+//
+//	nav_msgs::Odometry odom_msg;
+//	geometry_msgs::PoseStamped pose_msg;
+//
+//	pose_msg.header.stamp = queueOfFrames.back().getTimestamp();
+//	pose_msg.header.frame_id = odom_frame_id;
+//	tf::poseTFToMsg(tf::Transform(rot_mat, t),pose_msg.pose);
+//
+//	odompub.publish( pose_msg );
 
 	if(show_features||show_tracks){
 		if(show_features) queueOfFrames.back().markFeatures();
 		if(show_tracks) queueOfFrames.back().markTracks( queueOfFrames[queueLast-1].getFeatList() );
 		sensor_msgs::ImagePtr imgMsg = queueOfFrames.back().getImageMsg();
-		pub.publish( imgMsg );
+		impub.publish( imgMsg );
 	}
-	ROS_DEBUG("Number of features matched: %d", queueOfFrames.back().getNumberOfFeatures());
 
-//	queueOfFrames.pop_front();
+	ROS_DEBUG("Number of features matched: %d", queueOfFrames.back().getNumberOfFeatures());
 }
 
 } /* namespace LRM */

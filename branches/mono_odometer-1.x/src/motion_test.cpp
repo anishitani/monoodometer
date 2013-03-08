@@ -20,27 +20,110 @@
 using namespace std;
 using namespace cv;
 
+void compare(vector<Point2d> train_pts, vector<Point2d> query_pts,
+		vector<DMatch> matches, const vector<KeyPoint>& train_kpts,
+		const vector<KeyPoint>& query_kpts)
+{
+	int sizes[3] =
+	{ train_pts.size(), query_pts.size(), matches.size() };
+	int vec_size = sizes[0];
+	for (int i = 0; i < 3; i++)
+	{
+		if (vec_size != sizes[i])
+		{
+			cout << "Train PTS  " << sizes[0] << endl << "Query PTS  "
+					<< sizes[1] << endl << "Matches    " << sizes[2] << endl;
+			printf("Error: Wrong size\n");
+			return;
+		}
+	}
+	for (int i = 0; i < (int) matches.size(); i++)
+	{
+		const DMatch & dmatch = matches[i];
+		if (train_pts[i].x != train_kpts[dmatch.trainIdx].pt.x
+				|| train_pts[i].y != train_kpts[dmatch.trainIdx].pt.y
+				|| query_pts[i].x != query_kpts[dmatch.queryIdx].pt.x
+				|| query_pts[i].y != query_kpts[dmatch.queryIdx].pt.y)
+		{
+			cout << "PTS : " << train_pts[i] << ' ' << query_pts[i] << endl;
+			cout << "KPTS: " << train_kpts[dmatch.trainIdx].pt << ' '
+					<< query_kpts[dmatch.queryIdx].pt << endl;
+			cout << endl;
+		}
+	}
+}
+
 void drawMatchesRelative(const vector<KeyPoint>& train,
 		const vector<KeyPoint>& query, std::vector<cv::DMatch>& matches,
 		Mat& img, const vector<unsigned char>& mask = vector<unsigned char>())
 {
 	for (int i = 0; i < (int) matches.size(); i++)
 	{
-		if (mask.empty() || mask[i])
+		if (!mask.empty())
 		{
-			Point2f pt_new = query[matches[i].queryIdx].pt;
-			Point2f pt_old = train[matches[i].trainIdx].pt;
-//			Point2f dist = pt_new - pt_old;
+			if (mask[i])
+			{
+				Point2d pt_new = query[matches[i].queryIdx].pt;
+				Point2d pt_old = train[matches[i].trainIdx].pt;
+
+				cv::line(img, pt_new, pt_old, Scalar(125, 255, 125), 1);
+				cv::circle(img, pt_new, 2, Scalar(0, 255, 0), 1);
+			}
+			else
+			{
+				Point2d pt_new = query[matches[i].queryIdx].pt;
+				Point2d pt_old = train[matches[i].trainIdx].pt;
+
+				cv::line(img, pt_new, pt_old, Scalar(125, 125, 255), 1);
+				cv::circle(img, pt_new, 2, Scalar(0, 0, 255), 1);
+			}
+		}
+		else
+		{
+			Point2d pt_new = query[matches[i].queryIdx].pt;
+			Point2d pt_old = train[matches[i].trainIdx].pt;
 
 			cv::line(img, pt_new, pt_old, Scalar(125, 255, 125), 1);
-			cv::circle(img, pt_new, 2, Scalar(255, 0, 125), 1);
+			cv::circle(img, pt_new, 2, Scalar(0, 255, 0), 1);
+		}
+	}
+}
 
+void drawMatchesRelative(const vector<Point2d> train,
+		const vector<Point2d> query, Mat input, Mat& output,
+		const vector<unsigned char>& mask = vector<unsigned char>())
+{
+	int matches_size = train.size();
+	cvtColor(input, output, CV_GRAY2BGR, 3);
+
+	if (!mask.empty())
+	{
+		for (int i = 0; i < matches_size; i++)
+		{
+			if (mask[i])
+			{
+				line(output, query[i], train[i], Scalar(0, 255, 0), 1, CV_AA);
+				circle(output, query[i], 2, Scalar(125, 255, 125), 1, CV_AA);
+			}
+			else
+			{
+				line(output, query[i], train[i], Scalar(0, 0, 255), 1, CV_AA);
+				circle(output, query[i], 2, Scalar(125, 125, 255), 1, CV_AA);
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < matches_size; i++)
+		{
+			line(output, query[i], train[i], Scalar(0, 255, 0), 1, CV_AA);
+			circle(output, query[i], 2, Scalar(125, 255, 125), 1, CV_AA);
 		}
 	}
 }
 
 //Takes a descriptor and turns it into an xy point
-void keypoints2points(const vector<KeyPoint>& in, vector<Point2f>& out)
+void keypoints2points(const vector<KeyPoint>& in, vector<Point2d>& out)
 {
 	out.clear();
 	out.reserve(in.size());
@@ -51,7 +134,7 @@ void keypoints2points(const vector<KeyPoint>& in, vector<Point2f>& out)
 }
 
 //Takes an xy point and appends that to a keypoint structure
-void points2keypoints(const vector<Point2f>& in, vector<KeyPoint>& out)
+void points2keypoints(const vector<Point2d>& in, vector<KeyPoint>& out)
 {
 
 	out.clear();
@@ -66,9 +149,9 @@ void points2keypoints(const vector<Point2f>& in, vector<KeyPoint>& out)
 void warpKeypoints(const Mat& H, const vector<KeyPoint>& in,
 		vector<KeyPoint>& out)
 {
-	vector<Point2f> pts;
+	vector<Point2d> pts;
 	keypoints2points(in, pts);
-	vector<Point2f> pts_w(pts.size());
+	vector<Point2d> pts_w(pts.size());
 	Mat m_pts_w(pts_w);
 	perspectiveTransform(Mat(pts), m_pts_w, H);
 	points2keypoints(pts_w, out);
@@ -77,36 +160,33 @@ void warpKeypoints(const Mat& H, const vector<KeyPoint>& in,
 //Converts matching indices to xy points
 void matches2points(const vector<KeyPoint>& train,
 		const vector<KeyPoint>& query, const std::vector<cv::DMatch>& matches,
-		std::vector<cv::Point2f>& pts_train, std::vector<Point2f>& pts_query)
+		vector<cv::Point2d>& pts_train, vector<Point2d>& pts_query)
 {
 
 	pts_train.clear();
 	pts_query.clear();
-	pts_train.reserve(matches.size());
-	pts_query.reserve(matches.size());
+	pts_train.reserve(matches.size() + 100);
+	pts_query.reserve(matches.size() + 100);
 
-	size_t i = 0;
-
-	for (; i < matches.size(); i++)
+	for (int i = 0; i < (int) matches.size(); i++)
 	{
 
 		const DMatch & dmatch = matches[i];
 
 		pts_query.push_back(query[dmatch.queryIdx].pt);
 		pts_train.push_back(train[dmatch.trainIdx].pt);
-
 	}
-
 }
 
 //Normalize the features point
-bool feature_point_normalization(std::vector<cv::Point2f> prev_pts,
-		std::vector<cv::Point2f> curr_pts,
-		std::vector<cv::Point2f> &norm_prev_pts,
-		std::vector<cv::Point2f> &norm_curr_pts, cv::Mat &Tp, cv::Mat &Tc)
+//Chojnacki, W., Brooks, M. J., Van den Hengel, a., & Gawley, D. (2003). Revisiting hartley’s normalized eight-point algorithm.
+bool feature_point_normalization(std::vector<cv::Point2d> prev_pts,
+		std::vector<cv::Point2d> curr_pts,
+		std::vector<cv::Point2d> &norm_prev_pts,
+		std::vector<cv::Point2d> &norm_curr_pts, cv::Mat &Tp, cv::Mat &Tc)
 {
 	uint matches_size = prev_pts.size();
-	cv::Point2f cent_prev(0, 0), cent_curr(0, 0);
+	cv::Point2d cent_prev(0, 0), cent_curr(0, 0);
 	for (uint i = 0; i < matches_size; i++)
 	{
 		cent_prev += prev_pts[i];
@@ -140,26 +220,25 @@ bool feature_point_normalization(std::vector<cv::Point2f> prev_pts,
 	}
 
 	// compute corresponding transformation matrices
-	Tp = cv::Mat(
-			cv::Matx33d(sp, 0, -sp * cent_prev.x, 0, sp, -sp * cent_prev.y, 0,
-					0, 1));
-	Tc = cv::Mat(
-			cv::Matx33d(sc, 0, -sc * cent_curr.x, 0, sc, -sc * cent_curr.y, 0,
-					0, 1));
+	Tp = Mat(
+			Matx33d(sp, 0, -sp * cent_prev.x, 0, sp, -sp * cent_prev.y, 0, 0,
+					1));
+	Tc = Mat(
+			Matx33d(sc, 0, -sc * cent_curr.x, 0, sc, -sc * cent_curr.y, 0, 0,
+					1));
 
 	return true;
 }
-
 //Estimates the fundamental matrix
-cv::Mat compute_F_matrix(std::vector<cv::Point2f> train_pts,
-		std::vector<cv::Point2f> query_pts, Mat &mask)
+
+cv::Mat compute_F_matrix(std::vector<cv::Point2d> train_pts,
+		std::vector<cv::Point2d> query_pts, Mat &mask)
 {
 	return findFundamentalMat(train_pts, query_pts, FM_RANSAC, 0.1, 0.99, mask);
 }
 
 //Extracts rotation and translatipon from essential matrix
-vector<cv::Mat> compute_Rt(cv::Mat E, cv::Mat K,
-		std::vector<cv::Point2f> prev_pts, std::vector<cv::Point2f> curr_pts)
+vector<cv::Mat> compute_Rt(cv::Mat E, cv::Mat K)
 {
 
 	// hartley matrices
@@ -194,22 +273,22 @@ vector<cv::Mat> compute_Rt(cv::Mat E, cv::Mat K,
 	// create vector containing all 4 solutions
 	vector<Mat> P; //(4,Mat::eye(4,4,CV_64F));
 
-	Mat P1 = Mat::eye(4, 4, CV_64F);
+	Mat P1 = Mat::eye(3, 4, CV_64F);
 	Ra.copyTo(P1(cv::Range(0, 3), cv::Range(0, 3)));
 	tp.copyTo(P1(cv::Range(0, 3), cv::Range(3, 4)));
 	P.push_back(P1);
 
-	Mat P2 = Mat::eye(4, 4, CV_64F);
+	Mat P2 = Mat::eye(3, 4, CV_64F);
 	Ra.copyTo(P2(cv::Range(0, 3), cv::Range(0, 3)));
 	tn.copyTo(P2(cv::Range(0, 3), cv::Range(3, 4)));
 	P.push_back(P2);
 
-	Mat P3 = Mat::eye(4, 4, CV_64F);
+	Mat P3 = Mat::eye(3, 4, CV_64F);
 	Rb.copyTo(P3(cv::Range(0, 3), cv::Range(0, 3)));
 	tp.copyTo(P3(cv::Range(0, 3), cv::Range(3, 4)));
 	P.push_back(P3);
 
-	Mat P4 = Mat::eye(4, 4, CV_64F);
+	Mat P4 = Mat::eye(3, 4, CV_64F);
 	Rb.copyTo(P4(cv::Range(0, 3), cv::Range(0, 3)));
 	tn.copyTo(P4(cv::Range(0, 3), cv::Range(3, 4)));
 	P.push_back(P4);
@@ -217,57 +296,73 @@ vector<cv::Mat> compute_Rt(cv::Mat E, cv::Mat K,
 	return P;
 }
 
-//int triangulateCheck(vector<DMatch> matches, Mat &K, Mat P)
-//{
-//
-//	// init 3d point matrix
-//	X = Matrix(4, p_matched.size());
-//
-//	// projection matrices
-//	Matrix P1(3, 4);
-//	Matrix P2(3, 4);
-//	P1.setMat(K, 0, 0);
-//	P2.setMat(R, 0, 0);
-//	P2.setMat(t, 0, 3);
-//	P2 = K * P2;
-//
-//	// triangulation via orthogonal regression
-//	Matrix J(4, 4);
-//	Matrix U, S, V;
-//	for (int32_t i = 0; i < (int) p_matched.size(); i++)
-//	{
-//		for (int32_t j = 0; j < 4; j++)
-//		{
-//			J.val[0][j] = P1.val[2][j] * p_matched[i].u1p - P1.val[0][j];
-//			J.val[1][j] = P1.val[2][j] * p_matched[i].v1p - P1.val[1][j];
-//			J.val[2][j] = P2.val[2][j] * p_matched[i].u1c - P2.val[0][j];
-//			J.val[3][j] = P2.val[2][j] * p_matched[i].v1c - P2.val[1][j];
-//		}
-//		J.svd(U, S, V);
-//		X.setMat(V.getMat(0, 3, 3, 3), 0, i);
-//	}
-//
-//	// compute inliers
-//	Matrix AX1 = P1 * X;
-//	Matrix BX1 = P2 * X;
-//	int32_t num = 0;
-//	for (int32_t i = 0; i < X.n; i++)
-//		if (AX1.val[2][i] * X.val[3][i] > 0 && BX1.val[2][i] * X.val[3][i] > 0)
-//			num++;
-//
-//	// return number of inliers
-//	return num;
-//}
+int triangulateCheck(vector<Point2d> train_pts, vector<Point2d> query_pts,
+		Mat &K, Mat P, vector<unsigned char> mask = vector<unsigned char>())
+{
+	// init 3d point matrix
+	Mat A = Mat::zeros(4, 4, CV_64F);
+	Mat P1, P2;
+	Mat X_vec;
+	SVD svd;
 
-void estimate_motion(vector<Point2f> train_pts, vector<Point2f> query_pts, vector<DMatch> matches,
-		Mat K, Mat &P)
+	int num_inliers = 0;
+
+	// projection matrices
+	P1 = Mat::eye(3, 4, CV_64F);
+	P2 = K * P;
+
+	// triangulation via orthogonal regression
+	for (int i = 0; i < (int) mask.size(); i++)
+	{
+//		int i = 1;
+		if (!(int) mask[i])
+		{
+			continue;
+		}
+		A.row(0) += (query_pts[i].x * P1.row(2).t() - P1.row(0).t()).t();
+		A.row(1) += (query_pts[i].y * P1.row(2).t() - P1.row(1).t()).t();
+		A.row(2) += (train_pts[i].x * P2.row(2).t() - P2.row(0).t()).t();
+		A.row(3) += (train_pts[i].y * P2.row(2).t() - P2.row(1).t()).t();
+
+		svd(A);
+
+		Mat X(svd.vt.row(3));
+
+		/**************************/
+		/** Checa a profundidade **/
+		/**************************/
+		Mat x1 = P1 * X.t(), x2 = P2 * X.t();
+		Mat M1(P1, Rect(0, 0, 3, 3)), M2(P2, Rect(0, 0, 3, 3));
+		int sign1 = determinant(M1) > 0 ? 1 : -1, sign2 =
+				determinant(M2) > 0 ? 1 : -1;
+
+		double depth1 = (sign1 * x1.at<double>(2, 0))
+				/ (X.at<double>(0, 3) * norm(M1.col(2))), depth2 = (sign2
+				* x2.at<double>(2, 0)) / (X.at<double>(0, 3) * norm(M2.col(2)));
+		if (depth1 > 0 && depth2 > 0)
+			num_inliers++;
+		/**************************/
+
+		X /= X.at<double>(0, 3);
+
+		X_vec.push_back(X);
+
+		A = Mat::zeros(4, 4, CV_64F);
+	}
+
+	// return number of inliers
+	return num_inliers;
+}
+
+void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
+		vector<DMatch> matches, Mat K, Mat &P, vector<uchar> &inlier_mask)
 {
 	//Normalization transformations
 	Mat Tp, Tc;
 
 	//Normalized vectors
-	vector<Point2f> norm_train_pts(train_pts.size());
-	vector<Point2f> norm_query_pts(query_pts.size());
+	vector<Point2d> norm_train_pts(train_pts.size());
+	vector<Point2d> norm_query_pts(query_pts.size());
 
 	//Fundamental matrix
 	Mat F;
@@ -290,8 +385,8 @@ void estimate_motion(vector<Point2f> train_pts, vector<Point2f> query_pts, vecto
 	}
 
 	SVD svd(F);
-//	svd.w.at<double>(0) = 1;
-//	svd.w.at<double>(1) = 1;
+	svd.w.at<double>(0) = 1;
+	svd.w.at<double>(1) = 1;
 	svd.w.at<double>(2) = 0;
 
 	F = svd.u * cv::Mat().diag(svd.w) * svd.vt;
@@ -301,32 +396,27 @@ void estimate_motion(vector<Point2f> train_pts, vector<Point2f> query_pts, vecto
 	cv::Mat R, t;
 
 	vector<Mat> P_vec;
-	P_vec = compute_Rt(E, K, norm_train_pts, norm_query_pts);
+	P_vec = compute_Rt(E, K);
 
-//	int max_inlier;
-//	for (int i = 0; i < P.size(); i++)
-//	{
-//		int num_inliers = triangulateCheck();
-//	}
+	int max_inlier = 0;
+	int pos = 0;
 
-//
-//
-//
-//	Mat P_curr;
-//	int32_t max_inliers = 0;
-//	for (int32_t i = 0; i < 4; i++)
-//	{
-//		int32_t num_inliers = triangulateChieral(p_matched, K, R_vec[i],
-//				t_vec[i], X_curr);
-//		if (num_inliers > max_inliers)
-//		{
-//			max_inliers = num_inliers;
-//			X = X_curr;
-//			R = R_vec[i];
-//			t = t_vec[i];
-//		}
-//	}
+	vector<vector<uchar> > mask_vec;
 
+	for (size_t i = 0; i < P_vec.size(); i++)
+	{
+		vector<uchar> _mask(mask);
+		int inlier = triangulateCheck(train_pts, query_pts, K, P_vec[i], _mask);
+		if (max_inlier < inlier)
+		{
+			max_inlier = inlier;
+			pos = i;
+		}
+		mask_vec.push_back(_mask);
+	}
+	P = P_vec[pos](Range::all(), Range::all());
+	cout << P << endl;
+	inlier_mask = mask_vec[pos];
 }
 
 void resetH(Mat&H)
@@ -360,17 +450,18 @@ int main(int argc, char** argv)
 	// Features detector, descriptor and matcher
 	Ptr<FeatureDetector> detector;
 	Ptr<DescriptorExtractor> descriptor;
-	BFMatcher desc_matcher(NORM_L2); // Matching rule
+	BFMatcher desc_matcher(NORM_L2,true); // Matching rule
 //	DescriptorMatcher desc_matcher;
 
 	detector = new SiftFeatureDetector(DESIRED_FTRS);
 	descriptor = new SiftDescriptorExtractor(128);
 
 	// Feature points
-	vector<Point2f> train_pts, query_pts;
+	vector<Point2d> train_pts, query_pts;
 
 	// Keypoints
-	vector<KeyPoint> train_kpts, query_kpts;
+	vector<KeyPoint> train_kpts, query_kpts, matched_train_kpts,
+			matched_query_kpts;
 
 	// Descriptors
 	Mat train_desc, query_desc;
@@ -381,15 +472,18 @@ int main(int argc, char** argv)
 
 	// Mask of near matches
 	vector<unsigned char> match_mask;
+	vector<unsigned char> inlier_mask;
 	/****************************/
 
 	/****************************/
 	/** Images ******************/
 	/****************************/
-	Mat frame, output_image, current_image, previous_image;
+	Mat frame, pair_image, relative_image, current_image, previous_image;
 
-	string window_name("Matches");
-	namedWindow(window_name.c_str(), CV_WINDOW_NORMAL);
+	string pair_window_name("Matches");
+	string relative_window_name("Relative");
+	namedWindow(pair_window_name.c_str(), CV_WINDOW_AUTOSIZE);
+	namedWindow(relative_window_name.c_str(), CV_WINDOW_AUTOSIZE);
 	/****************************/
 
 	Mat H_prev = Mat::eye(3, 3, CV_32FC1);
@@ -423,16 +517,17 @@ int main(int argc, char** argv)
 		//Projection matrix
 		Mat P;
 		//Rotation matrix
-//		Matx33f R;
+		Matx33f R;
 		//traslation vector
-//		Vec3f t;
+		Vec3f t;
 
 		if (!train_desc.empty())
 		{
-			/*********************************/
-			/** Calcula os matches proximos **/
-			/*********************************/
-			desc_matcher.radiusMatch(train_desc, query_desc, radiusMatches,
+//			desc_matcher.radiusMatch();
+			/******************************************/
+			/** Calcula as correspondencias proximas **/
+			/******************************************/
+			desc_matcher.radiusMatch(query_desc, train_desc, radiusMatches,
 					100.0);
 			matches.clear();
 			for (int i = 0; i < (int) radiusMatches.size(); i++)
@@ -452,48 +547,62 @@ int main(int argc, char** argv)
 					matches.push_back(radiusMatches[i][pos]);
 				}
 			}
-			/*********************************/
+			/******************************************/
 
-			drawMatches(previous_image, train_kpts, current_image, query_kpts,
-					matches, output_image, Scalar::all(-1), Scalar::all(-1),
-					vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+//			drawMatches(current_image, query_kpts, previous_image, train_kpts,
+//					matches, pair_image, Scalar::all(-1), Scalar::all(-1),
+//					vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
-			matches2points(train_kpts, query_kpts, matches, train_pts,
-					query_pts);
+			if (matches.size() > 8)
+			{
 
-			estimate_motion(train_pts, query_pts, matches, K, P);
+				matches2points(train_kpts, query_kpts, matches, train_pts,
+						query_pts);
 
-//			R = P(Range::all(),Range(0,3));
-//			t = P.col(3);
+				estimate_motion(train_pts, query_pts, matches, K, P,
+						inlier_mask);
+
+//				cvtColor(current_image,relative_image,CV_GRAY2BGR);
+				drawMatchesRelative(train_pts, query_pts, current_image, relative_image, inlier_mask);
+
+//				R = P(Range::all(),Range(0,3));
+//				t = P.col(3);
 //
-//			float ry = asin( -R(2,0) ),
-//				  rx = asin( R(2,1)/cos(ry) ),
-//				  rz = asin( R(1,0)/cos(ry) );
-//			float cx = cos(rx),cy = cos(ry),cz = cos(rz),
-//				  sx = sin(rx),sy = sin(ry),sz = sin(rz);
-//
-//			Mat C(4,4,CV_32F);
-//			C.at<float>(0,0) = +cy*cz;          C.at<float>(0,1) = -cy*sz;          C.at<float>(0,2) = +sy;    C.at<float>(0,3) = t(0);
-//			C.at<float>(1,0) = +sx*sy*cz+cx*sz; C.at<float>(1,1) = -sx*sy*sz+cx*cz; C.at<float>(1,2) = -sx*cy; C.at<float>(1,3) = t(1);
-//			C.at<float>(2,0) = -cx*sy*cz+sx*sz; C.at<float>(2,1) = +cx*sy*sz+sx*cz; C.at<float>(2,2) = +cx*cy; C.at<float>(2,3) = t(2);
-//			C.at<float>(3,0) = 0;               C.at<float>(3,1) = 0;               C.at<float>(3,2) = 0;      C.at<float>(3,3) = 1;
-//
-//			C = C.inv();
-//
-//			cout << C << endl;
-//
-//			R = C( Range(0,3),Range(0,3) ); R = R.t();
-//			t = C( Range(0,3),Range(3,4) );
-//
-//			pose = R*pose+t;
+//				double ry = asin( R(0,2) ),
+//					   rx = asin( R(2,1)/cos(ry) ),
+//					   rz = asin( R(1,0)/cos(ry) );
+//				double cx = cos(rx),cy = cos(ry),cz = cos(rz),
+//					   sx = sin(rx),sy = sin(ry),sz = sin(rz);
+
+				//			Mat C(4,4,CV_32F);
+				//			C.at<float>(0,0) = +cy*cz;          C.at<float>(0,1) = -cy*sz;          C.at<float>(0,2) = +sy;    C.at<float>(0,3) = t(0);
+				//			C.at<float>(1,0) = +sx*sy*cz+cx*sz; C.at<float>(1,1) = -sx*sy*sz+cx*cz; C.at<float>(1,2) = -sx*cy; C.at<float>(1,3) = t(1);
+				//			C.at<float>(2,0) = -cx*sy*cz+sx*sz; C.at<float>(2,1) = +cx*sy*sz+sx*cz; C.at<float>(2,2) = +cx*cy; C.at<float>(2,3) = t(2);
+				//			C.at<float>(3,0) = 0;               C.at<float>(3,1) = 0;               C.at<float>(3,2) = 0;      C.at<float>(3,3) = 1;
+				//
+				//			C = C.inv();
+				//
+				//			cout << C << endl;
+				//
+				//			R = C( Range(0,3),Range(0,3) ); R = R.t();
+				//			t = C( Range(0,3),Range(3,4) );
+				//
+				//			pose = R*pose+t;
+			}
 		}
 
 		train_kpts = query_kpts;
 		query_desc.copyTo(train_desc);
 		current_image.copyTo(previous_image);
 
-		if (!output_image.empty())
-			imshow(window_name.c_str(), output_image);
+		if (!pair_image.empty())
+		{
+			imshow(pair_window_name.c_str(), pair_image);
+		}
+		if (!relative_image.empty())
+		{
+			imshow(relative_window_name.c_str(), relative_image);
+		}
 
 		if ((char) waitKey(0) == 'q')
 			break;

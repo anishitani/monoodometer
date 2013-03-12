@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+<!-- 
+	<param name="/use_sim_time" value="true"/>
+	
+	<node name="rviz" pkg="rviz" type="rviz"/>
+ -->
+ 	
+	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer" output="screen">
+		<param name="image_topic" value="/camera/image"/>
+    </node>
+</launch>

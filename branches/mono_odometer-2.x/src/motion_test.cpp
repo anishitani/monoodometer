@@ -20,6 +20,11 @@
 using namespace std;
 using namespace cv;
 
+double rad2deg(double rad)
+{
+	return (rad * 180 / CV_PI);
+}
+
 void compare(vector<Point2d> train_pts, vector<Point2d> query_pts,
 		vector<DMatch> matches, const vector<KeyPoint>& train_kpts,
 		const vector<KeyPoint>& query_kpts)
@@ -55,7 +60,7 @@ void compare(vector<Point2d> train_pts, vector<Point2d> query_pts,
 
 void drawMatchesRelative(const vector<KeyPoint>& train,
 		const vector<KeyPoint>& query, std::vector<cv::DMatch>& matches,
-		Mat& img, const vector<unsigned char>& mask = vector<unsigned char>())
+		Mat& img, const vector<char>& mask = vector<char>())
 {
 	for (int i = 0; i < (int) matches.size(); i++)
 	{
@@ -91,7 +96,7 @@ void drawMatchesRelative(const vector<KeyPoint>& train,
 
 void drawMatchesRelative(const vector<Point2d> train,
 		const vector<Point2d> query, Mat input, Mat& output,
-		const vector<unsigned char>& mask = vector<unsigned char>())
+		const vector<char>& mask = vector<char>())
 {
 	int matches_size = train.size();
 	cvtColor(input, output, CV_GRAY2BGR, 3);
@@ -234,7 +239,7 @@ bool feature_point_normalization(std::vector<cv::Point2d> prev_pts,
 cv::Mat compute_F_matrix(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts, Mat &mask)
 {
-	return findFundamentalMat(train_pts, query_pts, FM_RANSAC, 0.1, 0.99, mask);
+	return findFundamentalMat(train_pts, query_pts, FM_RANSAC, 0.01, 0.99, mask);
 }
 
 //Extracts rotation and translatipon from essential matrix
@@ -297,7 +302,7 @@ vector<cv::Mat> compute_Rt(cv::Mat E, cv::Mat K)
 }
 
 int triangulateCheck(vector<Point2d> train_pts, vector<Point2d> query_pts,
-		Mat &K, Mat P, vector<unsigned char> mask = vector<unsigned char>())
+		Mat &K, Mat P, vector<char> mask = vector<char>())
 {
 	// init 3d point matrix
 	Mat A = Mat::zeros(4, 4, CV_64F);
@@ -355,7 +360,7 @@ int triangulateCheck(vector<Point2d> train_pts, vector<Point2d> query_pts,
 }
 
 void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
-		vector<DMatch> matches, Mat K, Mat &P, vector<uchar> &inlier_mask)
+		vector<DMatch> matches, Mat K, Mat &P, vector<char> &inlier_mask)
 {
 	//Normalization transformations
 	Mat Tp, Tc;
@@ -401,11 +406,11 @@ void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
 	int max_inlier = 0;
 	int pos = 0;
 
-	vector<vector<uchar> > mask_vec;
+	vector<vector<char> > mask_vec;
 
 	for (size_t i = 0; i < P_vec.size(); i++)
 	{
-		vector<uchar> _mask(mask);
+		vector<char> _mask(mask);
 		int inlier = triangulateCheck(train_pts, query_pts, K, P_vec[i], _mask);
 		if (max_inlier < inlier)
 		{
@@ -415,7 +420,7 @@ void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
 		mask_vec.push_back(_mask);
 	}
 	P = P_vec[pos](Range::all(), Range::all());
-	cout << P << endl;
+
 	inlier_mask = mask_vec[pos];
 }
 
@@ -441,6 +446,8 @@ int main(int argc, char** argv)
 	nh.param<std::string>("extension", extension, ".jpg");
 	nh.param<int>("database_size", database_size, 1);
 
+
+
 	/****************************/
 	/** Feature and Descriptor **/
 	/****************************/
@@ -453,8 +460,26 @@ int main(int argc, char** argv)
 	BFMatcher desc_matcher(NORM_L2,true); // Matching rule
 //	DescriptorMatcher desc_matcher;
 
-	detector = new SiftFeatureDetector(DESIRED_FTRS);
-	descriptor = new SiftDescriptorExtractor(128);
+	//SIFT
+//	detector = new SiftFeatureDetector();
+//	descriptor = new SiftDescriptorExtractor();
+
+	//SURF
+//	detector = new SurfFeatureDetector(1000);
+//	descriptor = new SurfDescriptorExtractor();
+
+	//ORB
+//	detector = new cv::ORB( DESIRED_FTRS );
+//	descriptor = new cv::OrbDescriptorExtractor( DESIRED_FTRS );
+
+	//FAST
+//	detector = new cv::GridAdaptedFeatureDetector( new cv::FastFeatureDetector(10, true), DESIRED_FTRS, 4, 4);
+	detector = new cv::PyramidAdaptedFeatureDetector( new cv::FastFeatureDetector(5, true) );
+	descriptor = new cv::BriefDescriptorExtractor();
+
+	//SHI
+//	detector = new GoodFeaturesToTrackDetector(DESIRED_FTRS, 0.01, 1.0, 5);
+//	descriptor = new BriefDescriptorExtractor();
 
 	// Feature points
 	vector<Point2d> train_pts, query_pts;
@@ -472,8 +497,10 @@ int main(int argc, char** argv)
 
 	// Mask of near matches
 	vector<unsigned char> match_mask;
-	vector<unsigned char> inlier_mask;
+	vector<char> inlier_mask;
 	/****************************/
+
+
 
 	/****************************/
 	/** Images ******************/
@@ -482,11 +509,13 @@ int main(int argc, char** argv)
 
 	string pair_window_name("Matches");
 	string relative_window_name("Relative");
-	namedWindow(pair_window_name.c_str(), CV_WINDOW_AUTOSIZE);
-	namedWindow(relative_window_name.c_str(), CV_WINDOW_AUTOSIZE);
+	namedWindow(pair_window_name.c_str(), CV_WINDOW_NORMAL);
+	namedWindow(relative_window_name.c_str(), CV_WINDOW_NORMAL);
 	/****************************/
 
-	Mat H_prev = Mat::eye(3, 3, CV_32FC1);
+
+
+
 
 	/************************/
 	/** Calibration Matrix **/
@@ -499,8 +528,29 @@ int main(int argc, char** argv)
 	calib_data["cameraMatrix"] >> K;
 	/************************/
 
-	for (int i = 1; i < database_size + 1; i++)
+
+
+	/************************/
+	/** Motion Structures  **/
+	/************************/
+	//Projection matrix
+	Mat P = Mat::eye(4,4,CV_64F);
+
+	//Rotation matrix
+	Matx33d R;
+	//traslation vector
+	Vec3d t;
+	//Pose vector
+	Vec3d pose(0,0,0);
+	/************************/
+
+
+
+//	for (int i = 1; i < database_size + 1; i++)
+	for (int i = 1;; i++)
 	{
+
+
 		/************************/
 		/**Leitura da Image *****/
 		/************************/
@@ -509,28 +559,26 @@ int main(int argc, char** argv)
 		cout << img_path << endl;
 
 		current_image = imread(string(img_path), CV_LOAD_IMAGE_GRAYSCALE);
+		if(current_image.empty()) break;
 		/************************/
+
+
+
 
 		detector->detect(current_image, query_kpts);
 		descriptor->compute(current_image, query_kpts, query_desc);
 
-		//Projection matrix
-		Mat P;
-		//Rotation matrix
-		Matx33f R;
-		//traslation vector
-		Vec3f t;
-
 		if (!train_desc.empty())
 		{
-//			desc_matcher.radiusMatch();
+
+//			desc_matcher.match(query_desc, train_desc,matches);
 			/******************************************/
 			/** Calcula as correspondencias proximas **/
 			/******************************************/
 			desc_matcher.radiusMatch(query_desc, train_desc, radiusMatches,
 					100.0);
 			matches.clear();
-			for (int i = 0; i < (int) radiusMatches.size(); i++)
+			for (int i=0 ; i < (int) radiusMatches.size(); i++)
 			{
 				if (radiusMatches[i].size())
 				{
@@ -549,9 +597,9 @@ int main(int argc, char** argv)
 			}
 			/******************************************/
 
-//			drawMatches(current_image, query_kpts, previous_image, train_kpts,
-//					matches, pair_image, Scalar::all(-1), Scalar::all(-1),
-//					vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+			drawMatches(current_image, query_kpts, previous_image, train_kpts,
+					matches, pair_image, Scalar::all(-1), Scalar::all(-1),
+					vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 
 			if (matches.size() > 8)
 			{
@@ -562,9 +610,10 @@ int main(int argc, char** argv)
 				estimate_motion(train_pts, query_pts, matches, K, P,
 						inlier_mask);
 
-//				cvtColor(current_image,relative_image,CV_GRAY2BGR);
 				drawMatchesRelative(train_pts, query_pts, current_image, relative_image, inlier_mask);
 
+//				cout << P << endl;
+//
 //				R = P(Range::all(),Range(0,3));
 //				t = P.col(3);
 //
@@ -573,20 +622,28 @@ int main(int argc, char** argv)
 //					   rz = asin( R(1,0)/cos(ry) );
 //				double cx = cos(rx),cy = cos(ry),cz = cos(rz),
 //					   sx = sin(rx),sy = sin(ry),sz = sin(rz);
+//
+//				cout << rad2deg(rx) << ' ' << rad2deg(ry) << ' ' << rad2deg(rz) << endl << endl;
+//
+//				Mat C(4,4,CV_32F);
+//				C.at<float>(0,0) = +cy*cz;          C.at<float>(0,1) = -cy*sz;          C.at<float>(0,2) = +sy;    C.at<float>(0,3) = t(0);
+//				C.at<float>(1,0) = +sx*sy*cz+cx*sz; C.at<float>(1,1) = -sx*sy*sz+cx*cz; C.at<float>(1,2) = -sx*cy; C.at<float>(1,3) = t(1);
+//				C.at<float>(2,0) = -cx*sy*cz+sx*sz; C.at<float>(2,1) = +cx*sy*sz+sx*cz; C.at<float>(2,2) = +cx*cy; C.at<float>(2,3) = t(2);
+//				C.at<float>(3,0) = 0;               C.at<float>(3,1) = 0;               C.at<float>(3,2) = 0;      C.at<float>(3,3) = 1;
+//
+//				C = C.inv();
+//
+//				cout << C << endl;
+//
+//				R = C( Range(0,3),Range(0,3) ); R = R.t();
+//				t = C( Range(0,3),Range(3,4) );
+//
+//				ry = asin( R(0,2) ),
+//				rx = asin( R(2,1)/cos(ry) ),
+//				rz = asin( R(1,0)/cos(ry) );
+//
+//				cout << rad2deg(rx) << ' ' << rad2deg(ry) << ' ' << rad2deg(rz) << endl;
 
-				//			Mat C(4,4,CV_32F);
-				//			C.at<float>(0,0) = +cy*cz;          C.at<float>(0,1) = -cy*sz;          C.at<float>(0,2) = +sy;    C.at<float>(0,3) = t(0);
-				//			C.at<float>(1,0) = +sx*sy*cz+cx*sz; C.at<float>(1,1) = -sx*sy*sz+cx*cz; C.at<float>(1,2) = -sx*cy; C.at<float>(1,3) = t(1);
-				//			C.at<float>(2,0) = -cx*sy*cz+sx*sz; C.at<float>(2,1) = +cx*sy*sz+sx*cz; C.at<float>(2,2) = +cx*cy; C.at<float>(2,3) = t(2);
-				//			C.at<float>(3,0) = 0;               C.at<float>(3,1) = 0;               C.at<float>(3,2) = 0;      C.at<float>(3,3) = 1;
-				//
-				//			C = C.inv();
-				//
-				//			cout << C << endl;
-				//
-				//			R = C( Range(0,3),Range(0,3) ); R = R.t();
-				//			t = C( Range(0,3),Range(3,4) );
-				//
 				//			pose = R*pose+t;
 			}
 		}

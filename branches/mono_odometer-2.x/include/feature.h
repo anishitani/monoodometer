@@ -14,21 +14,21 @@ namespace LRM {
 
 #define DEFAULT_RADIUS 10.0
 
-/// Types of possible features
-enum feature_t {
-	SHI_TOMASI,
-	HARRIS,
-	ORB,
-	FAST,
-	SURF,
-	SIFT,
-	NO_FEATURE
-};
-
-/// Types of possible descriptors
-enum descriptor_t {
-	SSD
-};
+///// Types of possible features
+//enum feature_t {
+//	SHI_TOMASI,
+//	HARRIS,
+//	ORB,
+//	FAST,
+//	SURF,
+//	SIFT,
+//	NO_FEATURE
+//};
+//
+///// Types of possible descriptors
+//enum descriptor_t {
+//	SSD
+//};
 
 
 class Descriptor;

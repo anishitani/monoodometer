@@ -29,17 +29,8 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_add_executable(example examples/example.cpp)
 #target_link_libraries(example ${PROJECT_NAME})
 
-# adds definition to source codes 
-#add_definitions( -DMAIN_5PT -DNO_TARGETJR )
-
-# creates the five point algorithm
-#rosbuild_add_library( five_points five_point_solver/Ematrix_5pt.cc 
-#                                  five_point_solver/polydet.cc 
-#                                  five_point_solver/polyquotient.cc 
-#                                  five_point_solver/sturm.cc )
-
 # creates a new library using the odometer, montion, frame and feature sources 
-rosbuild_add_library( odometry_tools src/mono_odometer.cpp src/motion.cpp src/frame.cpp src/feature.cpp )
+rosbuild_add_library( odometry_tools src/mono_odometer.cpp src/motion.cpp src/frame.cpp src/feature.cpp src/parameter.cpp )
 
 # creates the executables
 rosbuild_add_executable(feature_test src/feature_test.cpp)

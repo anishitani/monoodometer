@@ -13,6 +13,10 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
+#include <tf/transform_broadcaster.h>
+#include <nav_msgs/Odometry.h>
+#include <geometry_msgs/PoseStamped.h>
+
 #include <cv_bridge/cv_bridge.h>
 
 #include <image_transport/image_transport.h>
@@ -30,7 +34,26 @@
 #include <vector>
 #include <deque>
 
+namespace LRM{
+/// Types of possible features
+enum feature_t {
+	SHI_TOMASI,
+	HARRIS,
+	ORB,
+	FAST,
+	SURF,
+	SIFT,
+	NO_FEATURE
+};
+
+/// Types of possible descriptors
+enum descriptor_t {
+	SSD
+};
+
+
 class FeatureHandler;
 class Frame;
+}
 
 #endif /* CORE_H_ */

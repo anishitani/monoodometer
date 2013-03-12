@@ -8,8 +8,8 @@
  -->
  	
 	<node name="motion_test" pkg="mono_odometer" type="motion_test" output="screen">  
-		<param name="base_path" value="/home/nishitani/Dropbox/usp/ros/mono_odometer/dataset/rua/01/"/>
+		<param name="base_path" value="/home/nishitani/Dropbox/usp/ros/mono_odometer/dataset/mesa/07/"/>
 		<param name="extension" value=".jpg"/>
-		<param name="database_size" value="50" />
+		<!-- <param name="database_size" value="2" /> -->
     </node>
 </launch>

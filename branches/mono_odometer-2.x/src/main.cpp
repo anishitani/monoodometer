@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
 
 	MonoOdometer odometer( nh,it );
 
-	image_transport::Subscriber sub = it.subscribe("/camera/image",1,&MonoOdometer::ImageCallback,&odometer);
+	image_transport::Subscriber sub = it.subscribe(odometer.getImageTopic(),1,&MonoOdometer::ImageCallback,&odometer);
 
 	ros::spin();
 

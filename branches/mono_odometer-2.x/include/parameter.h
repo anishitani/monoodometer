@@ -20,7 +20,7 @@ public:
 	~OdomParam(){};
 
 	void configROSParam( ros::NodeHandle nh );
-	void parseFeatureType( std::string feature_type );
+	void parseFeatureType();
 
 	//gets
 	const char* getImageTopic()			{ return image_topic.c_str(); }
@@ -29,8 +29,10 @@ public:
 	const char* getCalibFilename()		{ return calib_filename.c_str(); }
 	feature_t getFeatureType()	{ return feature_type; }
 	int getNumberOfFeatures()	{ return number_of_features; }
-	bool getShowFeatures()		{ return show_features; }
-	bool getShowTracks()		{ return show_tracks; }
+	uint getBundleSize()		{ return bundle_window_size; }
+	bool getDrawKeypoints()		{ return draw_keypoints; }
+	bool getDrawTracks()		{ return draw_tracks; }
+	bool getDrawPair()			{ return draw_pair; }
 
 private:
 	// Calibration file
@@ -46,9 +48,11 @@ private:
 
 	std::string odom_frame_id;
 
-	int number_of_features;				///< Type of the features used
-	bool show_features;					///< Display the image with the features detected
-	bool show_tracks;					///< Display the image with the features tracks
+	int number_of_features;				///< Max number of features detected
+	int bundle_window_size;				///< Size of the Bundle Adjustment Window (default 2)
+	bool draw_keypoints;				///< Display the image with the features detected
+	bool draw_tracks;					///< Display the image with the features tracks
+	bool draw_pair;						///< Display the last and current images linking the matches
 };
 
 }

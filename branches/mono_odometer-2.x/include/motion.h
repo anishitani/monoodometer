@@ -9,7 +9,6 @@
 #define MOTION_H_
 
 #include "core.h"
-#include "frame.h"
 
 typedef double Matches[][3];
 typedef double Matches_5[5][3];
@@ -30,32 +29,42 @@ void compute_E_matrices(Matches q, Matches qp, Ematrix Ematrices[10],
 namespace LRM
 {
 
-/*
- *
- */
 class MotionEstimator
 {
 private:
-	cv::Mat inliers;
+	std::vector<char> inliers;
+	std::vector<cv::Point2d> train_pts, query_pts;
 
 public:
 	MotionEstimator();
 	virtual ~MotionEstimator();
 
-	void estimate_motion(Frame prev, Frame curr, cv::Mat &P, cv::Mat K = cv::Mat());
-	bool feature_point_normalization(std::vector<cv::Point2f> prev_pts,
-			std::vector<cv::Point2f> curr_pts,
-			std::vector<cv::Point2f> &norm_prev_pts,
-			std::vector<cv::Point2f> &norm_curr_pts, cv::Mat &Tp, cv::Mat &Tc);
-	cv::Mat compute_F_matrix(std::vector<cv::Point2f> prev_pts,
-			std::vector<cv::Point2f> curr_pts);
-	cv::Mat compute_Rt(cv::Mat E, cv::Mat K,std::vector<cv::Point2f> prev_pts,
-			std::vector<cv::Point2f> curr_pts,
-			cv::Mat &R, cv::Mat &t);
-	int cheiralityCheck(cv::Mat P2, cv::Mat K, std::vector<cv::Point2f> pp, std::vector<cv::Point2f> pc);
-	cv::Mat Rodrigues( cv::Vec3d omega, double theta=-1);
-	double triple_product(cv::Vec3d a,cv::Vec3d b,cv::Vec3d c);
+	void matches2points(const std::vector<cv::KeyPoint>& query,
+			const std::vector<cv::KeyPoint>& train,
+			const std::vector<cv::DMatch>& matches,
+			std::vector<cv::Point2d> &query_pts,
+			std::vector<cv::Point2d> &train_pts);
+	void estimate_motion(std::vector<cv::Point2d> train_pts,
+			std::vector<cv::Point2d> query_pts, std::vector<cv::DMatch> matches,
+			cv::Mat K, cv::Mat &P);
+	bool feature_point_normalization(std::vector<cv::Point2d> query_pts,
+			std::vector<cv::Point2d> train_pts,
+			std::vector<cv::Point2d> &norm_query_pts,
+			std::vector<cv::Point2d> &norm_train_pts, cv::Mat &Tc, cv::Mat &Tp);
+	cv::Mat compute_F_matrix(std::vector<cv::Point2d> train_pts,
+			std::vector<cv::Point2d> query_pts);
+	std::vector<cv::Mat> compute_Rt(cv::Mat E, cv::Mat K);
+	int triangulateCheck(std::vector<cv::Point2d> train_pts,
+			std::vector<cv::Point2d> query_pts, cv::Mat &K, cv::Mat P,
+			std::vector<char> mask = std::vector<char>());
+	int cheiralityCheck(cv::Mat P2, cv::Mat K, std::vector<cv::Point2d> pp,
+			std::vector<cv::Point2d> pc);
+	cv::Mat Rodrigues(cv::Vec3d omega, double theta = -1);
+	double triple_product(cv::Vec3d a, cv::Vec3d b, cv::Vec3d c);
 	cv::Mat skew(cv::Vec3d a);
+
+	//gets
+	std::vector<char> getInliers(){ return inliers; }
 };
 
 } /* namespace LRM */

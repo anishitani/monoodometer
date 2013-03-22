@@ -452,7 +452,7 @@ int main(int argc, char** argv)
 	/** Feature and Descriptor **/
 	/****************************/
 	// number of used features
-	const int DESIRED_FTRS = 500;
+//	const int DESIRED_FTRS = 500;
 
 	// Features detector, descriptor and matcher
 	Ptr<FeatureDetector> detector;

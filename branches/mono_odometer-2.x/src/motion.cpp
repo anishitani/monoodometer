@@ -20,87 +20,132 @@ MotionEstimator::~MotionEstimator()
 }
 
 /**
+ * matches2points:
+ * 	Tranform the keypoints matched in a matched list of points.
+ *
+ * @param query			Current set of keypoints.
+ * @param train			Last set of keypoints.
+ * @param matches		Matches between the current and last keypoints.
+ * @param query_pts		Current set of 2D points.
+ * @param train_pts		Last set of 2D points.
+ */
+void MotionEstimator::matches2points(const std::vector<cv::KeyPoint>& query,
+		const std::vector<cv::KeyPoint>& train,
+		const std::vector<cv::DMatch>& matches,
+		std::vector<cv::Point2d> &query_pts, std::vector<cv::Point2d> &train_pts)
+{
+	train_pts.clear();
+	query_pts.clear();
+
+	for (int i = 0; i < (int) matches.size(); i++)
+	{
+		const cv::DMatch & dmatch = matches[i];
+
+		query_pts.push_back(query[dmatch.queryIdx].pt);
+		train_pts.push_back(train[dmatch.trainIdx].pt);
+	}
+}
+
+/**
  * estimate_motion:
  * 		Estimates the rotation and translation between two frames.
  *
- * @param prev		Previous analized frame.
- * @param curr		Current analized frame.
+ * @param train		Previous analized frame.
+ * @param query		Current analized frame.
  * @param K			Camera matrix.
  */
-void MotionEstimator::estimate_motion(Frame prev, Frame curr, cv::Mat &P,
-		cv::Mat K)
+void MotionEstimator::estimate_motion(std::vector<cv::Point2d> train_pts,
+		std::vector<cv::Point2d> query_pts, std::vector<cv::DMatch> matches,
+		cv::Mat K, cv::Mat &P)
 {
-	std::vector<cv::DMatch> tmpMatchesList(curr.getFeatMatches());
-	std::random_shuffle(tmpMatchesList.begin(), tmpMatchesList.end());
+	//Normalization transformations
+	cv::Mat Tp, Tc;
 
-	std::vector<cv::Point2f> prev_pts(tmpMatchesList.size());
-	std::vector<cv::Point2f> curr_pts(tmpMatchesList.size());
+	//Normalized vectors
+	std::vector<cv::Point2d> norm_train_pts(train_pts.size());
+	std::vector<cv::Point2d> norm_query_pts(query_pts.size());
 
-	for (uint i = 0; i < tmpMatchesList.size(); i++)
+	//Fundamental matrix
+	cv::Mat F;
+
+	if (!feature_point_normalization(query_pts, train_pts, norm_query_pts,
+			norm_train_pts, Tc, Tp))
 	{
-		prev_pts[i] = prev.getFeatList()[tmpMatchesList[i].trainIdx].pt;
-		curr_pts[i] = curr.getFeatList()[tmpMatchesList[i].queryIdx].pt;
+		P = cv::Mat().eye(4, 4, CV_64F);
+		return;
 	}
 
-	cv::Mat Tp, Tc;
-	std::vector<cv::Point2f> norm_prev_pts(tmpMatchesList.size());
-	std::vector<cv::Point2f> norm_curr_pts(tmpMatchesList.size());
-
-	if (!feature_point_normalization(prev_pts, curr_pts, norm_prev_pts,
-			norm_curr_pts, Tp, Tc))
+	F = compute_F_matrix(norm_train_pts, norm_query_pts);
+	if (F.empty())
+	{
+		P = cv::Mat::eye(4, 4, CV_64F);
 		return;
-
-	cv::Mat F = compute_F_matrix(norm_prev_pts, norm_curr_pts);
+	}
 
 	cv::SVD svd(F);
-
 	svd.w.at<double>(0) = 1;
 	svd.w.at<double>(1) = 1;
 	svd.w.at<double>(2) = 0;
+
 	F = svd.u * cv::Mat().diag(svd.w) * svd.vt;
 
 	cv::Mat E = K.t() * Tc.t() * F * Tp * K;
 
-//	cv::Mat E = K.t() * Tc.t() * F * Tp * K;
-//
-//	cv::SVD svd(E);
-//	svd.w.at<double>(2) = 0;
-//	E = svd.u * cv::Mat().diag(svd.w) * svd.vt;
-
 	cv::Mat R, t;
 
-	P = compute_Rt(E, K, norm_prev_pts, norm_curr_pts, R, t);
+	std::vector<cv::Mat> P_vec;
+	P_vec = compute_Rt(E, K);
 
+	int max_inliers = 0;
+	int pos = 0;
+
+	std::vector<std::vector<char> > mask_vec;
+
+	for (size_t i = 0; i < P_vec.size(); i++)
+	{
+		std::vector<char> _mask(inliers);
+		int num_inliers = triangulateCheck(train_pts, query_pts, K, P_vec[i],
+				_mask);
+		if (max_inliers < num_inliers)
+		{
+			max_inliers = num_inliers;
+			pos = i;
+		}
+		mask_vec.push_back(_mask);
+	}
+	P = P_vec[pos](cv::Range::all(), cv::Range::all());
+
+	inliers = mask_vec[pos];
 }
 
 bool MotionEstimator::feature_point_normalization(
-		std::vector<cv::Point2f> prev_pts, std::vector<cv::Point2f> curr_pts,
-		std::vector<cv::Point2f> &norm_prev_pts,
-		std::vector<cv::Point2f> &norm_curr_pts, cv::Mat &Tp, cv::Mat &Tc)
+		std::vector<cv::Point2d> query_pts, std::vector<cv::Point2d> train_pts,
+		std::vector<cv::Point2d> &norm_query_pts,
+		std::vector<cv::Point2d> &norm_train_pts, cv::Mat &Tc, cv::Mat &Tp)
 {
-	uint matches_size = prev_pts.size();
-	cv::Point2f cent_prev(0, 0), cent_curr(0, 0);
+	uint matches_size = train_pts.size();
+	cv::Point2d cent_train(0, 0), cent_query(0, 0);
 	for (uint i = 0; i < matches_size; i++)
 	{
-		cent_prev += prev_pts[i];
-		cent_curr += curr_pts[i];
+		cent_train += train_pts[i];
+		cent_query += query_pts[i];
 	}
-	cent_prev.x /= (double) matches_size;
-	cent_prev.y /= (double) matches_size;
-	cent_curr.x /= (double) matches_size;
-	cent_curr.y /= (double) matches_size;
+	cent_train.x /= (double) matches_size;
+	cent_train.y /= (double) matches_size;
+	cent_query.x /= (double) matches_size;
+	cent_query.y /= (double) matches_size;
 	for (uint i = 0; i < matches_size; i++)
 	{
-		norm_prev_pts[i] = prev_pts[i] - cent_prev;
-		norm_curr_pts[i] = curr_pts[i] - cent_curr;
+		norm_train_pts[i] = train_pts[i] - cent_train;
+		norm_query_pts[i] = query_pts[i] - cent_query;
 	}
 
 	// scale features such that mean distance from origin is sqrt(2)
 	double sp = 0, sc = 0;
 	for (uint i = 0; i < matches_size; i++)
 	{
-		sp += cv::norm(norm_prev_pts[i]);
-		sc += cv::norm(norm_curr_pts[i]);
+		sp += cv::norm(norm_train_pts[i]);
+		sc += cv::norm(norm_query_pts[i]);
 	}
 	if (fabs(sp) < 1e-10 || fabs(sc) < 1e-10)
 		return false;
@@ -108,88 +153,58 @@ bool MotionEstimator::feature_point_normalization(
 	sc = sqrt(2.0) * (double) matches_size / sc;
 	for (uint i = 0; i < matches_size; i++)
 	{
-		norm_prev_pts[i] *= sp;
-		norm_curr_pts[i] *= sc;
+		norm_train_pts[i] *= sp;
+		norm_query_pts[i] *= sc;
 	}
 
 	// compute corresponding transformation matrices
 	Tp = cv::Mat(
-			cv::Matx33d(sp, 0, -sp * cent_prev.x, 0, sp, -sp * cent_prev.y, 0,
+			cv::Matx33d(sp, 0, -sp * cent_train.x, 0, sp, -sp * cent_train.y, 0,
 					0, 1));
 	Tc = cv::Mat(
-			cv::Matx33d(sc, 0, -sc * cent_curr.x, 0, sc, -sc * cent_curr.y, 0,
+			cv::Matx33d(sc, 0, -sc * cent_query.x, 0, sc, -sc * cent_query.y, 0,
 					0, 1));
 
 	return true;
 }
 
-/*
-cv::Mat MotionEstimator::compute_F_matrix(std::vector<cv::Point2f> prev_pts,
-		std::vector<cv::Point2f> curr_pts)
+cv::Mat MotionEstimator::compute_F_matrix(std::vector<cv::Point2d> train_pts,
+		std::vector<cv::Point2d> query_pts)
 {
-	cv::Mat F = cv::findFundamentalMat(prev_pts, curr_pts, cv::FM_RANSAC, 10,
-			0.99, inliers);
+	cv::Mat mask;
+	cv::Mat F = cv::findFundamentalMat(train_pts, query_pts, cv::FM_RANSAC, 0.005,
+			0.99, mask);
 
-//	std::cout << F << std::endl;
+	inliers = std::vector<char>(mask);
+
+	//	std::cout << F << std::endl;
 
 	return F;
 }
-*/
 
- cv::Mat MotionEstimator::compute_F_matrix (std::vector<cv::Point2f> prev_pts,
- std::vector<cv::Point2f> curr_pts) {
-
- // number of active p_matched
- uint N = prev_pts.size();
-
- // create constraint matrix A
- cv::Mat A(N,9,CV_64F);
-
- for (uint i=0; i<N; i++) {
- //    Matcher::p_match m = p_matched[active[i]];
- A.at<float>(i,0) = curr_pts[i].x*prev_pts[i].x;
- A.at<float>(i,1) = curr_pts[i].x*prev_pts[i].y;
- A.at<float>(i,2) = curr_pts[i].x;
- A.at<float>(i,3) = curr_pts[i].y*prev_pts[i].x;
- A.at<float>(i,4) = curr_pts[i].y*prev_pts[i].y;
- A.at<float>(i,5) = curr_pts[i].y;
- A.at<float>(i,6) = prev_pts[i].x;
- A.at<float>(i,7) = prev_pts[i].y;
- A.at<float>(i,8) = 1;
- }
-
- // compute singular value decomposition of A
- //  Mat U,W,V;
- cv::SVD svd(A);
-
- // extract fundamental matrix from the column of V corresponding to the smallest singular value
- cv::Mat F = cv::Mat(svd.vt.row(8));// Matrix::reshape(V.getMat(0,8,8,8),3,3);
- F = F.reshape(0,3);
-
- // enforce rank 2
- svd(F);
- svd.w.at<double>(3) = 0;
-
- return svd.u*cv::Mat::diag(svd.w)*svd.vt;
- }
-
-
-cv::Mat MotionEstimator::compute_Rt(cv::Mat E, cv::Mat K,
-		std::vector<cv::Point2f> prev_pts, std::vector<cv::Point2f> curr_pts,
-		cv::Mat &R, cv::Mat &t)
+std::vector<cv::Mat> MotionEstimator::compute_Rt(cv::Mat E, cv::Mat K)
 {
 
 	// hartley matrices
-	double w[3][3] = {{0, -1, 0}, {+1, 0, 0}, {0, 0, 1}};
-	double z[3][3] = {{0, +1, 0}, {-1, 0, 0}, {0, 0, 0}};
-	cv::Mat W = cv::Mat(3,3,CV_64F,w);
-	cv::Mat Z = cv::Mat(3,3,CV_64F,z);
+	double w[3][3] =
+	{
+	{ 0, -1, 0 },
+	{ +1, 0, 0 },
+	{ 0, 0, 1 } };
+	double z[3][3] =
+	{
+	{ 0, +1, 0 },
+	{ -1, 0, 0 },
+	{ 0, 0, 0 } };
+	cv::Mat W = cv::Mat(3, 3, CV_64F, w);
+	cv::Mat Z = cv::Mat(3, 3, CV_64F, z);
 
 	// extract T,R1,R2 (8 solutions)
 	cv::SVD svd;
 	svd(E);
 
-	cv::Mat _t  = svd.u.col(2);
+	cv::Mat tp = svd.u.col(2);
+	cv::Mat tn = -svd.u.col(2);
 	cv::Mat Ra = svd.u * W * svd.vt;
 	cv::Mat Rb = svd.u * W.t() * svd.vt;
 
@@ -200,142 +215,100 @@ cv::Mat MotionEstimator::compute_Rt(cv::Mat E, cv::Mat K,
 		Rb = -Rb;
 
 	// create vector containing all 4 solutions
-	std::vector< cv::Mat > P(4);
+	std::vector<cv::Mat> P; //(4,Mat::eye(4,4,CV_64F));
 
-//	P[0]( cv::Range(0,2),cv::Range(0,2) ) = Ra; P[0].col(3) =  _t;
-//
-//	P[1]( cv::Range(0,2),cv::Range(0,2) ) = Ra; P[1].col(3) = -_t;
-//	P[2]( cv::Range(0,2),cv::Range(0,2) ) = Rb; P[2].col(3) =  _t;
-//	P[3]( cv::Range(0,2),cv::Range(0,2) ) = Rb; P[3].col(3) = -_t;
+	cv::Mat P1 = cv::Mat::eye(3, 4, CV_64F);
+	Ra.copyTo(P1(cv::Range(0, 3), cv::Range(0, 3)));
+	tp.copyTo(P1(cv::Range(0, 3), cv::Range(3, 4)));
+	P.push_back(P1);
 
-	std::cout << Ra << ' ' << _t  << std::endl << std::endl;
-	std::cout << Ra << ' ' << -_t  << std::endl << std::endl;
-	std::cout << Rb << ' ' << _t  << std::endl << std::endl;
-	std::cout << Rb << ' ' << -_t  << std::endl << std::endl;
+	cv::Mat P2 = cv::Mat::eye(3, 4, CV_64F);
+	Ra.copyTo(P2(cv::Range(0, 3), cv::Range(0, 3)));
+	tn.copyTo(P2(cv::Range(0, 3), cv::Range(3, 4)));
+	P.push_back(P2);
 
-	// try all 4 solutions
-//	Matrix X_curr;
-//	int32_t max_inliers = 0;
-//	for (int32_t i = 0; i < 4; i++)
-//	{
-//		int32_t num_inliers = triangulateChieral(p_matched, K, R_vec[i],
-//				t_vec[i], X_curr);
-//		if (num_inliers > max_inliers)
-//		{
-//			max_inliers = num_inliers;
-//			X = X_curr;
-//			R = R_vec[i];
-//			t = t_vec[i];
-//		}
-//	}
+	cv::Mat P3 = cv::Mat::eye(3, 4, CV_64F);
+	Rb.copyTo(P3(cv::Range(0, 3), cv::Range(0, 3)));
+	tp.copyTo(P3(cv::Range(0, 3), cv::Range(3, 4)));
+	P.push_back(P3);
 
-//	cv::SVD positive(E);
-//	cv::SVD negative(-E);
-//
-//	cv::Mat Rzp = (cv::Mat_<double>(3, 3) << 0, -1, 0,  1, 0, 0, 0, 0, 1);
-//	cv::Mat Rzn = (cv::Mat_<double>(3, 3) << 0,  1, 0, -1, 0, 0, 0, 0, 1);
-//	cv::Mat W   = (cv::Mat_<double>(3, 3) << 1,0,0, 0,1,0, 0,0,0);
-//
-//	Mat T  = U*Z*~U;
-//	Mat Ra = U*W*(~V);
-//	Mat Rb = U*(~W)*(~V);
-//
-//	cv::Mat U,V,T,Tx,Rot;
-//
-//	std::vector<cv::Mat> hypothesis(4);
-//	for (int i = 0; i < 4; i++)
-//		hypothesis[i] = cv::Mat(3, 4, CV_32F, cv::Scalar(0));
-//
-//	//============ +E =================
-//	U = positive.u;
-//	V = positive.vt.t();
-//
-//	double detU = cv::determinant(U);
-//	double detV = cv::determinant(V);
-//
-//	if(detU<0 && detV<0){
-//		U  = -U;
-//		V = -V;
-//	}
-//	else if(detU<0 && detV>0){
-//		U = -U * Rodrigues(cv::Vec3d(0,0,1),CV_PI) * Rzp;
-//		V =  V * Rzp;
-//	}
-//	else if(detU>0 && detV<0){
-//		U =  U * Rodrigues(cv::Vec3d(0,0,1),CV_PI) * Rzp;
-//		V = -V * Rzp;
-//	}
-//
-//	Tx  = U * (Rzp*W) * U.t();
-//	Rot = U * Rzp.t() * V.t();
-//
-//	T = (cv::Mat_<double>(3,1) << Tx.at<double>(2, 1),Tx.at<double>(0, 2),Tx.at<double>(1, 0));
-//	T.copyTo(hypothesis[0].col(3));
-//	Rot.copyTo( hypothesis[0](cv::Range::all(), cv::Range(0,3)) );
-//
-//	Tx  = U * (Rzn*W) * U.t();
-//	Rot = U * Rzn.t() * V.t();
-//
-//	T = (cv::Mat_<double>(3,1) << Tx.at<double>(2, 1),Tx.at<double>(0, 2),Tx.at<double>(1, 0));
-//	T.copyTo(hypothesis[1].col(3));
-//	Rot.copyTo( hypothesis[1](cv::Range::all(), cv::Range(0,3)) );
-//	//=================================
-//
-//	//============ -E =================
-//	U = negative.u;
-//	V = negative.vt.t();
-//
-//	detU = cv::determinant(U);
-//	detV = cv::determinant(V);
-//
-//	if(detU<0 && detV<0){
-//		U = -U;
-//		V = -V;
-//	}
-//	else if(detU<0 && detV>0){
-//		U = -U * Rodrigues(cv::Vec3d(0,0,1),CV_PI) * Rzp;
-//		V =  V * Rzp;
-//	}
-//	else if(detU>0 && detV<0){
-//		U =  U * Rodrigues(cv::Vec3d(0,0,1),CV_PI) * Rzp;
-//		V = -V * Rzp;
-//	}
-//
-//	Tx  = U * (Rzp*W) * U.t();
-//	Rot = U * Rzp.t() * V.t();
-//
-//	T = (cv::Mat_<double>(3,1) << Tx.at<double>(2, 1),Tx.at<double>(0, 2),Tx.at<double>(1, 0));
-//	T.copyTo(hypothesis[2].col(3));
-//	Rot.copyTo( hypothesis[2](cv::Range::all(), cv::Range(0,3)) );
-//
-//	Tx  = U * (Rzn*W) * U.t();
-//	Rot = U * Rzn.t() * V.t();
-//
-//	T = (cv::Mat_<double>(3,1) << Tx.at<double>(2, 1),Tx.at<double>(0, 2),Tx.at<double>(1, 0));
-//	T.copyTo(hypothesis[3].col(3));
-//	Rot.copyTo( hypothesis[3](cv::Range::all(), cv::Range(0,3)) );
-//	//=================================
-//
-//	int inliers = 0, best = -1;
-// 	for (int i = 0; i < 4; i++)
-//	{
-//		/*
-//		 * pp: Previous image point
-//		 * pc: Current image point
-//		 */
-//
-//		int positive_check = cheiralityCheck(hypothesis[i], K, prev_pts, curr_pts);
-//		if(positive_check > inliers){
-//			inliers = positive_check;
-//			best = i;
-//		}
-//	}
-//
-//	return (best==-1) ? cv::Mat().eye(3, 4, CV_32F) : hypothesis[best];
+	cv::Mat P4 = cv::Mat::eye(3, 4, CV_64F);
+	Rb.copyTo(P4(cv::Range(0, 3), cv::Range(0, 3)));
+	tn.copyTo(P4(cv::Range(0, 3), cv::Range(3, 4)));
+	P.push_back(P4);
+
+	return P;
+}
+
+int MotionEstimator::triangulateCheck(std::vector<cv::Point2d> train_pts,
+		std::vector<cv::Point2d> query_pts, cv::Mat &K, cv::Mat P,
+		std::vector<char> mask)
+{
+	// init 3d point matrix
+	cv::Mat A = cv::Mat::zeros(4, 4, CV_64F);
+	cv::Mat P1, P2;
+	cv::Mat X_vec;
+	cv::SVD svd;
+
+	int num_inliers = 0;
+
+	// projection matrices
+	P1 = cv::Mat::eye(3, 4, CV_64F);
+	P2 = K * P;
+
+	// triangulation via orthogonal regression
+	for (int i = 0; i < (int) mask.size(); i++)
+	{
+		if (!(int) mask[i])
+			continue;
+
+		/* ********************************** */
+		/*  Set the homogeneous equation AX=0 */
+		/* ********************************** */
+		A.row(0) += (query_pts[i].x * P1.row(2).t() - P1.row(0).t()).t();
+		A.row(1) += (query_pts[i].y * P1.row(2).t() - P1.row(1).t()).t();
+		A.row(2) += (train_pts[i].x * P2.row(2).t() - P2.row(0).t()).t();
+		A.row(3) += (train_pts[i].y * P2.row(2).t() - P2.row(1).t()).t();
+		/* ********************************** */
+
+		svd(A);
+
+		cv::Mat X(svd.vt.row(3));
+
+		/* ******************** */
+		/* Checa a profundidade */
+		/* ******************** */
+		cv::Mat x1 = P1 * X.t(), x2 = P2 * X.t();
+		cv::Mat M1(P1, cv::Rect(0, 0, 3, 3)), M2(P2, cv::Rect(0, 0, 3, 3));
+		int sign1 = cv::determinant(M1) > 0 ? 1 : -1, sign2 =
+				cv::determinant(M2) > 0 ? 1 : -1;
+
+		double depth1 = (sign1 * x1.at<double>(2, 0))
+				/ (X.at<double>(0, 3) * norm(M1.col(2))), depth2 = (sign2
+				* x2.at<double>(2, 0)) / (X.at<double>(0, 3) * norm(M2.col(2)));
+		if (depth1 > 0 && depth2 > 0)
+		{
+			num_inliers++;
+		}
+		else
+		{
+			mask[i] = (char) 0;
+		}
+		/**************************/
+
+		X /= X.at<double>(0, 3);
+
+		X_vec.push_back(X);
+
+		A = cv::Mat::zeros(4, 4, CV_64F);
+	}
+
+	// return number of inliers
+	return num_inliers;
 }
 
 int MotionEstimator::cheiralityCheck(cv::Mat P2, cv::Mat K,
-		std::vector<cv::Point2f> pp, std::vector<cv::Point2f> pc)
+		std::vector<cv::Point2d> pp, std::vector<cv::Point2d> pc)
 {
 	cv::Mat R(P2, cv::Range::all(), cv::Range(0, 3)), t(P2, cv::Range::all(),
 			cv::Range(3, 4)), Tx = (cv::Mat_<float>(3, 3) << 0, -t.at<double>(

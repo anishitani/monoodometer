@@ -10,7 +10,8 @@
 
 #include "core.h"
 
-namespace LRM {
+namespace LRM
+{
 
 #define DEFAULT_RADIUS 10.0
 
@@ -30,14 +31,14 @@ namespace LRM {
 //	SSD
 //};
 
-
 class Descriptor;
 
 /*
  *	Class Feature:
  *		The class Feature defines and stores the features of the image.
  */
-class FeatureHandler {
+class FeatureHandler
+{
 private:
 	cv::Ptr<cv::FeatureDetector> detector;
 	cv::Ptr<cv::DescriptorExtractor> extractor;
@@ -48,28 +49,38 @@ private:
 	double radius;
 
 public:
-	FeatureHandler(){}
-	FeatureHandler( feature_t feature_type, int maxNumberOfFeatures );
+	FeatureHandler()
+	{
+	}
+	FeatureHandler(feature_t feature_type, int maxNumberOfFeatures);
 	virtual ~FeatureHandler();
 
-	void setRadius(double radius){ this->radius = radius; }
+	void setRadius(double radius)
+	{
+		this->radius = radius;
+	}
 
-	void detect( cv::Mat image, std::vector<cv::KeyPoint> &features );
-	void extract( cv::Mat image, std::vector<cv::KeyPoint> &features, cv::Mat &descriptors );
-	void match( cv::Mat queryDescriptors,
-				cv::Mat trainDescriptors,
-				std::vector<cv::KeyPoint> queryKeyPoints,
-				std::vector<cv::KeyPoint> trainKeyPoints,
-				std::vector<cv::DMatch> &matches );
+	void detect(cv::Mat image, std::vector<cv::KeyPoint> &features);
+	void extract(cv::Mat image, std::vector<cv::KeyPoint> &features,
+			cv::Mat &descriptors);
+	void match(std::vector<cv::KeyPoint> queryKeyPoints,
+			std::vector<cv::KeyPoint> trainKeyPoints, cv::Mat queryDescriptors,
+			cv::Mat trainDescriptors, std::vector<cv::DMatch> &matches);
 
-	static int ShiTomasiCorner	( cv::Ptr<cv::FeatureDetector> det, cv::Mat src,  std::vector<cv::KeyPoint> &arrayOfFeatures );
-	static int HarrisCorner		( cv::Ptr<cv::FeatureDetector> det, cv::Mat src,  std::vector<cv::KeyPoint> &arrayOfFeatures );
-	static int ORB_Detector		( cv::Ptr<cv::FeatureDetector> det, cv::Mat src,  std::vector<cv::KeyPoint> &arrayOfFeatures );
-	static int FAST_Detector	( cv::Ptr<cv::FeatureDetector> det, cv::Mat src,  std::vector<cv::KeyPoint> &arrayOfFeatures );
-	static int SURF_Detector	( cv::Ptr<cv::FeatureDetector> det, cv::Mat src,  std::vector<cv::KeyPoint> &arrayOfFeatures );
+	static int ShiTomasiCorner(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
+			std::vector<cv::KeyPoint> &arrayOfFeatures);
+	static int HarrisCorner(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
+			std::vector<cv::KeyPoint> &arrayOfFeatures);
+	static int ORB_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
+			std::vector<cv::KeyPoint> &arrayOfFeatures);
+	static int FAST_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
+			std::vector<cv::KeyPoint> &arrayOfFeatures);
+	static int SURF_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
+			std::vector<cv::KeyPoint> &arrayOfFeatures);
 };
 
-class Descriptor {
+class Descriptor
+{
 
 };
 

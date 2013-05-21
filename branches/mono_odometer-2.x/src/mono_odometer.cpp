@@ -41,13 +41,13 @@ MonoOdometer::MonoOdometer(ros::NodeHandle nh,
 	}
 	calib_data["cameraMatrix"] >> camera_matrix;
 
-	ROS_DEBUG( "Source image topic: %s", odomparam.getImageTopic());
-	ROS_DEBUG( "Feature image topic: %s", odomparam.getFeatureImageTopic());
-	ROS_DEBUG( "Feature type: %s", odomparam.getFeatureTypeName());
-	ROS_DEBUG( "Number of features: %d", odomparam.getNumberOfFeatures());
-	ROS_DEBUG( "Draw keypoints: %s", (odomparam.getDrawKeypoints()?"yes":"no"));
-	ROS_DEBUG( "Draw tracks: %s", (odomparam.getDrawTracks()?"yes":"no"));
-	ROS_DEBUG( "Calibration filename: %s", odomparam.getCalibFilename());
+	ROS_DEBUG( "Source image topic: %s"		,odomparam.getImageTopic());
+	ROS_DEBUG( "Feature image topic: %s"	,odomparam.getFeatureImageTopic());
+	ROS_DEBUG( "Feature type: %s"			,odomparam.getFeatureTypeName());
+	ROS_DEBUG( "Number of features: %d"		,odomparam.getNumberOfFeatures());
+	ROS_DEBUG( "Draw keypoints: %s"			,(odomparam.getDrawKeypoints()?"yes":"no"));
+	ROS_DEBUG( "Draw tracks: %s"			,(odomparam.getDrawTracks()?"yes":"no"));
+	ROS_DEBUG( "Calibration filename: %s"	,odomparam.getCalibFilename());
 
 	/* ************************** *
 	 * Feature and Motion Handler *
@@ -63,6 +63,11 @@ MonoOdometer::MonoOdometer(ros::NodeHandle nh,
 	imsub = it.subscribe(odomparam.getImageTopic(), 1,
 			&MonoOdometer::ImageCallback, this);
 	impub = it.advertise(odomparam.getFeatureImageTopic(), 1);
+
+	/* ****************** *
+	 * Odometer Publisher *
+	 * ****************** */
+	odompub = nh.advertise<nav_msgs::Odometry>(odomparam.getOdomTopic(),1);
 
 	outImg.encoding = sensor_msgs::image_encodings::BGR8;
 }
@@ -106,6 +111,9 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 		Frame::motion(*m_estimator, queueOfFrames.back(), frame, matches,
 				camera_matrix, P);
+
+		cv::Matx33d R = P(cv::Range::all(),cv::Range(0,3));
+		cv::Vec3d 	t = P.col(3);
 
 		Frame::draw(outImg.image, queueOfFrames.back(), frame, matches,
 				odomparam, m_estimator->getInliers());

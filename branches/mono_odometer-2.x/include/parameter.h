@@ -34,6 +34,8 @@ public:
 	bool getDrawTracks()		{ return draw_tracks; }
 	bool getDrawPair()			{ return draw_pair; }
 
+	const char* getOdomTopic()	{ return odom_topic.c_str(); }
+
 private:
 	// Calibration file
 	std::string calib_filename;
@@ -41,6 +43,7 @@ private:
 	// Topics
 	std::string image_topic;			///< Name of the topic publishing the input image (ROS parameter)
 	std::string feature_image_topic;	///< Name of the topic publishing the images with features (ROS parameter)
+	std::string odom_topic;
 
 	// Types
 	std::string feature_type_name;		///< Type of the features used (ROS parameter)

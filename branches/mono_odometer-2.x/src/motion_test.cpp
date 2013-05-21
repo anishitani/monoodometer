@@ -11,6 +11,9 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/nonfree/nonfree.hpp"
+#include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
+#include <nav_msgs/Odometry.h>
 #include <iostream>
 #include <cstdio>
 #include <list>
@@ -66,21 +69,21 @@ void drawMatchesRelative(const vector<KeyPoint>& train,
 	{
 		if (!mask.empty())
 		{
-			if (mask[i])
-			{
-				Point2d pt_new = query[matches[i].queryIdx].pt;
-				Point2d pt_old = train[matches[i].trainIdx].pt;
-
-				cv::line(img, pt_new, pt_old, Scalar(125, 255, 125), 1);
-				cv::circle(img, pt_new, 2, Scalar(0, 255, 0), 1);
-			}
-			else
+			if (!mask[i])
 			{
 				Point2d pt_new = query[matches[i].queryIdx].pt;
 				Point2d pt_old = train[matches[i].trainIdx].pt;
 
 				cv::line(img, pt_new, pt_old, Scalar(125, 125, 255), 1);
 				cv::circle(img, pt_new, 2, Scalar(0, 0, 255), 1);
+			}
+			else
+			{
+				Point2d pt_new = query[matches[i].queryIdx].pt;
+				Point2d pt_old = train[matches[i].trainIdx].pt;
+
+				cv::line(img, pt_new, pt_old, Scalar(125, 255, 125), 1);
+				cv::circle(img, pt_new, 2, Scalar(0, 255, 0), 1);
 			}
 		}
 		else
@@ -105,15 +108,18 @@ void drawMatchesRelative(const vector<Point2d> train,
 	{
 		for (int i = 0; i < matches_size; i++)
 		{
+			if (!mask[i])
+			{
+				line(output, query[i], train[i], Scalar(0, 0, 255), 1, CV_AA);
+				circle(output, query[i], 2, Scalar(125, 125, 255), 1, CV_AA);
+			}
+		}
+		for (int i = 0; i < matches_size; i++)
+		{
 			if (mask[i])
 			{
 				line(output, query[i], train[i], Scalar(0, 255, 0), 1, CV_AA);
 				circle(output, query[i], 2, Scalar(125, 255, 125), 1, CV_AA);
-			}
-			else
-			{
-				line(output, query[i], train[i], Scalar(0, 0, 255), 1, CV_AA);
-				circle(output, query[i], 2, Scalar(125, 125, 255), 1, CV_AA);
 			}
 		}
 	}
@@ -242,6 +248,36 @@ cv::Mat compute_F_matrix(std::vector<cv::Point2d> train_pts,
 	return findFundamentalMat(train_pts, query_pts, FM_RANSAC, 0.01, 0.99, mask);
 }
 
+//cv::Mat compute_F_matrix(std::vector<cv::Point2d> train_pts,
+//		std::vector<cv::Point2d> query_pts, Mat &mask)
+//{
+//	int N = train_pts.size();
+//	// create constraint matrix A
+//	Mat A(N,9,CV_64F);
+//	for (uint i=0; i<N; i++) {
+//	  A.at<double>(i,0) = query_pts[i].x*train_pts[i].x;
+//	  A.at<double>(i,1) = query_pts[i].x*train_pts[i].y;
+//	  A.at<double>(i,2) = query_pts[i].x;
+//	  A.at<double>(i,3) = query_pts[i].y*train_pts[i].x;
+//	  A.at<double>(i,4) = query_pts[i].y*train_pts[i].y;
+//	  A.at<double>(i,5) = query_pts[i].y;
+//	  A.at<double>(i,6) = train_pts[i].x;
+//	  A.at<double>(i,7) = train_pts[i].y;
+//	  A.at<double>(i,8) = 1;
+//	}
+//
+//	// compute singular value decomposition of A
+//	SVD svd;
+//	svd(A);
+//
+//	// extract fundamental matrix from the column of V corresponding to the smallest singular value
+//	Mat F = svd.vt.row(8).reshape(1,3);
+//	F = F.reshape(1,3);
+//	cout << F << endl;
+//
+//	return F;
+//}
+
 //Extracts rotation and translatipon from essential matrix
 vector<cv::Mat> compute_Rt(cv::Mat E, cv::Mat K)
 {
@@ -313,7 +349,7 @@ int triangulateCheck(vector<Point2d> train_pts, vector<Point2d> query_pts,
 	int num_inliers = 0;
 
 	// projection matrices
-	P1 = Mat::eye(3, 4, CV_64F);
+	P1 = K * Mat::eye(3, 4, CV_64F);
 	P2 = K * P;
 
 	// triangulation via orthogonal regression
@@ -337,14 +373,19 @@ int triangulateCheck(vector<Point2d> train_pts, vector<Point2d> query_pts,
 		/** Checa a profundidade **/
 		/**************************/
 		Mat x1 = P1 * X.t(), x2 = P2 * X.t();
-		Mat M1(P1, Rect(0, 0, 3, 3)), M2(P2, Rect(0, 0, 3, 3));
-		int sign1 = determinant(M1) > 0 ? 1 : -1, sign2 =
-				determinant(M2) > 0 ? 1 : -1;
-
-		double depth1 = (sign1 * x1.at<double>(2, 0))
-				/ (X.at<double>(0, 3) * norm(M1.col(2))), depth2 = (sign2
-				* x2.at<double>(2, 0)) / (X.at<double>(0, 3) * norm(M2.col(2)));
-		if (depth1 > 0 && depth2 > 0)
+//		Mat M1(P1, Rect(0, 0, 3, 3)), M2(P2, Rect(0, 0, 3, 3));
+//		int sign1 = determinant(M1) > 0 ? 1 : -1, sign2 =
+//				determinant(M2) > 0 ? 1 : -1;
+//
+//		double depth1, depth2;
+//		depth1 = (sign1 * x1.at<double>(2, 0))
+//				/ (X.at<double>(0, 3) * norm(M1.col(2)));
+//		depth2 = (sign2 * x2.at<double>(2, 0))
+//				/ (X.at<double>(0, 3) * norm(M2.col(2)));
+//		if (depth1 > 0 && depth2 > 0)
+//			num_inliers++;
+		if (x1.at<double>(2, 0) * X.at<double>(0, 3) > 0
+				&& x2.at<double>(2, 0) * X.at<double>(0, 3) > 0)
 			num_inliers++;
 		/**************************/
 
@@ -375,6 +416,11 @@ void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
 	//Inliers mask
 	Mat mask;
 
+//	for(uint i=0 ; i<train_pts.size() ; i++){
+//		train_pts[i] = Point2d(Mat(K.inv()*Mat(train_pts[i])));
+//		query_pts[i] = Point2d(Mat(K.inv()*Mat(query_pts[i])));
+//	}
+
 	if (!feature_point_normalization(train_pts, query_pts, norm_train_pts,
 			norm_query_pts, Tp, Tc))
 	{
@@ -398,6 +444,8 @@ void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
 
 	Mat E = K.t() * Tc.t() * F * Tp * K;
 
+//	cout << E << endl;
+
 	cv::Mat R, t;
 
 	vector<Mat> P_vec;
@@ -412,6 +460,8 @@ void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
 	{
 		vector<char> _mask(mask);
 		int inlier = triangulateCheck(train_pts, query_pts, K, P_vec[i], _mask);
+		printf("%d: %d\n", i, inlier);
+		cout << P_vec[i] << endl;
 		if (max_inlier < inlier)
 		{
 			max_inlier = inlier;
@@ -438,48 +488,63 @@ int main(int argc, char** argv)
 	std::string node_name = ros::this_node::getName();
 	ros::NodeHandle nh(node_name);
 
-	std::string base_path, extension;
-	int database_size;
+	ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>(
+			"/mono_odometer/odom", 1);
+	tf::TransformBroadcaster odom_broadcaster;
+	tf::TransformListener tf_listener;
+
+	image_transport::Publisher outlier_pub; ///< Image publisher
+	image_transport::Publisher match_pub; ///< Image publisher
+	image_transport::Publisher original_pub; ///< Image publisher
+
+	image_transport::ImageTransport it(nh);
+
+	outlier_pub = it.advertise("/image/outlier", 1);
+	match_pub = it.advertise("/image/match", 1);
+	original_pub = it.advertise("/image/original", 1);
+
+	std::string base_path, extension, calib_path;
+	int database_size, feature_type;
 
 	nh.param<std::string>("base_path", base_path,
 			"/home/nishitani/Dropbox/usp/ros/mono_odometer/dataset");
+	nh.param<std::string>("calib_path", calib_path,
+			"~/ros/mono_odometer/calib/camera.yaml");
 	nh.param<std::string>("extension", extension, ".jpg");
 	nh.param<int>("database_size", database_size, 1);
-
-
+	nh.param<int>("feature_type", feature_type, 0);
 
 	/****************************/
 	/** Feature and Descriptor **/
 	/****************************/
 	// number of used features
-//	const int DESIRED_FTRS = 500;
-
+	const int DESIRED_FTRS = 500;
 	// Features detector, descriptor and matcher
 	Ptr<FeatureDetector> detector;
 	Ptr<DescriptorExtractor> descriptor;
-	BFMatcher desc_matcher(NORM_L2,true); // Matching rule
+	BFMatcher desc_matcher(NORM_L2, true); // Matching rule
 //	DescriptorMatcher desc_matcher;
 
-	//SIFT
-//	detector = new SiftFeatureDetector();
-//	descriptor = new SiftDescriptorExtractor();
-
-	//SURF
-//	detector = new SurfFeatureDetector(1000);
-//	descriptor = new SurfDescriptorExtractor();
-
-	//ORB
-//	detector = new cv::ORB( DESIRED_FTRS );
-//	descriptor = new cv::OrbDescriptorExtractor( DESIRED_FTRS );
-
-	//FAST
-//	detector = new cv::GridAdaptedFeatureDetector( new cv::FastFeatureDetector(10, true), DESIRED_FTRS, 4, 4);
-	detector = new cv::PyramidAdaptedFeatureDetector( new cv::FastFeatureDetector(5, true) );
-	descriptor = new cv::BriefDescriptorExtractor();
-
-	//SHI
-//	detector = new GoodFeaturesToTrackDetector(DESIRED_FTRS, 0.01, 1.0, 5);
-//	descriptor = new BriefDescriptorExtractor();
+	switch (feature_type)
+	{
+	case 0:
+		//SIFT
+		detector = new SiftFeatureDetector();
+		descriptor = new SiftDescriptorExtractor();
+		break;
+	case 1:
+		//FAST
+//		detector = new cv::GridAdaptedFeatureDetector( new cv::FastFeatureDetector(10, true), DESIRED_FTRS, 4, 4);
+		detector = new cv::PyramidAdaptedFeatureDetector(
+				new cv::FastFeatureDetector(5, true));
+		descriptor = new cv::BriefDescriptorExtractor();
+		break;
+	case 2:
+		//SHI
+		detector = new GoodFeaturesToTrackDetector(DESIRED_FTRS, 0.01, 1.0, 5);
+		descriptor = new BriefDescriptorExtractor();
+		break;
+	}
 
 	// Feature points
 	vector<Point2d> train_pts, query_pts;
@@ -500,8 +565,6 @@ int main(int argc, char** argv)
 	vector<char> inlier_mask;
 	/****************************/
 
-
-
 	/****************************/
 	/** Images ******************/
 	/****************************/
@@ -509,61 +572,77 @@ int main(int argc, char** argv)
 
 	string pair_window_name("Matches");
 	string relative_window_name("Relative");
-	namedWindow(pair_window_name.c_str(), CV_WINDOW_NORMAL);
+//	namedWindow(pair_window_name.c_str(), CV_WINDOW_NORMAL);
 	namedWindow(relative_window_name.c_str(), CV_WINDOW_NORMAL);
 	/****************************/
-
-
-
-
 
 	/************************/
 	/** Calibration Matrix **/
 	/************************/
 	Mat K;
 	FileStorage calib_data;
-	calib_data.open(
-			"/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml",
-			cv::FileStorage::READ);
+	calib_data.open(calib_path.c_str(), cv::FileStorage::READ);
 	calib_data["cameraMatrix"] >> K;
 	/************************/
-
-
 
 	/************************/
 	/** Motion Structures  **/
 	/************************/
 	//Projection matrix
-	Mat P = Mat::eye(4,4,CV_64F);
+	Mat P = Mat::eye(4, 4, CV_64F);
 
 	//Rotation matrix
 	Matx33d R;
 	//traslation vector
-	Vec3d t;
+	Vec3d t, _pose(0, 0, 0);
 	//Pose vector
-	Vec3d pose(0,0,0);
+	tf::Pose pose;
+	pose.setIdentity();
+	odom_broadcaster.sendTransform(
+			tf::StampedTransform(pose, ros::Time::now(), "odom", "base_link"));
 	/************************/
 
+	/*****************************/
+	//TESTING
+//	Mat x1, x2;
+//	FileStorage cube_pts;
+//	cube_pts.open(
+//			"/home/nishitani/ros/mono_odometer/dataset/other/raw/01/cube_pts.yaml",
+//			cv::FileStorage::READ);
+//	cube_pts["query"] >> x1;
+//	cube_pts["train"] >> x2;
+////	x1 = x1.t();
+////	x2 = x2.t();
+////	cout << x1 << endl << endl << x2 << endl;
+//
+//	vector<Point2d> X1, X2;
+//
+//	for (int i = 0; i < x1.cols; i++)
+//	{
+////		X1.push_back(Point2d((double)x1.col(i).data[0],(double)x1.col(i).data[1]));
+////		X2.push_back(Point2d((double)x2.col(i).data[0],(double)x2.col(i).data[1]));
+//		X1.push_back(Point2d(x1.col(i)));
+//		X2.push_back(Point2d(x2.col(i)));
+////		cout << x1.col(i) << endl << x2.col(i) << endl << endl;
+//	}
+	/*****************************/
 
+	ROS_INFO("BEGIN");
 
-//	for (int i = 1; i < database_size + 1; i++)
 	for (int i = 1;; i++)
 	{
-
+		ROS_INFO("RUN %d",i);
 
 		/************************/
 		/**Leitura da Image *****/
 		/************************/
 		char img_path[100];
 		sprintf(img_path, "%s%04d%s", base_path.c_str(), i, extension.c_str());
-		cout << img_path << endl;
 
 		current_image = imread(string(img_path), CV_LOAD_IMAGE_GRAYSCALE);
-		if(current_image.empty()) break;
+		if (current_image.empty())
+			break;
 		/************************/
-
-
-
 
 		detector->detect(current_image, query_kpts);
 		descriptor->compute(current_image, query_kpts, query_desc);
@@ -578,7 +657,7 @@ int main(int argc, char** argv)
 			desc_matcher.radiusMatch(query_desc, train_desc, radiusMatches,
 					100.0);
 			matches.clear();
-			for (int i=0 ; i < (int) radiusMatches.size(); i++)
+			for (int i = 0; i < (int) radiusMatches.size(); i++)
 			{
 				if (radiusMatches[i].size())
 				{
@@ -600,7 +679,6 @@ int main(int argc, char** argv)
 			drawMatches(current_image, query_kpts, previous_image, train_kpts,
 					matches, pair_image, Scalar::all(-1), Scalar::all(-1),
 					vector<char>(), DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
-
 			if (matches.size() > 8)
 			{
 
@@ -610,41 +688,97 @@ int main(int argc, char** argv)
 				estimate_motion(train_pts, query_pts, matches, K, P,
 						inlier_mask);
 
-				drawMatchesRelative(train_pts, query_pts, current_image, relative_image, inlier_mask);
+				drawMatchesRelative(train_pts, query_pts, current_image,
+						relative_image, inlier_mask);
 
-//				cout << P << endl;
-//
-//				R = P(Range::all(),Range(0,3));
-//				t = P.col(3);
-//
-//				double ry = asin( R(0,2) ),
-//					   rx = asin( R(2,1)/cos(ry) ),
-//					   rz = asin( R(1,0)/cos(ry) );
-//				double cx = cos(rx),cy = cos(ry),cz = cos(rz),
-//					   sx = sin(rx),sy = sin(ry),sz = sin(rz);
-//
-//				cout << rad2deg(rx) << ' ' << rad2deg(ry) << ' ' << rad2deg(rz) << endl << endl;
-//
-//				Mat C(4,4,CV_32F);
-//				C.at<float>(0,0) = +cy*cz;          C.at<float>(0,1) = -cy*sz;          C.at<float>(0,2) = +sy;    C.at<float>(0,3) = t(0);
-//				C.at<float>(1,0) = +sx*sy*cz+cx*sz; C.at<float>(1,1) = -sx*sy*sz+cx*cz; C.at<float>(1,2) = -sx*cy; C.at<float>(1,3) = t(1);
-//				C.at<float>(2,0) = -cx*sy*cz+sx*sz; C.at<float>(2,1) = +cx*sy*sz+sx*cz; C.at<float>(2,2) = +cx*cy; C.at<float>(2,3) = t(2);
-//				C.at<float>(3,0) = 0;               C.at<float>(3,1) = 0;               C.at<float>(3,2) = 0;      C.at<float>(3,3) = 1;
-//
-//				C = C.inv();
-//
-//				cout << C << endl;
-//
-//				R = C( Range(0,3),Range(0,3) ); R = R.t();
-//				t = C( Range(0,3),Range(3,4) );
-//
-//				ry = asin( R(0,2) ),
-//				rx = asin( R(2,1)/cos(ry) ),
-//				rz = asin( R(1,0)/cos(ry) );
-//
-//				cout << rad2deg(rx) << ' ' << rad2deg(ry) << ' ' << rad2deg(rz) << endl;
+				R = P(Range::all(), Range(0, 3));
+				t = P.col(3);
 
-				//			pose = R*pose+t;
+				double ry = asin(R(0, 2)), rx = asin(-R(1, 2) / cos(ry)), rz =
+						asin(-R(0, 1) / cos(ry));
+				double cx = cos(rx), cy = cos(ry), cz = cos(rz), sx = sin(rx),
+						sy = sin(ry), sz = sin(rz);
+
+				Mat C(4, 4, CV_64F);
+				C.at<double>(0, 0) = +cy * cz;
+				C.at<double>(0, 1) = -cy * sz;
+				C.at<double>(0, 2) = +sy;
+				C.at<double>(0, 3) = t(0);
+				C.at<double>(1, 0) = +sx * sy * cz + cx * sz;
+				C.at<double>(1, 1) = -sx * sy * sz + cx * cz;
+				C.at<double>(1, 2) = -sx * cy;
+				C.at<double>(1, 3) = t(1);
+				C.at<double>(2, 0) = -cx * sy * cz + sx * sz;
+				C.at<double>(2, 1) = +cx * sy * sz + sx * cz;
+				C.at<double>(2, 2) = +cx * cy;
+				C.at<double>(2, 3) = t(2);
+				C.at<double>(3, 0) = 0;
+				C.at<double>(3, 1) = 0;
+				C.at<double>(3, 2) = 0;
+				C.at<double>(3, 3) = 1;
+				C = C.inv();
+
+				R = C(Range(0, 3), Range(0, 3)); //R = R.t();
+				t = C(Range(0, 3), Range(3, 4));
+
+				printf("rx=%f - ry=%f - rz=%f\n\n", rad2deg(rx), rad2deg(ry),
+						rad2deg(rz));
+
+				_pose = R * _pose + t;
+
+				tf::Matrix3x3 _R(R.val[0], R.val[1], R.val[2], R.val[3],
+						R.val[4], R.val[5], R.val[6], R.val[7], R.val[8]);
+				tf::Vector3 _T(t(0), t(1), t(2));
+				tf::Transform motion(_R, _T);
+
+				std::string error_msg;
+				tf::StampedTransform base_to_sensor;
+				if (tf_listener.canTransform("base_link", "camera",
+						ros::Time(0), &error_msg))
+				{
+					tf_listener.lookupTransform("base_link", "camera",
+							ros::Time(0), base_to_sensor);
+				}
+				else
+				{
+					ROS_WARN_THROTTLE(10.0,
+							"The tf from '%s' to '%s' does not seem to be available, "
+							"will assume it as identity!", "base_link", "camera");
+					ROS_DEBUG("Transform error: %s", error_msg.c_str());
+					base_to_sensor.setIdentity();
+				}
+
+				motion = base_to_sensor * motion * base_to_sensor.inverse();
+
+				pose *= motion;
+
+				odom_broadcaster.sendTransform(
+						tf::StampedTransform(pose, ros::Time::now(), "odom",
+								"base_link"));
+
+				//next, we'll publish the odometry message over ROS
+				nav_msgs::Odometry odom;
+				odom.header.stamp = ros::Time::now();
+				odom.header.frame_id = "odom";
+				odom.child_frame_id = "camera";
+
+				tf::poseTFToMsg(pose, odom.pose.pose);
+
+				printf("odom: %f %f %f\n", odom.pose.pose.position.x,
+						odom.pose.pose.position.y, odom.pose.pose.position.z);
+
+				double delta_t = 1.0;
+				odom.twist.twist.linear.x = motion.getOrigin().getX() / delta_t;
+				odom.twist.twist.linear.y = motion.getOrigin().getY() / delta_t;
+				odom.twist.twist.linear.z = motion.getOrigin().getZ() / delta_t;
+				double yaw, pitch, roll;
+				motion.getBasis().getEulerYPR(yaw, pitch, roll);
+				odom.twist.twist.angular.x = roll / delta_t;
+				odom.twist.twist.angular.y = pitch / delta_t;
+				odom.twist.twist.angular.z = yaw / delta_t;
+				//publish the message
+				odom_pub.publish(odom);
+
 			}
 		}
 
@@ -654,14 +788,29 @@ int main(int argc, char** argv)
 
 		if (!pair_image.empty())
 		{
-			imshow(pair_window_name.c_str(), pair_image);
+//			imshow(pair_window_name.c_str(), pair_image);
+			cv_bridge::CvImage img;
+			img.image = pair_image;
+			img.header.stamp = ros::Time::now();
+			img.header.seq = i;
+			img.header.frame_id = std::string("image_" + i);
+			img.encoding = sensor_msgs::image_encodings::BGR8;
+			match_pub.publish(img.toImageMsg());
 		}
 		if (!relative_image.empty())
 		{
-			imshow(relative_window_name.c_str(), relative_image);
+//			imshow(relative_window_name.c_str(), relative_image);
+			cv_bridge::CvImage img;
+			img.image = relative_image;
+			img.header.stamp = ros::Time::now();
+			img.header.seq = i;
+			img.header.frame_id = std::string("image_" + i);
+			img.encoding = sensor_msgs::image_encodings::BGR8;
+			outlier_pub.publish(img.toImageMsg());
 		}
 
 		if ((char) waitKey(0) == 'q')
 			break;
 	}
+	ros::shutdown();
 }

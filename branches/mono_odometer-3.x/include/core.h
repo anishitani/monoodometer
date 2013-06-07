@@ -51,9 +51,6 @@ enum descriptor_t {
 	SSD
 };
 
-
-class FeatureHandler;
-class Frame;
 }
 
 #endif /* CORE_H_ */

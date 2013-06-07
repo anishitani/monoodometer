@@ -14,17 +14,16 @@ using namespace LRM;
 /**
  *	main()
  */
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
 	ros::init(argc, argv, "mono_odometer");
 	std::string node_name = ros::this_node::getName();
 
 	ros::NodeHandle nh(node_name);
 
-	image_transport::ImageTransport it( nh );
+	image_transport::ImageTransport it(nh);
 
-	MonoOdometer odometer( nh,it );
-
-	image_transport::Subscriber sub = it.subscribe(odometer.getImageTopic(),1,&MonoOdometer::ImageCallback,&odometer);
+	MonoOdometer odometer(nh, it);
 
 	ros::spin();
 

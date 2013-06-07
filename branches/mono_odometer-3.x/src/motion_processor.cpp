@@ -6,7 +6,7 @@
  */
 
 //TODO: Attribution of credits to the libviso2 library
-#include "motion.h"
+#include "motion_processor.h"
 
 namespace LRM
 {

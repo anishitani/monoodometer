@@ -10,6 +10,32 @@
 namespace LRM
 {
 
+//////////////////////////////////////////////////////////////////////////
+/**						ROS Parameter Class							   **/
+//////////////////////////////////////////////////////////////////////////
+int ROSParameter::parse(ros::NodeHandle nh)
+{
+	std::string value_str;
+	int value_int;
+	double value_double;
+
+	nh.param<std::string>("INPUT_IMAGE_TOPIC", value_str, "/camera/image");
+	parameter["INPUT_IMAGE_TOPIC"] = value_str;
+
+	ROS_DEBUG(
+			"INPUT_IMAGE_TOPIC = %s", boost::any_cast<std::string>(parameter["INPUT_IMAGE_TOPIC"]).c_str());
+
+	return 0;
+}
+
+//////////////////////////////////////////////////////////////////////////
+/**						MonoOdometer Class							   **/
+//////////////////////////////////////////////////////////////////////////
+MonoOdometer::MonoOdometer()
+{
+	// TODO Auto-generated destructor stub
+}
+
 /**
  * MonoOdometer Constructor:
  * 		The constructor of the Mono Odometer class. Captures and process
@@ -17,59 +43,17 @@ namespace LRM
  *
  * 	 @param[in]	nh	Node handle of the node of the monocular odometer.
  */
-MonoOdometer::MonoOdometer(ros::NodeHandle nh,
-		image_transport::ImageTransport it)
+MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
+		image_transport::ImageTransport &it)
 {
+	ros_parameter.parse(nh);
+	img_proc_parameter.parse(nh);
 
-	/*
-	 * ROS Information
-	 */
-	odomparam.configROSParam(nh);
-	odomparam.parseFeatureType();
+	img_proc.setting(img_proc_parameter);
 
-	if (odomparam.getFeatureType() == NO_FEATURE)
-	{
-		ROS_ERROR("No feature or wrong feature type defined.");
-		exit(-1);
-	}
-
-	calib_data.open(odomparam.getCalibFilename(), cv::FileStorage::READ);
-	if (!calib_data.isOpened())
-	{
-		ROS_ERROR("No calibration matrix was found.");
-		exit(-1);
-	}
-	calib_data["cameraMatrix"] >> camera_matrix;
-
-	ROS_DEBUG( "Source image topic: %s"		,odomparam.getImageTopic());
-	ROS_DEBUG( "Feature image topic: %s"	,odomparam.getFeatureImageTopic());
-	ROS_DEBUG( "Feature type: %s"			,odomparam.getFeatureTypeName());
-	ROS_DEBUG( "Number of features: %d"		,odomparam.getNumberOfFeatures());
-	ROS_DEBUG( "Draw keypoints: %s"			,(odomparam.getDrawKeypoints()?"yes":"no"));
-	ROS_DEBUG( "Draw tracks: %s"			,(odomparam.getDrawTracks()?"yes":"no"));
-	ROS_DEBUG( "Calibration filename: %s"	,odomparam.getCalibFilename());
-
-	/* ************************** *
-	 * Feature and Motion Handler *
-	 * ************************** */
-	f_handler.reset(
-			new FeatureHandler(odomparam.getFeatureType(),
-					odomparam.getNumberOfFeatures()));
-	m_estimator.reset(new MotionEstimator());
-
-	/* ****************************** *
-	 * Image Subscriber and Publisher *
-	 * ****************************** */
-	imsub = it.subscribe(odomparam.getImageTopic(), 1,
+	//Setting CALLBACK
+	input_image_subscriber = it.subscribe(getInputImageTopic(), 1,
 			&MonoOdometer::ImageCallback, this);
-	impub = it.advertise(odomparam.getFeatureImageTopic(), 1);
-
-	/* ****************** *
-	 * Odometer Publisher *
-	 * ****************** */
-	odompub = nh.advertise<nav_msgs::Odometry>(odomparam.getOdomTopic(),1);
-
-	outImg.encoding = sensor_msgs::image_encodings::BGR8;
 }
 
 MonoOdometer::~MonoOdometer()
@@ -87,42 +71,17 @@ MonoOdometer::~MonoOdometer()
  */
 void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
-	// New frame from camera
-	Frame frame(msg);
-
-	frame.process(*f_handler);
-
-	if (queueOfFrames.empty())
-	{
-		queueOfFrames.push_back(frame);
-		return;
-	}
-	else
-	{
-		std::vector<cv::DMatch> matches;
-
-		if (queueOfFrames.size() >= odomparam.getBundleSize())
-		{
-			queueOfFrames.pop_front();
-			queueOfMatches.pop_front();
-		}
-
-		Frame::match(*f_handler, queueOfFrames.back(), frame, matches);
-
-		Frame::motion(*m_estimator, queueOfFrames.back(), frame, matches,
-				camera_matrix, P);
-
-		cv::Matx33d R = P(cv::Range::all(),cv::Range(0,3));
-		cv::Vec3d 	t = P.col(3);
-
-		Frame::draw(outImg.image, queueOfFrames.back(), frame, matches,
-				odomparam, m_estimator->getInliers());
-
-		queueOfFrames.push_back(frame);
-		queueOfMatches.push_back(matches);
-	}
-
-	impub.publish(outImg.toImageMsg());
+	img_proc.detect_features(query_image, query_kpts);
+	//feature vector?
+//	if(first_run){
+//		first_run = false;
+//		return;
+//	}
+//	else{
+//		ImageProcessor::match_feature(matches, query_feature, train_feature, match_param);
+//		MotionProcessor::estimate_motion(train_feature, query_feature, matches, rotation, translation);
+//		update_pose(rotation, translation);
+//	}
 }
 
 } /* namespace LRM */

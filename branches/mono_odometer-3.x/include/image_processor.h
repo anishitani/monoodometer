@@ -9,35 +9,31 @@
 #define FEATURE_H_
 
 #include "core.h"
+#include "parameter.h"
 
 namespace LRM
 {
 
 #define DEFAULT_RADIUS 10.0
 
-///// Types of possible features
-//enum feature_t {
-//	SHI_TOMASI,
-//	HARRIS,
-//	ORB,
-//	FAST,
-//	SURF,
-//	SIFT,
-//	NO_FEATURE
-//};
-//
-///// Types of possible descriptors
-//enum descriptor_t {
-//	SSD
-//};
+class ImageProcessorParameter: public Parameter
+{
 
-class Descriptor;
+
+public:
+	ImageProcessorParameter(){}
+
+	~ImageProcessorParameter(){}
+
+	int parse(ros::NodeHandle nh);
+
+};
 
 /*
  *	Class Feature:
  *		The class Feature defines and stores the features of the image.
  */
-class FeatureHandler
+class ImageProcessor
 {
 private:
 	cv::Ptr<cv::FeatureDetector> detector;
@@ -49,21 +45,27 @@ private:
 	double radius;
 
 public:
-	FeatureHandler()
-	{
-	}
-	FeatureHandler(feature_t feature_type, int maxNumberOfFeatures);
-	virtual ~FeatureHandler();
+	ImageProcessor();
+	ImageProcessor(ImageProcessorParameter param);
+	virtual ~ImageProcessor();
+
+	/**
+	 * Method setting:
+	 *
+	 * @param param
+	 * @return
+	 */
+	int setting(ImageProcessorParameter param);
 
 	void setRadius(double radius)
 	{
 		this->radius = radius;
 	}
 
-	void detect(cv::Mat image, std::vector<cv::KeyPoint> &features);
-	void extract(cv::Mat image, std::vector<cv::KeyPoint> &features,
+	void detect_features(cv::Mat image, std::vector<cv::KeyPoint> &kpts);
+	void extract_features(cv::Mat image, std::vector<cv::KeyPoint> &features,
 			cv::Mat &descriptors);
-	void match(std::vector<cv::KeyPoint> queryKeyPoints,
+	void match_features(std::vector<cv::KeyPoint> queryKeyPoints,
 			std::vector<cv::KeyPoint> trainKeyPoints, cv::Mat queryDescriptors,
 			cv::Mat trainDescriptors, std::vector<cv::DMatch> &matches);
 
@@ -77,11 +79,6 @@ public:
 			std::vector<cv::KeyPoint> &arrayOfFeatures);
 	static int SURF_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 			std::vector<cv::KeyPoint> &arrayOfFeatures);
-};
-
-class Descriptor
-{
-
 };
 
 } /* namespace LRM */

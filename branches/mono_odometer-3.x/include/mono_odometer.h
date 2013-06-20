@@ -44,6 +44,7 @@ private:
 	/* *****ROS Variables******* */
 	ROSParameter ros_parameter;
 	image_transport::Subscriber input_image_subscriber;
+	image_transport::Publisher  output_feature_advertiser;
 	/* ************************* */
 
 	/* *****Image Variables***** */
@@ -51,12 +52,16 @@ private:
 
 	ImageProcessorParameter img_proc_parameter;
 
-	cv::Mat train_image; ///< Previous image
-	cv::Mat query_image; ///< Current image
+	cv_bridge::CvImageConstPtr train_image; 	///< Previous image
+	cv_bridge::CvImageConstPtr query_image; 	///< Current image
+	cv_bridge::CvImage feature_image;
 
 	std::vector<cv::KeyPoint> train_kpts; ///< Previous image keypoints
 	std::vector<cv::KeyPoint> query_kpts; ///< Current image keypoints
 	/* ************************* */
+
+	int convertSensorMsgToImage(const sensor_msgs::ImageConstPtr &msg, cv_bridge::CvImageConstPtr &image);
+	int drawFeatureImage();
 
 public:
 	MonoOdometer();
@@ -69,6 +74,12 @@ public:
 	{
 		return ros_parameter.getParameterByName<std::string>(
 				"INPUT_IMAGE_TOPIC");
+	}
+
+	std::string getFeatureImageTopic()
+	{
+		return ros_parameter.getParameterByName<std::string>(
+				"FEATURE_IMAGE_TOPIC");
 	}
 };
 

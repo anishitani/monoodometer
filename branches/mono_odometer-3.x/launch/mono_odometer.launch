@@ -3,6 +3,7 @@
 		type="rviz"/> -->
 	<!-- node pkg="tf" type="static_transform_publisher" name="map_broadcaster" 
 		args="0 0 0 0 0 0 /world /map 30" output="screen" / -->
+	<node pkg="webcam" type="webcam" name="webcam_test"/>
 	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer"
 		output="screen">
 		<param name="image_topic" value="/camera/image" />

@@ -1,10 +1,3 @@
-/*
- * feature.cpp
- *
- *  Created on: Sep 22, 2012
- *      Author: nishitani
- */
-
 #include "image_processor.h"
 
 namespace LRM
@@ -18,18 +11,22 @@ int ImageProcessorParameter::parse(ros::NodeHandle nh)
 	std::string value_str;
 	int value_int;
 
-//	nh.param<std::string>("INPUT_IMAGE_TOPIC", value_str, "/camera/image");
-//	parameter["INPUT_IMAGE_TOPIC"] = value_str;
-//
-//	ROS_DEBUG(
-//			"INPUT_IMAGE_TOPIC = %s", boost::any_cast<std::string>(parameter["INPUT_IMAGE_TOPIC"]).c_str());
+	nh.param<std::string>("FEATURE_TYPE", value_str, "SIFT");
+	parameter["FEATURE_TYPE"] = Feature::getFeatureByName(value_str);
+
+	nh.param<int>("MAX_NUM_FEATURE_PTS", value_int, 100);
+	parameter["MAX_NUM_FEATURE_PTS"] = value_int;
+
+	ROS_DEBUG("FEATURE_TYPE = %s", value_str.c_str());
+	ROS_DEBUG("MAX_NUM_FEATURE_PTS = %d", value_int);
 
 	return 0;
 }
 
-
 ImageProcessor::ImageProcessor()
 {
+	maxNumberOfFeatures = 0;
+	feature_type = SIFT;
 }
 
 ImageProcessor::ImageProcessor(ImageProcessorParameter param)
@@ -37,7 +34,7 @@ ImageProcessor::ImageProcessor(ImageProcessorParameter param)
 
 	this->maxNumberOfFeatures = maxNumberOfFeatures;
 	this->feature_type = feature_type;
-	this->radius = DEFAULT_RADIUS;
+//	this->radius = DEFAULT_RADIUS;
 
 	switch (feature_type)
 	{
@@ -79,8 +76,8 @@ ImageProcessor::ImageProcessor(ImageProcessorParameter param)
 	default:
 		break;
 	}
-//	matcher = new cv::FlannBasedMatcher();
-//	matcher = new cv::BFMatcher(cv::NORM_L2);
+	matcher = new cv::FlannBasedMatcher();
+	matcher = new cv::BFMatcher(cv::NORM_L2);
 }
 
 ImageProcessor::~ImageProcessor()
@@ -92,17 +89,22 @@ ImageProcessor::~ImageProcessor()
 
 int ImageProcessor::setting(ImageProcessorParameter param)
 {
-	int err_code = 0;
+	int IP_ERR_CODE = 0; //Error Code
 
 	maxNumberOfFeatures = param.getParameterByName<int>("MAX_NUM_FEATURE_PTS");
 	feature_type = param.getParameterByName<feature_t>("FEATURE_TYPE");
-	radius = param.getParameterByName<double>("FEATURE_MATCH_RADIUS");
+//	radius = param.getParameterByName<double>("FEATURE_MATCH_RADIUS");
 
 	switch (feature_type)
 	{
+	/*
+	 * GoodFeaturesToTrackDetector( int maxCorners, double qualityLevel,
+	 *                           	double minDistance, int blockSize=3,
+	 *                           	bool useHarrisDetector=false, double k=0.04 );
+	 */
 	case SHI_TOMASI:
 		detector = new cv::GoodFeaturesToTrackDetector(maxNumberOfFeatures,
-				0.01, 10.0);
+				0.01, 10.0, 3, false);
 		extractor = new cv::BriefDescriptorExtractor();
 		matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
 		break;
@@ -139,7 +141,7 @@ int ImageProcessor::setting(ImageProcessorParameter param)
 		break;
 	}
 
-	return err_code;
+	return IP_ERR_CODE;
 }
 
 /**
@@ -274,6 +276,14 @@ int ImageProcessor::SURF_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 {
 	// Apply corner detection
 	det->detect(src, arrayOfFeatures);
+
+	return 0;
+}
+
+int ImageProcessor::draw_feature(cv::Mat inImage, cv::Mat &outImage, std::vector<cv::KeyPoint> kpts)
+{
+	cv::cvtColor(inImage,outImage,CV_GRAY2BGR);
+	cv::drawKeypoints(outImage,kpts,outImage, cv::Scalar(0,255,0),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
 
 	return 0;
 }

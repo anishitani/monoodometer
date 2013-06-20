@@ -1,10 +1,3 @@
-/*
- * feature.h
- *
- *  Created on: Sep 22, 2012
- *      Author: nishitani
- */
-
 #ifndef FEATURE_H_
 #define FEATURE_H_
 
@@ -19,11 +12,14 @@ namespace LRM
 class ImageProcessorParameter: public Parameter
 {
 
-
 public:
-	ImageProcessorParameter(){}
+	ImageProcessorParameter()
+	{
+	}
 
-	~ImageProcessorParameter(){}
+	~ImageProcessorParameter()
+	{
+	}
 
 	int parse(ros::NodeHandle nh);
 
@@ -42,7 +38,7 @@ private:
 
 	int maxNumberOfFeatures;
 	feature_t feature_type;
-	double radius;
+//	double radius;
 
 public:
 	ImageProcessor();
@@ -57,10 +53,10 @@ public:
 	 */
 	int setting(ImageProcessorParameter param);
 
-	void setRadius(double radius)
-	{
-		this->radius = radius;
-	}
+//	void setRadius(double radius)
+//	{
+//		this->radius = radius;
+//	}
 
 	void detect_features(cv::Mat image, std::vector<cv::KeyPoint> &kpts);
 	void extract_features(cv::Mat image, std::vector<cv::KeyPoint> &features,
@@ -79,6 +75,8 @@ public:
 			std::vector<cv::KeyPoint> &arrayOfFeatures);
 	static int SURF_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 			std::vector<cv::KeyPoint> &arrayOfFeatures);
+
+	static int draw_feature(cv::Mat inImage, cv::Mat &outImage, std::vector<cv::KeyPoint> kpts);
 };
 
 } /* namespace LRM */

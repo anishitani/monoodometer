@@ -34,20 +34,54 @@
 #include <vector>
 #include <deque>
 
-namespace LRM{
+namespace LRM
+{
+
 /// Types of possible features
-enum feature_t {
-	SHI_TOMASI,
-	HARRIS,
-	ORB,
-	FAST,
-	SURF,
-	SIFT,
-	NO_FEATURE
+enum feature_t
+{
+	SHI_TOMASI, HARRIS, ORB, FAST, SURF, SIFT, NO_FEATURE
+};
+
+class Feature
+{
+public:
+	static feature_t getFeatureByName(std::string feature_name)
+	{
+		if (feature_name == "SHI_TOMASI")
+		{
+			return SHI_TOMASI;
+		}
+		else if (feature_name == "HARRIS")
+		{
+			return HARRIS;
+		}
+		else if (feature_name == "ORB")
+		{
+			return ORB;
+		}
+		else if (feature_name == "FAST")
+		{
+			return FAST;
+		}
+		else if (feature_name == "SURF")
+		{
+			return SURF;
+		}
+		else if (feature_name == "SIFT")
+		{
+			return SIFT;
+		}
+		else
+		{
+			return NO_FEATURE;
+		}
+	}
 };
 
 /// Types of possible descriptors
-enum descriptor_t {
+enum descriptor_t
+{
 	SSD
 };
 

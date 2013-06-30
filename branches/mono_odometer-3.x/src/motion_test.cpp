@@ -445,8 +445,6 @@ void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
 
 	Mat E = K.t() * Tc.t() * F * Tp * K;
 
-//	cout << E << endl;
-
 	cv::Mat R, t;
 
 	vector<Mat> P_vec;
@@ -461,8 +459,8 @@ void estimate_motion(vector<Point2d> train_pts, vector<Point2d> query_pts,
 	{
 		vector<char> _mask(mask);
 		int inlier = triangulateCheck(train_pts, query_pts, K, P_vec[i], _mask);
-		printf("%d: %d\n", i, inlier);
-		cout << P_vec[i] << endl;
+//		printf("%d: %d\n", i, inlier);
+//		cout << P_vec[i] << endl;
 		if (max_inlier < inlier)
 		{
 			max_inlier = inlier;
@@ -612,19 +610,19 @@ int main(int argc, char** argv)
 //			cv::FileStorage::READ);
 //	cube_pts["query"] >> x1;
 //	cube_pts["train"] >> x2;
-////	x1 = x1.t();
-////	x2 = x2.t();
-////	cout << x1 << endl << endl << x2 << endl;
+//	x1 = x1.t();
+//	x2 = x2.t();
+//	cout << x1 << endl << endl << x2 << endl;
 //
 //	vector<Point2d> X1, X2;
 //
 //	for (int i = 0; i < x1.cols; i++)
 //	{
-////		X1.push_back(Point2d((double)x1.col(i).data[0],(double)x1.col(i).data[1]));
-////		X2.push_back(Point2d((double)x2.col(i).data[0],(double)x2.col(i).data[1]));
+//		X1.push_back(Point2d((double)x1.col(i).data[0],(double)x1.col(i).data[1]));
+//		X2.push_back(Point2d((double)x2.col(i).data[0],(double)x2.col(i).data[1]));
 //		X1.push_back(Point2d(x1.col(i)));
 //		X2.push_back(Point2d(x2.col(i)));
-////		cout << x1.col(i) << endl << x2.col(i) << endl << endl;
+//		cout << x1.col(i) << endl << x2.col(i) << endl << endl;
 //	}
 	/*****************************/
 
@@ -689,6 +687,7 @@ int main(int argc, char** argv)
 				estimate_motion(train_pts, query_pts, matches, K, P,
 						inlier_mask);
 
+				//Flow
 				drawMatchesRelative(train_pts, query_pts, current_image,
 						relative_image, inlier_mask);
 
@@ -699,6 +698,8 @@ int main(int argc, char** argv)
 						asin(-R(0, 1) / cos(ry));
 				double cx = cos(rx), cy = cos(ry), cz = cos(rz), sx = sin(rx),
 						sy = sin(ry), sz = sin(rz);
+
+//				std::cout << P << std::endl;
 
 				Mat C(4, 4, CV_64F);
 				C.at<double>(0, 0) = +cy * cz;
@@ -717,13 +718,19 @@ int main(int argc, char** argv)
 				C.at<double>(3, 1) = 0;
 				C.at<double>(3, 2) = 0;
 				C.at<double>(3, 3) = 1;
+
+//				std::cout << C << std::endl;
+
 				C = C.inv();
+
+//				std::cout << cv::Mat(R) << std::endl;
+
 
 				R = C(Range(0, 3), Range(0, 3)); //R = R.t();
 				t = C(Range(0, 3), Range(3, 4));
 
-				printf("rx=%f - ry=%f - rz=%f\n\n", rad2deg(rx), rad2deg(ry),
-						rad2deg(rz));
+//				printf("rx=%f - ry=%f - rz=%f\n\n", rad2deg(rx), rad2deg(ry),
+//						rad2deg(rz));
 
 				_pose = R * _pose + t;
 
@@ -765,8 +772,8 @@ int main(int argc, char** argv)
 
 				tf::poseTFToMsg(pose, odom.pose.pose);
 
-				printf("odom: %f %f %f\n", odom.pose.pose.position.x,
-						odom.pose.pose.position.y, odom.pose.pose.position.z);
+//				printf("odom: %f %f %f\n", odom.pose.pose.position.x,
+//						odom.pose.pose.position.y, odom.pose.pose.position.z);
 
 				double delta_t = 1.0;
 				odom.twist.twist.linear.x = motion.getOrigin().getX() / delta_t;

@@ -1,4 +1,4 @@
-# Install script for directory: /home/nishitani/ros/mono_odometer
+# Install script for directory: /home/nishitani/Dropbox/usp/ros/mono_odometer
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -38,7 +38,7 @@ ELSE(CMAKE_INSTALL_COMPONENT)
   SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 ENDIF(CMAKE_INSTALL_COMPONENT)
 
-FILE(WRITE "/home/nishitani/ros/mono_odometer/${CMAKE_INSTALL_MANIFEST}" "")
+FILE(WRITE "/home/nishitani/Dropbox/usp/ros/mono_odometer/${CMAKE_INSTALL_MANIFEST}" "")
 FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
-  FILE(APPEND "/home/nishitani/ros/mono_odometer/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+  FILE(APPEND "/home/nishitani/Dropbox/usp/ros/mono_odometer/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
 ENDFOREACH(file)

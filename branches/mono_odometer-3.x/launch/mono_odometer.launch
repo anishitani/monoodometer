@@ -3,18 +3,16 @@
 		type="rviz"/> -->
 	<!-- node pkg="tf" type="static_transform_publisher" name="map_broadcaster" 
 		args="0 0 0 0 0 0 /world /map 30" output="screen" / -->
-	<node pkg="webcam" type="webcam" name="webcam_test"/>
+	<!-- node pkg="webcam" type="webcam" name="webcam_test"/ -->
 	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer"
 		output="screen">
-		<param name="image_topic" value="/camera/image" />
-		<param name="feature_image_topic" value="/image/feature_image" />
-		<param name="feature_type" value="SIFT" />
-		<param name="number_of_features" value="1000" />
-		<param name="draw_keypoints" value="true" />
-		<param name="draw_tracks" value="false" />
-		<param name="draw_pair" value="false" />
-		<param name="calib_filename"
-			value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/phone.yaml" />
+		
+		<param name="CAMERA_MATRIX_PATH"
+			value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml" />
+		<param name="INPUT_IMAGE_TOPIC" value="/StereoCam/imageLeft" />
+		<!-- param name="FEATURE_IMAGE_TOPIC" value="image/feature" / -->
+		<!-- param name="MATCHES_IMAGE_TOPIC" value="image/matches" / -->
+		
 	</node>
 
 </launch>

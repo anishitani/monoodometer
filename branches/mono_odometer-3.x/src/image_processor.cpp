@@ -167,9 +167,13 @@ void ImageProcessor::extract_features(cv::Mat image,
 }
 
 /**
- * Method match:
+ * Method match_features:
  *
- * 	 @param[in]	f	Base frame for feature description extraction
+ * @param queryKeyPoints
+ * @param trainKeyPoints
+ * @param queryDescriptors
+ * @param trainDescriptors
+ * @param matches
  */
 void ImageProcessor::match_features(std::vector<cv::KeyPoint> queryKeyPoints,
 		std::vector<cv::KeyPoint> trainKeyPoints, cv::Mat queryDescriptors,
@@ -280,11 +284,23 @@ int ImageProcessor::SURF_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 	return 0;
 }
 
-int ImageProcessor::draw_feature(cv::Mat inImage, cv::Mat &outImage, std::vector<cv::KeyPoint> kpts)
+int ImageProcessor::draw_feature(cv::Mat inImage, cv::Mat &outImage,
+		std::vector<cv::KeyPoint> kpts)
 {
-	cv::cvtColor(inImage,outImage,CV_GRAY2BGR);
-	cv::drawKeypoints(outImage,kpts,outImage, cv::Scalar(0,255,0),cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	cv::cvtColor(inImage, outImage, CV_GRAY2BGR);
+	cv::drawKeypoints(outImage, kpts, outImage, cv::Scalar(0, 255, 0));
 
+	return 0;
+}
+
+int ImageProcessor::draw_matches(cv::Mat inQueryImage,
+		std::vector<cv::KeyPoint> query_kpts, cv::Mat inTrainImage,
+		std::vector<cv::KeyPoint> train_kpts, std::vector<cv::DMatch> matches,
+		cv::Mat &outPairImage, std::vector<char> mask)
+{
+	cv::drawMatches(inQueryImage, query_kpts, inTrainImage, train_kpts, matches,
+			outPairImage, cv::Scalar::all(-1), cv::Scalar::all(-1),
+			mask, cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
 	return 0;
 }
 

@@ -10,13 +10,31 @@
 
 namespace LRM
 {
+///////////////////////////////////////////////////////////////////////
+/**				Motion Processor Parameter Class					**/
+///////////////////////////////////////////////////////////////////////
 
-MotionEstimator::MotionEstimator()
+int MotionProcessorParameter::parse(ros::NodeHandle nh)
+{
+	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////
+/**						Motion Processor Class						**/
+///////////////////////////////////////////////////////////////////////
+MotionProcessor::MotionProcessor()
 {
 }
 
-MotionEstimator::~MotionEstimator()
+MotionProcessor::~MotionProcessor()
 {
+}
+
+int MotionProcessor::setting(MotionProcessorParameter param)
+{
+	int MP_ERR_CODE = 0; //Error Code
+
+	return MP_ERR_CODE;
 }
 
 /**
@@ -29,7 +47,7 @@ MotionEstimator::~MotionEstimator()
  * @param query_pts		Current set of 2D points.
  * @param train_pts		Last set of 2D points.
  */
-void MotionEstimator::matches2points(const std::vector<cv::KeyPoint>& query,
+void MotionProcessor::matches2points(const std::vector<cv::KeyPoint>& query,
 		const std::vector<cv::KeyPoint>& train,
 		const std::vector<cv::DMatch>& matches,
 		std::vector<cv::Point2d> &query_pts, std::vector<cv::Point2d> &train_pts)
@@ -47,14 +65,13 @@ void MotionEstimator::matches2points(const std::vector<cv::KeyPoint>& query,
 }
 
 /**
- * estimate_motion:
- * 		Estimates the rotation and translation between two frames.
+ * @brief Estimates the rotation and translation between two frames.
  *
  * @param train		Previous analized frame.
  * @param query		Current analized frame.
  * @param K			Camera matrix.
  */
-void MotionEstimator::estimate_motion(std::vector<cv::Point2d> train_pts,
+void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts, std::vector<cv::DMatch> matches,
 		cv::Mat K, cv::Mat &P)
 {
@@ -67,6 +84,7 @@ void MotionEstimator::estimate_motion(std::vector<cv::Point2d> train_pts,
 
 	//Fundamental matrix
 	cv::Mat F;
+
 
 	if (!feature_point_normalization(query_pts, train_pts, norm_query_pts,
 			norm_train_pts, Tc, Tp))
@@ -116,9 +134,10 @@ void MotionEstimator::estimate_motion(std::vector<cv::Point2d> train_pts,
 	P = P_vec[pos](cv::Range::all(), cv::Range::all());
 
 	inliers = mask_vec[pos];
+
 }
 
-bool MotionEstimator::feature_point_normalization(
+bool MotionProcessor::feature_point_normalization(
 		std::vector<cv::Point2d> query_pts, std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> &norm_query_pts,
 		std::vector<cv::Point2d> &norm_train_pts, cv::Mat &Tc, cv::Mat &Tp)
@@ -168,7 +187,7 @@ bool MotionEstimator::feature_point_normalization(
 	return true;
 }
 
-cv::Mat MotionEstimator::compute_F_matrix(std::vector<cv::Point2d> train_pts,
+cv::Mat MotionProcessor::compute_F_matrix(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts)
 {
 	cv::Mat mask;
@@ -182,7 +201,7 @@ cv::Mat MotionEstimator::compute_F_matrix(std::vector<cv::Point2d> train_pts,
 	return F;
 }
 
-std::vector<cv::Mat> MotionEstimator::compute_Rt(cv::Mat E, cv::Mat K)
+std::vector<cv::Mat> MotionProcessor::compute_Rt(cv::Mat E, cv::Mat K)
 {
 
 	// hartley matrices
@@ -240,7 +259,7 @@ std::vector<cv::Mat> MotionEstimator::compute_Rt(cv::Mat E, cv::Mat K)
 	return P;
 }
 
-int MotionEstimator::triangulateCheck(std::vector<cv::Point2d> train_pts,
+int MotionProcessor::triangulateCheck(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts, cv::Mat &K, cv::Mat P,
 		std::vector<char> mask)
 {
@@ -253,7 +272,7 @@ int MotionEstimator::triangulateCheck(std::vector<cv::Point2d> train_pts,
 	int num_inliers = 0;
 
 	// projection matrices
-	P1 = cv::Mat::eye(3, 4, CV_64F);
+	P1 = K * cv::Mat::eye(3, 4, CV_64F);
 	P2 = K * P;
 
 	// triangulation via orthogonal regression
@@ -279,21 +298,24 @@ int MotionEstimator::triangulateCheck(std::vector<cv::Point2d> train_pts,
 		/* Checa a profundidade */
 		/* ******************** */
 		cv::Mat x1 = P1 * X.t(), x2 = P2 * X.t();
-		cv::Mat M1(P1, cv::Rect(0, 0, 3, 3)), M2(P2, cv::Rect(0, 0, 3, 3));
-		int sign1 = cv::determinant(M1) > 0 ? 1 : -1, sign2 =
-				cv::determinant(M2) > 0 ? 1 : -1;
-
-		double depth1 = (sign1 * x1.at<double>(2, 0))
-				/ (X.at<double>(0, 3) * norm(M1.col(2))), depth2 = (sign2
-				* x2.at<double>(2, 0)) / (X.at<double>(0, 3) * norm(M2.col(2)));
-		if (depth1 > 0 && depth2 > 0)
-		{
+//		cv::Mat M1(P1, cv::Rect(0, 0, 3, 3)), M2(P2, cv::Rect(0, 0, 3, 3));
+//		int sign1 = cv::determinant(M1) > 0 ? 1 : -1, sign2 =
+//				cv::determinant(M2) > 0 ? 1 : -1;
+//
+//		double depth1 = (sign1 * x1.at<double>(2, 0))
+//				/ (X.at<double>(0, 3) * norm(M1.col(2))), depth2 = (sign2
+//				* x2.at<double>(2, 0)) / (X.at<double>(0, 3) * norm(M2.col(2)));
+//		if (depth1 > 0 && depth2 > 0)
+//		{
+//			num_inliers++;
+//		}
+//		else
+//		{
+//			mask[i] = (char) 0;
+//		}
+		if (x1.at<double>(2, 0) * X.at<double>(0, 3) > 0
+				&& x2.at<double>(2, 0) * X.at<double>(0, 3) > 0)
 			num_inliers++;
-		}
-		else
-		{
-			mask[i] = (char) 0;
-		}
 		/**************************/
 
 		X /= X.at<double>(0, 3);
@@ -307,7 +329,7 @@ int MotionEstimator::triangulateCheck(std::vector<cv::Point2d> train_pts,
 	return num_inliers;
 }
 
-int MotionEstimator::cheiralityCheck(cv::Mat P2, cv::Mat K,
+int MotionProcessor::cheiralityCheck(cv::Mat P2, cv::Mat K,
 		std::vector<cv::Point2d> pp, std::vector<cv::Point2d> pc)
 {
 	cv::Mat R(P2, cv::Range::all(), cv::Range(0, 3)), t(P2, cv::Range::all(),
@@ -347,7 +369,7 @@ int MotionEstimator::cheiralityCheck(cv::Mat P2, cv::Mat K,
 	return (positive_depth + positive_vol);
 }
 
-cv::Mat MotionEstimator::Rodrigues(cv::Vec3d omega, double theta)
+cv::Mat MotionProcessor::Rodrigues(cv::Vec3d omega, double theta)
 {
 	double norm_omega = cv::norm(omega);
 
@@ -371,14 +393,14 @@ cv::Mat MotionEstimator::Rodrigues(cv::Vec3d omega, double theta)
 
 }
 
-double MotionEstimator::triple_product(cv::Vec3d a, cv::Vec3d b, cv::Vec3d c)
+double MotionProcessor::triple_product(cv::Vec3d a, cv::Vec3d b, cv::Vec3d c)
 {
 	return c(0) * (a(1) * b(2) - a(2) * b(1))
 			+ c(1) * (a(2) * b(0) - b(2) * a(0))
 			+ c(2) * (a(0) * b(1) - b(0) * a(1));
 }
 
-cv::Mat MotionEstimator::skew(cv::Vec3d a)
+cv::Mat MotionProcessor::skew(cv::Vec3d a)
 {
 	return (cv::Mat_<float>(3, 3) << 0, -a(2), a(1), a(2), 0, -a(0), -a(1), a(
 			0), 0);

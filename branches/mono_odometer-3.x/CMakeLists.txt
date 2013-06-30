@@ -30,11 +30,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #target_link_libraries(example ${PROJECT_NAME})
 
 # creates a new library using the odometer, montion, frame and feature sources 
-rosbuild_add_library( odometry_tools src/mono_odometer.cpp src/parameter.cpp src/image_processor.cpp )
+rosbuild_add_library( odometry_tools src/mono_odometer.cpp src/parameter.cpp src/image_processor.cpp src/motion_processor.cpp )
 
 # creates the executables
 #rosbuild_add_executable(feature_test src/feature_test.cpp)
-#rosbuild_add_executable(motion_test src/motion_test.cpp)
+rosbuild_add_executable(motion_test src/motion_test.cpp)
 rosbuild_add_executable(${PROJECT_NAME} src/main.cpp)
 
 #link boost
@@ -43,5 +43,5 @@ rosbuild_add_boost_directories()
 
 # links the odometer library to the project 
 #target_link_libraries( feature_test odometry_tools )
-#target_link_libraries( motion_test odometry_tools )
+target_link_libraries( motion_test odometry_tools )
 target_link_libraries( ${PROJECT_NAME} odometry_tools )

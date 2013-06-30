@@ -76,7 +76,12 @@ public:
 	static int SURF_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 			std::vector<cv::KeyPoint> &arrayOfFeatures);
 
-	static int draw_feature(cv::Mat inImage, cv::Mat &outImage, std::vector<cv::KeyPoint> kpts);
+	static int draw_feature(cv::Mat inImage, cv::Mat &outImage,
+			std::vector<cv::KeyPoint> kpts);
+	static int draw_matches(cv::Mat inQueryImage,
+			std::vector<cv::KeyPoint> query_kpts, cv::Mat inTrainImage,
+			std::vector<cv::KeyPoint> train_kpts,
+			std::vector<cv::DMatch> matches, cv::Mat &outPairImage, std::vector<char> mask);
 };
 
 } /* namespace LRM */

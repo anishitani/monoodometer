@@ -9,35 +9,40 @@
 #define MOTION_H_
 
 #include "core.h"
-
-typedef double Matches[][3];
-typedef double Matches_5[5][3];
-typedef double Ematrix[3][3];
-
-/**
- * compute_E_matrices:
- *
- * @param q
- * @param qp
- * @param Ematrices
- * @param nroots
- * @param optimized
- */
-void compute_E_matrices(Matches q, Matches qp, Ematrix Ematrices[10],
-		int &nroots, bool optimized);
+#include "parameter.h"
 
 namespace LRM
 {
 
-class MotionEstimator
+///////////////////////////////////////////////////////////////////////
+/**				Motion Processor Parameter Class					**/
+///////////////////////////////////////////////////////////////////////
+class MotionProcessorParameter: public Parameter
+{
+public:
+	MotionProcessorParameter()
+	{
+	}
+
+	~MotionProcessorParameter()
+	{
+	}
+
+	int parse(ros::NodeHandle nh);
+
+};
+
+class MotionProcessor
 {
 private:
 	std::vector<char> inliers;
 	std::vector<cv::Point2d> train_pts, query_pts;
 
 public:
-	MotionEstimator();
-	virtual ~MotionEstimator();
+	MotionProcessor();
+	virtual ~MotionProcessor();
+
+	int setting(MotionProcessorParameter param);
 
 	void matches2points(const std::vector<cv::KeyPoint>& query,
 			const std::vector<cv::KeyPoint>& train,
@@ -64,7 +69,7 @@ public:
 	cv::Mat skew(cv::Vec3d a);
 
 	//gets
-	std::vector<char> getInliers(){ return inliers; }
+	std::vector<char> getInlierMask(){ return inliers; }
 };
 
 } /* namespace LRM */

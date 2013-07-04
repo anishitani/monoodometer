@@ -10,6 +10,7 @@ int ImageProcessorParameter::parse(ros::NodeHandle nh)
 {
 	std::string value_str;
 	int value_int;
+	double value_double;
 
 	nh.param<std::string>("FEATURE_TYPE", value_str, "SIFT");
 	parameter["FEATURE_TYPE"] = Feature::getFeatureByName(value_str);
@@ -17,24 +18,32 @@ int ImageProcessorParameter::parse(ros::NodeHandle nh)
 	nh.param<int>("MAX_NUM_FEATURE_PTS", value_int, 100);
 	parameter["MAX_NUM_FEATURE_PTS"] = value_int;
 
+	nh.param<double>("MATCH_RADIUS", value_double, 10.0);
+	parameter["MATCH_RADIUS"] = value_double;
+
 	ROS_DEBUG("FEATURE_TYPE = %s", value_str.c_str());
 	ROS_DEBUG("MAX_NUM_FEATURE_PTS = %d", value_int);
+	ROS_DEBUG("MAX_NUM_FEATURE_PTS = %f", value_double);
 
 	return 0;
 }
 
+//////////////////////////////////////////////////////////////////////////
+/**						Image Processor Class						   **/
+//////////////////////////////////////////////////////////////////////////
 ImageProcessor::ImageProcessor()
 {
-	maxNumberOfFeatures = 0;
+	maxNumberOfFeatures = 100;
 	feature_type = SIFT;
+	radius = 10.0;
 }
 
 ImageProcessor::ImageProcessor(ImageProcessorParameter param)
 {
 
-	this->maxNumberOfFeatures = maxNumberOfFeatures;
-	this->feature_type = feature_type;
-//	this->radius = DEFAULT_RADIUS;
+	this->maxNumberOfFeatures = 100;
+	this->feature_type = SIFT;
+	this->radius = 10.0;
 
 	switch (feature_type)
 	{
@@ -93,7 +102,7 @@ int ImageProcessor::setting(ImageProcessorParameter param)
 
 	maxNumberOfFeatures = param.getParameterByName<int>("MAX_NUM_FEATURE_PTS");
 	feature_type = param.getParameterByName<feature_t>("FEATURE_TYPE");
-//	radius = param.getParameterByName<double>("FEATURE_MATCH_RADIUS");
+	radius = param.getParameterByName<double>("MATCH_RADIUS");
 
 	switch (feature_type)
 	{
@@ -144,22 +153,12 @@ int ImageProcessor::setting(ImageProcessorParameter param)
 	return IP_ERR_CODE;
 }
 
-/**
- * Method detect:
- *
- * 	 @param[in]	f	Base frame for feature detection
- */
 void ImageProcessor::detect_features(cv::Mat image,
 		std::vector<cv::KeyPoint> &kpts)
 {
 	detector->detect(image, kpts);
 }
 
-/**
- * Method extract:
- *
- * 	 @param[in]	f	Base frame for feature description extraction
- */
 void ImageProcessor::extract_features(cv::Mat image,
 		std::vector<cv::KeyPoint> &features, cv::Mat &descriptors)
 {
@@ -181,7 +180,7 @@ void ImageProcessor::match_features(std::vector<cv::KeyPoint> queryKeyPoints,
 {
 	std::vector<std::vector<cv::DMatch> > radiusMatches;
 	matcher->radiusMatch(queryDescriptors, trainDescriptors, radiusMatches,
-			100.0);
+			radius);
 	matches.clear();
 	for (int i = 0; i < (int) radiusMatches.size(); i++)
 	{
@@ -202,14 +201,6 @@ void ImageProcessor::match_features(std::vector<cv::KeyPoint> queryKeyPoints,
 	}
 }
 
-/**
- * Method ShiTomasiCorner:
- * 		Feature detection using either Harris or Shi-Tomasi methods
- * 	for corner detection.
- *
- * 	 @param[in]	src				Input image
- * 	 @param[in]	arrayOfFeatures	Array of detected features
- */
 int ImageProcessor::ShiTomasiCorner(cv::Ptr<cv::FeatureDetector> det,
 		cv::Mat src, std::vector<cv::KeyPoint> &arrayOfFeatures)
 {
@@ -220,12 +211,13 @@ int ImageProcessor::ShiTomasiCorner(cv::Ptr<cv::FeatureDetector> det,
 }
 
 /**
- * Method HarrisCorner:
- * 		Feature detection using either Harris or Shi-Tomasi methods
+ * @brief Feature detection using either Harris or Shi-Tomasi methods
  * 	for corner detection.
  *
- * 	 @param[in]	src				Input image
- * 	 @param[in]	arrayOfFeatures	Array of detected features
+ * @param det
+ * @param src
+ * @param arrayOfFeatures
+ * @return
  */
 int ImageProcessor::HarrisCorner(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 		std::vector<cv::KeyPoint> &arrayOfFeatures)
@@ -237,11 +229,12 @@ int ImageProcessor::HarrisCorner(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 }
 
 /**
- * Method ORB:
- * 		Feature detection using SURF methods for corner detection.
+ * @brief Feature detection using SURF methods for corner detection.
  *
- * 	 @param[in]	src				Input image
- * 	 @param[in]	arrayOfFeatures	Array of detected features
+ * @param det
+ * @param src
+ * @param arrayOfFeatures
+ * @return
  */
 int ImageProcessor::ORB_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 		std::vector<cv::KeyPoint> &arrayOfFeatures)
@@ -252,13 +245,6 @@ int ImageProcessor::ORB_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 	return 0;
 }
 
-/**
- * Method FAST:
- * 		Feature detection using FAST methods for corner detection.
- *
- * 	 @param[in]	src				Input image
- * 	 @param[in]	arrayOfFeatures	Array of detected features
- */
 int ImageProcessor::FAST_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 		std::vector<cv::KeyPoint> &arrayOfFeatures)
 {
@@ -268,13 +254,6 @@ int ImageProcessor::FAST_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 	return 0;
 }
 
-/**
- * Method SURF:
- * 		Feature detection using SURF methods for corner detection.
- *
- * 	 @param[in]	src				Input image
- * 	 @param[in]	arrayOfFeatures	Array of detected features
- */
 int ImageProcessor::SURF_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 		std::vector<cv::KeyPoint> &arrayOfFeatures)
 {
@@ -299,8 +278,51 @@ int ImageProcessor::draw_matches(cv::Mat inQueryImage,
 		cv::Mat &outPairImage, std::vector<char> mask)
 {
 	cv::drawMatches(inQueryImage, query_kpts, inTrainImage, train_kpts, matches,
-			outPairImage, cv::Scalar::all(-1), cv::Scalar::all(-1),
-			mask, cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+			outPairImage, cv::Scalar::all(-1), cv::Scalar::all(-1), mask,
+			cv::DrawMatchesFlags::NOT_DRAW_SINGLE_POINTS);
+	return 0;
+}
+
+int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
+		const std::vector<cv::KeyPoint>& query,
+		const std::vector<cv::KeyPoint>& train,
+		std::vector<cv::DMatch>& matches, const std::vector<char>& mask =
+				std::vector<char>())
+{
+	cv::cvtColor(inImage, outImage, CV_GRAY2BGR);
+	for (uint i = 0; i < matches.size(); i++)
+	{
+		if (!mask.empty())
+		{
+			if (!mask[i])
+			{
+				cv::Point2d pt_new = query[matches[i].queryIdx].pt;
+				cv::Point2d pt_old = train[matches[i].trainIdx].pt;
+
+				cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 125, 255),
+						1);
+				cv::circle(outImage, pt_new, 2, cv::Scalar(0, 0, 255), 1);
+			}
+			else
+			{
+				cv::Point2d pt_new = query[matches[i].queryIdx].pt;
+				cv::Point2d pt_old = train[matches[i].trainIdx].pt;
+
+				cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 255, 125),
+						1);
+				cv::circle(outImage, pt_new, 2, cv::Scalar(0, 255, 0), 1);
+			}
+		}
+		else
+		{
+			cv::Point2d pt_new = query[matches[i].queryIdx].pt;
+			cv::Point2d pt_old = train[matches[i].trainIdx].pt;
+
+			cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 255, 125), 1);
+			cv::circle(outImage, pt_new, 2, cv::Scalar(0, 255, 0), 1);
+		}
+	}
+
 	return 0;
 }
 

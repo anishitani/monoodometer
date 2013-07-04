@@ -19,22 +19,26 @@ namespace LRM
 //////////////////////////////////////////////////////////////////////////
 int ROSParameter::parse(ros::NodeHandle nh)
 {
+
 	std::string value_str;
 
-	nh.param<std::string>("CAMERA_MATRIX_TOPIC",value_str, "");
-	parameter["CAMERA_MATRIX_TOPIC"] = value_str;
-
-	nh.param<std::string>("CAMERA_MATRIX_PATH",value_str, "");
-	parameter["CAMERA_MATRIX_PATH"] = value_str;
+	nh.param<std::string>("INTRINSIC_MATRIX_PATH", value_str, "");
+	parameter["INTRINSIC_MATRIX_PATH"] = value_str;
 
 	nh.param<std::string>("INPUT_IMAGE_TOPIC", value_str, "/camera/image");
 	parameter["INPUT_IMAGE_TOPIC"] = value_str;
 
-	nh.param<std::string>("FEATURE_IMAGE_TOPIC", value_str, "image/feature");
+	nh.param<std::string>("FEATURE_IMAGE_TOPIC", value_str, "images/feature");
 	parameter["FEATURE_IMAGE_TOPIC"] = value_str;
 
-	nh.param<std::string>("MATCHES_IMAGE_TOPIC", value_str, "image/matches");
+	nh.param<std::string>("OPTFLOW_IMAGE_TOPIC", value_str, "images/optflow");
+	parameter["OPTFLOW_IMAGE_TOPIC"] = value_str;
+
+	nh.param<std::string>("MATCHES_IMAGE_TOPIC", value_str, "images/matches");
 	parameter["MATCHES_IMAGE_TOPIC"] = value_str;
+
+	nh.param<std::string>("ODOMETRY_TOPIC", value_str, "odom");
+	parameter["ODOMETRY_TOPIC"] = value_str;
 
 	nh.param<std::string>("ODOMETER_REFERENCE_FRAME", value_str, "odom");
 	parameter["ODOMETER_REFERENCE_FRAME"] = value_str;
@@ -42,20 +46,29 @@ int ROSParameter::parse(ros::NodeHandle nh)
 	nh.param<std::string>("ROBOT_FRAME", value_str, "base_link");
 	parameter["ROBOT_FRAME"] = value_str;
 
-	ROS_DEBUG("CAMERA_MATRIX_TOPIC = %s",
-			boost::any_cast<std::string>(parameter["CAMERA_MATRIX_TOPIC"]).c_str());
-	ROS_DEBUG("CAMERA_MATRIX_PATH = %s",
-			boost::any_cast<std::string>(parameter["CAMERA_MATRIX_PATH"]).c_str());
+	nh.param<std::string>("SENSOR_FRAME", value_str, "camera");
+	parameter["SENSOR_FRAME"] = value_str;
+
+	ROS_DEBUG("INTRINSIC_MATRIX_TOPIC = %s",
+			boost::any_cast<std::string>(parameter["INTRINSIC_MATRIX_TOPIC"]).c_str());
+	ROS_DEBUG("INTRINSIC_MATRIX_PATH = %s",
+			boost::any_cast<std::string>(parameter["INTRINSIC_MATRIX_PATH"]).c_str());
 	ROS_DEBUG("INPUT_IMAGE_TOPIC = %s",
 			boost::any_cast<std::string>(parameter["INPUT_IMAGE_TOPIC"]).c_str());
 	ROS_DEBUG("FEATURE_IMAGE_TOPIC = %s",
 			boost::any_cast<std::string>(parameter["FEATURE_IMAGE_TOPIC"]).c_str());
 	ROS_DEBUG("MATCHES_IMAGE_TOPIC = %s",
 			boost::any_cast<std::string>(parameter["MATCHES_IMAGE_TOPIC"]).c_str());
+	ROS_DEBUG("OPTFLOW_IMAGE_TOPIC = %s",
+			boost::any_cast<std::string>(parameter["OPTFLOW_IMAGE_TOPIC"]).c_str());
+	ROS_DEBUG("ODOMETRY_TOPIC = %s",
+			boost::any_cast<std::string>(parameter["ODOMETRY_TOPIC"]).c_str());
 	ROS_DEBUG("ODOMETER_REFERENCE_FRAME = %s",
 			boost::any_cast<std::string>(parameter["ODOMETER_REFERENCE_FRAME"]).c_str());
 	ROS_DEBUG("ROBOT_FRAME = %s",
 			boost::any_cast<std::string>(parameter["ROBOT_FRAME"]).c_str());
+	ROS_DEBUG("SENSOR_FRAME = %s",
+			boost::any_cast<std::string>(parameter["SENSOR_FRAME"]).c_str());
 
 	return 0;
 }
@@ -74,6 +87,7 @@ MonoOdometer::MonoOdometer()
  * 	 a new frame and estimates the momentaneous motion.
  *
  * 	 @param[in]	nh	Node handle of the node of the monocular odometer.
+ * 	 @param[in] it 	Image transport handler.
  */
 MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 		image_transport::ImageTransport &it)
@@ -82,24 +96,26 @@ MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 	img_proc_parameter.parse(nh);
 	mot_proc_parameter.parse(nh);
 
-
 	/*
-	 * Loads camera matrix.
+	 * Loads intrinsic parameters matrix.
 	 */
-	if(isCameraMatrixPath()){
+	if (isIntrinsicMatrixPath())
+	{
 		cv::FileStorage calib_data;
-		calib_data.open(getCameraMatrixPath().c_str(), cv::FileStorage::READ);
-		if(calib_data.isOpened()){
-			calib_data["cameraMatrix"] >> camera_matrix;
+		calib_data.open(getIntrinsicMatrixPath().c_str(),
+				cv::FileStorage::READ);
+		if (calib_data.isOpened())
+		{
+			calib_data["cameraMatrix"] >> K;
 		}
-		else{
-			ROS_WARN("Could not open file %s",getCameraMatrixPath().c_str());
+		else
+		{
+			ROS_WARN("Could not open file %s",
+					getIntrinsicMatrixPath().c_str());
 		}
 	}
-	else if(isCameraMatrixTopic()){
-
-	}
-	if(camera_matrix.empty()){
+	if (K.empty())
+	{
 		ROS_ERROR("No camera matrix was set.");
 		ros::shutdown();
 	}
@@ -113,7 +129,8 @@ MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 	 */
 	pose.setIdentity();
 	odom_broadcaster.sendTransform(
-			tf::StampedTransform(pose, ros::Time::now(), getOdometerReferenceFrame(), getRobotFrame()));
+			tf::StampedTransform(pose, ros::Time::now(),
+					getOdometerReferenceFrame(), getRobotFrame()));
 
 	/*
 	 * Sets the image callback.
@@ -126,8 +143,14 @@ MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 	 */
 	output_feature_advertiser = it.advertise(getFeatureImageTopic(), 1);
 	output_matches_advertiser = it.advertise(getMatchesImageTopic(), 1);
+	output_optflow_advertiser = it.advertise(getOptFlowImageTopic(), 1);
+
+	odometry_advertiser = nh.advertise<nav_msgs::Odometry>(getOdometryTopic(),
+			1);
 
 	query_timestamp = train_timestamp = ros::Time::now();
+
+	ROS_INFO("MonoOdometer initialized!");
 }
 
 MonoOdometer::~MonoOdometer()
@@ -135,8 +158,58 @@ MonoOdometer::~MonoOdometer()
 	// TODO Auto-generated destructor stub
 }
 
-int update_pose()
+int MonoOdometer::update_pose()
 {
+	cv::Mat P = mot_proc.getCameraMatrix();
+
+	P = P.inv();
+
+	tf::Matrix3x3 R(P.at<double>(0, 0), P.at<double>(0, 1), P.at<double>(0, 2),
+			P.at<double>(1, 0), P.at<double>(1, 1), P.at<double>(1, 2),
+			P.at<double>(2, 0), P.at<double>(2, 1), P.at<double>(2, 2));
+
+	tf::Vector3 T(P.at<double>(0, 3), P.at<double>(1, 3), P.at<double>(2, 3));
+	tf::Transform motion(R, T);
+
+	std::string error_msg;
+	if (tf_listener.canTransform(getRobotFrame(), getSensorFrame(),
+			ros::Time(0), &error_msg))
+	{
+		tf_listener.lookupTransform(getRobotFrame(), getSensorFrame(),
+				ros::Time(0), base_to_sensor);
+	}
+	else
+	{
+		ROS_WARN_THROTTLE(10.0,
+				"The tf from '%s' to '%s' does not seem to be available, "
+						"will assume it as identity!", getRobotFrame().c_str(),
+				getSensorFrame().c_str());
+		ROS_DEBUG("Transform error: %s", error_msg.c_str());
+		base_to_sensor.setIdentity();
+	}
+
+	motion = base_to_sensor * motion * base_to_sensor.inverse();
+
+	pose *= motion;
+
+	/*
+	 //next, we'll publish the odometry message over ROS
+	 odometry.header.stamp = ros::Time::now();
+	 odometry.header.frame_id = getOdometerReferenceFrame();
+	 odometry.child_frame_id = getSensorFrame();
+
+	 tf::poseTFToMsg(pose, odometry.pose.pose);
+
+	 double delta_t = 1.0;//(query_timestamp-train_timestamp).toSec();
+	 odometry.twist.twist.linear.x = motion.getOrigin().getX() / delta_t;
+	 odometry.twist.twist.linear.y = motion.getOrigin().getY() / delta_t;
+	 odometry.twist.twist.linear.z = motion.getOrigin().getZ() / delta_t;
+	 double yaw, pitch, roll;
+	 motion.getBasis().getEulerYPR(yaw, pitch, roll);
+	 odometry.twist.twist.angular.x = roll / delta_t;
+	 odometry.twist.twist.angular.y = pitch / delta_t;
+	 odometry.twist.twist.angular.z = yaw / delta_t;
+	 */
 	return 0;
 }
 
@@ -157,6 +230,7 @@ int MonoOdometer::convertSensorMsgToImage(const sensor_msgs::ImageConstPtr &msg,
 int MonoOdometer::drawFeatureImage()
 {
 	feature_image.encoding = sensor_msgs::image_encodings::BGR8;
+	std::vector<char> inliers = mot_proc.getInlierMask();
 	ImageProcessor::draw_feature(query_image->image, feature_image.image,
 			query_kpts);
 	return 0;
@@ -165,8 +239,25 @@ int MonoOdometer::drawFeatureImage()
 int MonoOdometer::drawMatchesImage()
 {
 	matches_image.encoding = sensor_msgs::image_encodings::BGR8;
+	std::vector<char> inliers = mot_proc.getInlierMask();
+	inliers = inliers.size() == matches.size() ? inliers : std::vector<char>();
+
 	ImageProcessor::draw_matches(query_image->image, query_kpts,
-			train_image->image, train_kpts, matches, matches_image.image, mot_proc.getInlierMask());
+			train_image->image, train_kpts, matches, matches_image.image,
+			inliers);
+	return 0;
+}
+
+int MonoOdometer::drawOptFlowImage()
+{
+	optflow_image.encoding = sensor_msgs::image_encodings::BGR8;
+
+	std::vector<char> inliers = mot_proc.getInlierMask();
+	inliers = inliers.size() == matches.size() ? inliers : std::vector<char>();
+
+	ImageProcessor::draw_optflow(query_image->image, optflow_image.image,
+			query_kpts, train_kpts, matches, inliers);
+
 	return 0;
 }
 
@@ -180,7 +271,6 @@ int MonoOdometer::drawMatchesImage()
 void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
 	query_timestamp = msg->header.stamp;
-	ROS_INFO("%lf",query_timestamp.toSec());
 	convertSensorMsgToImage(msg, query_image);
 
 	// Detect features and extract the features descriptors
@@ -194,20 +284,42 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 		if (matches.size() > 8)
 		{
-			mot_proc.matches2points(train_kpts,query_kpts,matches,train_pts,query_pts);
-			cv::Mat P;
-			mot_proc.estimate_motion(train_pts, query_pts, matches, camera_matrix, P);
+			mot_proc.matches2points(train_kpts, query_kpts, matches, train_pts,
+					query_pts);
+			mot_proc.estimate_motion(train_pts, query_pts, matches, K);
+			update_pose();
+		}
+		else{
+			/**
+			 * @todo What happens when it's not possible to estimate a motion? Kalman?
+			 */
 		}
 
-		update_pose();
+		/*
+		 * Publishing the transformation between the odometer and the robot
+		 * base link.
+		 */
+		odom_broadcaster.sendTransform(
+				tf::StampedTransform(pose, ros::Time::now(),
+						getOdometerReferenceFrame(), getRobotFrame()));
 
-		if(output_feature_advertiser.getNumSubscribers()>0){
-			drawFeatureImage();
-			output_feature_advertiser.publish(feature_image.toImageMsg());
-		}
-		if(output_matches_advertiser.getNumSubscribers()>0){
-			drawMatchesImage();
-			output_matches_advertiser.publish(matches_image.toImageMsg());
+		if (matches.size() > 8)
+		{
+			if (output_feature_advertiser.getNumSubscribers() > 0)
+			{
+				drawFeatureImage();
+				output_feature_advertiser.publish(feature_image.toImageMsg());
+			}
+			if (output_matches_advertiser.getNumSubscribers() > 0)
+			{
+				drawMatchesImage();
+				output_matches_advertiser.publish(matches_image.toImageMsg());
+			}
+			if (output_optflow_advertiser.getNumSubscribers() > 0)
+			{
+				drawOptFlowImage();
+				output_optflow_advertiser.publish(optflow_image.toImageMsg());
+			}
 		}
 	}
 

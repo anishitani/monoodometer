@@ -1,10 +1,3 @@
-/*
- * motion.cpp
- *
- *  Created on: Sep 26, 2012
- *      Author: nishitani
- */
-
 //TODO: Attribution of credits to the libviso2 library
 #include "motion_processor.h"
 
@@ -16,6 +9,17 @@ namespace LRM
 
 int MotionProcessorParameter::parse(ros::NodeHandle nh)
 {
+	double value_double;
+
+	nh.param<double>("RANSAC_EPIPOLAR_DIST", value_double, 3.0);
+	parameter["RANSAC_EPIPOLAR_DIST"] = value_double;
+
+	nh.param<double>("RANSAC_CONFIDENCE", value_double, 0.95);
+	parameter["RANSAC_CONFIDENCE"] = value_double;
+
+	ROS_DEBUG("FEATURE_TYPE = %f", boost::any_cast<double>(parameter["RANSAC_EPIPOLAR_DIST"]));
+	ROS_DEBUG("RANSAC_EPIPOLAR_DIST = %f", boost::any_cast<double>(parameter["RANSAC_EPIPOLAR_DIST"]));
+
 	return 0;
 }
 
@@ -24,6 +28,8 @@ int MotionProcessorParameter::parse(ros::NodeHandle nh)
 ///////////////////////////////////////////////////////////////////////
 MotionProcessor::MotionProcessor()
 {
+	confidence = 0.95;
+	epipolar_dist = 3.0;
 }
 
 MotionProcessor::~MotionProcessor()
@@ -33,6 +39,9 @@ MotionProcessor::~MotionProcessor()
 int MotionProcessor::setting(MotionProcessorParameter param)
 {
 	int MP_ERR_CODE = 0; //Error Code
+
+	epipolar_dist = param.getParameterByName<double>("RANSAC_EPIPOLAR_DIST");
+	confidence = param.getParameterByName<double>("RANSAC_CONFIDENCE");
 
 	return MP_ERR_CODE;
 }
@@ -67,13 +76,14 @@ void MotionProcessor::matches2points(const std::vector<cv::KeyPoint>& query,
 /**
  * @brief Estimates the rotation and translation between two frames.
  *
- * @param train		Previous analized frame.
- * @param query		Current analized frame.
- * @param K			Camera matrix.
+ * @param train_pts		Previous image feature points.
+ * @param query_pts		Current image feature points.
+ * @param matches		Matches previous and current feature points indexers.
+ * @param K				Intrinsic parameters matrix.
  */
 void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts, std::vector<cv::DMatch> matches,
-		cv::Mat K, cv::Mat &P)
+		cv::Mat K)
 {
 	//Normalization transformations
 	cv::Mat Tp, Tc;
@@ -94,7 +104,7 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 	}
 
 	F = compute_F_matrix(norm_train_pts, norm_query_pts);
-	if (F.empty())
+	if (!cv::countNonZero(F))
 	{
 		P = cv::Mat::eye(4, 4, CV_64F);
 		return;
@@ -131,7 +141,8 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 		}
 		mask_vec.push_back(_mask);
 	}
-	P = P_vec[pos](cv::Range::all(), cv::Range::all());
+
+	P = P_vec[pos];
 
 	inliers = mask_vec[pos];
 
@@ -191,8 +202,8 @@ cv::Mat MotionProcessor::compute_F_matrix(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts)
 {
 	cv::Mat mask;
-	cv::Mat F = cv::findFundamentalMat(train_pts, query_pts, cv::FM_RANSAC, 0.005,
-			0.99, mask);
+	cv::Mat F = cv::findFundamentalMat(train_pts, query_pts, cv::FM_RANSAC, 3,
+			0.95, mask);
 
 	inliers = std::vector<char>(mask);
 
@@ -236,22 +247,22 @@ std::vector<cv::Mat> MotionProcessor::compute_Rt(cv::Mat E, cv::Mat K)
 	// create vector containing all 4 solutions
 	std::vector<cv::Mat> P; //(4,Mat::eye(4,4,CV_64F));
 
-	cv::Mat P1 = cv::Mat::eye(3, 4, CV_64F);
+	cv::Mat P1 = cv::Mat::eye(4, 4, CV_64F);
 	Ra.copyTo(P1(cv::Range(0, 3), cv::Range(0, 3)));
 	tp.copyTo(P1(cv::Range(0, 3), cv::Range(3, 4)));
 	P.push_back(P1);
 
-	cv::Mat P2 = cv::Mat::eye(3, 4, CV_64F);
+	cv::Mat P2 = cv::Mat::eye(4, 4, CV_64F);
 	Ra.copyTo(P2(cv::Range(0, 3), cv::Range(0, 3)));
 	tn.copyTo(P2(cv::Range(0, 3), cv::Range(3, 4)));
 	P.push_back(P2);
 
-	cv::Mat P3 = cv::Mat::eye(3, 4, CV_64F);
+	cv::Mat P3 = cv::Mat::eye(4, 4, CV_64F);
 	Rb.copyTo(P3(cv::Range(0, 3), cv::Range(0, 3)));
 	tp.copyTo(P3(cv::Range(0, 3), cv::Range(3, 4)));
 	P.push_back(P3);
 
-	cv::Mat P4 = cv::Mat::eye(3, 4, CV_64F);
+	cv::Mat P4 = cv::Mat::eye(4, 4, CV_64F);
 	Rb.copyTo(P4(cv::Range(0, 3), cv::Range(0, 3)));
 	tn.copyTo(P4(cv::Range(0, 3), cv::Range(3, 4)));
 	P.push_back(P4);
@@ -273,7 +284,7 @@ int MotionProcessor::triangulateCheck(std::vector<cv::Point2d> train_pts,
 
 	// projection matrices
 	P1 = K * cv::Mat::eye(3, 4, CV_64F);
-	P2 = K * P;
+	P2 = K * P(cv::Range(0,3),cv::Range::all());
 
 	// triangulation via orthogonal regression
 	for (int i = 0; i < (int) mask.size(); i++)
@@ -292,12 +303,12 @@ int MotionProcessor::triangulateCheck(std::vector<cv::Point2d> train_pts,
 
 		svd(A);
 
-		cv::Mat X(svd.vt.row(3));
+		cv::Mat X(svd.vt.row(3).t());
 
 		/* ******************** */
 		/* Checa a profundidade */
 		/* ******************** */
-		cv::Mat x1 = P1 * X.t(), x2 = P2 * X.t();
+		cv::Mat x1 = P1 * X, x2 = P2 * X;
 //		cv::Mat M1(P1, cv::Rect(0, 0, 3, 3)), M2(P2, cv::Rect(0, 0, 3, 3));
 //		int sign1 = cv::determinant(M1) > 0 ? 1 : -1, sign2 =
 //				cv::determinant(M2) > 0 ? 1 : -1;
@@ -313,12 +324,12 @@ int MotionProcessor::triangulateCheck(std::vector<cv::Point2d> train_pts,
 //		{
 //			mask[i] = (char) 0;
 //		}
-		if (x1.at<double>(2, 0) * X.at<double>(0, 3) > 0
-				&& x2.at<double>(2, 0) * X.at<double>(0, 3) > 0)
+		if (x1.at<double>(2, 0) * X.at<double>(3, 0) > 0
+				&& x2.at<double>(2, 0) * X.at<double>(3, 0) > 0)
 			num_inliers++;
 		/**************************/
 
-		X /= X.at<double>(0, 3);
+		X /= X.at<double>(3, 0);
 
 		X_vec.push_back(X);
 

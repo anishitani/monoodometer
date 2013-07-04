@@ -1,0 +1,49 @@
+.TH "LRM::ImageProcessorParameter" 3 "Wed Jul 3 2013" "Version 3.0" "Mono Odometer" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+LRM::ImageProcessorParameter \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <image_processor\&.h>\fP
+.PP
+Inherits \fBLRM::Parameter\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBImageProcessorParameter\fP ()"
+.br
+.ti -1c
+.RI "\fB~ImageProcessorParameter\fP ()"
+.br
+.ti -1c
+.RI "int \fBparse\fP (ros::NodeHandle nh)"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+List of parameter regarding ROS configuration for the launch file\&.
+.IP "\(bu" 2
+\fBFEATURE_TYPE:\fP Type of feature to be detected\&. (\fBDefault:\fP SIFT)
+.IP "\(bu" 2
+\fBMAX_NUM_FEATURE_PTS:\fP Maximum number of features to be detected\&. (\fBDefault:\fP 100)
+.IP "\(bu" 2
+\fBMATCH_RADIUS:\fP Radius used as a filter for the feature match\&. (\fBDefault:\fP 10\&.0) 
+.PP
+
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "\fBLRM::ImageProcessorParameter::ImageProcessorParameter\fP ()\fC [inline]\fP"
+.SS "\fBLRM::ImageProcessorParameter::~ImageProcessorParameter\fP ()\fC [inline]\fP"
+.SH "Member Function Documentation"
+.PP 
+.SS "int \fBLRM::ImageProcessorParameter::parse\fP (ros::NodeHandlenh)\fC [virtual]\fP"Image Processor \fBParameter\fP Class 
+.PP
+Implements \fBLRM::Parameter\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Mono Odometer from the source code\&.

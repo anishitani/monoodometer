@@ -1,0 +1,197 @@
+.TH "LRM::ImageProcessor" 3 "Wed Jul 3 2013" "Version 0.01" "Mono Odometer" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+LRM::ImageProcessor \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <image_processor\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBImageProcessor\fP ()"
+.br
+.ti -1c
+.RI "\fBImageProcessor\fP (\fBImageProcessorParameter\fP param)"
+.br
+.ti -1c
+.RI "virtual \fB~ImageProcessor\fP ()"
+.br
+.ti -1c
+.RI "int \fBsetting\fP (\fBImageProcessorParameter\fP param)"
+.br
+.ti -1c
+.RI "void \fBdetect_features\fP (cv::Mat image, std::vector< cv::KeyPoint > &kpts)"
+.br
+.ti -1c
+.RI "void \fBextract_features\fP (cv::Mat image, std::vector< cv::KeyPoint > &features, cv::Mat &descriptors)"
+.br
+.ti -1c
+.RI "void \fBmatch_features\fP (std::vector< cv::KeyPoint > queryKeyPoints, std::vector< cv::KeyPoint > trainKeyPoints, cv::Mat queryDescriptors, cv::Mat trainDescriptors, std::vector< cv::DMatch > &matches)"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static int \fBShiTomasiCorner\fP (cv::Ptr< cv::FeatureDetector > det, cv::Mat src, std::vector< cv::KeyPoint > &arrayOfFeatures)"
+.br
+.ti -1c
+.RI "static int \fBHarrisCorner\fP (cv::Ptr< cv::FeatureDetector > det, cv::Mat src, std::vector< cv::KeyPoint > &arrayOfFeatures)"
+.br
+.ti -1c
+.RI "static int \fBORB_Detector\fP (cv::Ptr< cv::FeatureDetector > det, cv::Mat src, std::vector< cv::KeyPoint > &arrayOfFeatures)"
+.br
+.ti -1c
+.RI "static int \fBFAST_Detector\fP (cv::Ptr< cv::FeatureDetector > det, cv::Mat src, std::vector< cv::KeyPoint > &arrayOfFeatures)"
+.br
+.ti -1c
+.RI "static int \fBSURF_Detector\fP (cv::Ptr< cv::FeatureDetector > det, cv::Mat src, std::vector< cv::KeyPoint > &arrayOfFeatures)"
+.br
+.ti -1c
+.RI "static int \fBdraw_feature\fP (cv::Mat inImage, cv::Mat &outImage, std::vector< cv::KeyPoint > kpts)"
+.br
+.ti -1c
+.RI "static int \fBdraw_matches\fP (cv::Mat inQueryImage, std::vector< cv::KeyPoint > query_kpts, cv::Mat inTrainImage, std::vector< cv::KeyPoint > train_kpts, std::vector< cv::DMatch > matches, cv::Mat &outPairImage, std::vector< char > mask)"
+.br
+.ti -1c
+.RI "static int \fBdraw_optflow\fP (const cv::Mat inImage, cv::Mat &outImage, const std::vector< cv::KeyPoint > &query, const std::vector< cv::KeyPoint > &train, std::vector< cv::DMatch > &matches, const std::vector< char > &mask)"
+.br
+.in -1c
+.SS "Private Attributes"
+
+.in +1c
+.ti -1c
+.RI "cv::Ptr< cv::FeatureDetector > \fBdetector\fP"
+.br
+.ti -1c
+.RI "cv::Ptr< cv::DescriptorExtractor > \fBextractor\fP"
+.br
+.ti -1c
+.RI "cv::Ptr< cv::DescriptorMatcher > \fBmatcher\fP"
+.br
+.ti -1c
+.RI "int \fBmaxNumberOfFeatures\fP"
+.br
+.ti -1c
+.RI "\fBfeature_t\fP \fBfeature_type\fP"
+.br
+.in -1c
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "\fBLRM::ImageProcessor::ImageProcessor\fP ()"Image Processor Class 
+.SS "\fBLRM::ImageProcessor::ImageProcessor\fP (\fBImageProcessorParameter\fPparam)"
+.SS "\fBLRM::ImageProcessor::~ImageProcessor\fP ()\fC [virtual]\fP"
+.SH "Member Function Documentation"
+.PP 
+.SS "void \fBLRM::ImageProcessor::detect_features\fP (cv::Matimage, std::vector< cv::KeyPoint > &kpts)"Method detect:
+.PP
+\fBParameters:\fP
+.RS 4
+\fIf\fP Base frame for feature detection 
+.RE
+.PP
+
+.SS "int \fBLRM::ImageProcessor::draw_feature\fP (cv::MatinImage, cv::Mat &outImage, std::vector< cv::KeyPoint >kpts)\fC [static]\fP"
+.SS "int \fBLRM::ImageProcessor::draw_matches\fP (cv::MatinQueryImage, std::vector< cv::KeyPoint >query_kpts, cv::MatinTrainImage, std::vector< cv::KeyPoint >train_kpts, std::vector< cv::DMatch >matches, cv::Mat &outPairImage, std::vector< char >mask)\fC [static]\fP"
+.SS "int \fBLRM::ImageProcessor::draw_optflow\fP (const cv::MatinImage, cv::Mat &outImage, const std::vector< cv::KeyPoint > &query, const std::vector< cv::KeyPoint > &train, std::vector< cv::DMatch > &matches, const std::vector< char > &mask = \fCstd::vector<char>()\fP)\fC [static]\fP"
+.SS "void \fBLRM::ImageProcessor::extract_features\fP (cv::Matimage, std::vector< cv::KeyPoint > &features, cv::Mat &descriptors)"Method extract:
+.PP
+\fBParameters:\fP
+.RS 4
+\fIf\fP Base frame for feature description extraction 
+.RE
+.PP
+
+.SS "int \fBLRM::ImageProcessor::FAST_Detector\fP (cv::Ptr< cv::FeatureDetector >det, cv::Matsrc, std::vector< cv::KeyPoint > &arrayOfFeatures)\fC [static]\fP"Method FAST: \fBFeature\fP detection using FAST methods for corner detection\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsrc\fP Input image 
+.br
+\fIarrayOfFeatures\fP Array of detected features 
+.RE
+.PP
+
+.SS "int \fBLRM::ImageProcessor::HarrisCorner\fP (cv::Ptr< cv::FeatureDetector >det, cv::Matsrc, std::vector< cv::KeyPoint > &arrayOfFeatures)\fC [static]\fP"Method HarrisCorner: \fBFeature\fP detection using either Harris or Shi-Tomasi methods for corner detection\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsrc\fP Input image 
+.br
+\fIarrayOfFeatures\fP Array of detected features 
+.RE
+.PP
+
+.SS "void \fBLRM::ImageProcessor::match_features\fP (std::vector< cv::KeyPoint >queryKeyPoints, std::vector< cv::KeyPoint >trainKeyPoints, cv::MatqueryDescriptors, cv::MattrainDescriptors, std::vector< cv::DMatch > &matches)"Method match_features:
+.PP
+\fBParameters:\fP
+.RS 4
+\fIqueryKeyPoints\fP 
+.br
+\fItrainKeyPoints\fP 
+.br
+\fIqueryDescriptors\fP 
+.br
+\fItrainDescriptors\fP 
+.br
+\fImatches\fP 
+.RE
+.PP
+
+.SS "int \fBLRM::ImageProcessor::ORB_Detector\fP (cv::Ptr< cv::FeatureDetector >det, cv::Matsrc, std::vector< cv::KeyPoint > &arrayOfFeatures)\fC [static]\fP"Method ORB: \fBFeature\fP detection using SURF methods for corner detection\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsrc\fP Input image 
+.br
+\fIarrayOfFeatures\fP Array of detected features 
+.RE
+.PP
+
+.SS "int \fBLRM::ImageProcessor::setting\fP (\fBImageProcessorParameter\fPparam)"Method setting:
+.PP
+\fBParameters:\fP
+.RS 4
+\fIparam\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+.RE
+.PP
+
+.SS "int \fBLRM::ImageProcessor::ShiTomasiCorner\fP (cv::Ptr< cv::FeatureDetector >det, cv::Matsrc, std::vector< cv::KeyPoint > &arrayOfFeatures)\fC [static]\fP"Method ShiTomasiCorner: \fBFeature\fP detection using either Harris or Shi-Tomasi methods for corner detection\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsrc\fP Input image 
+.br
+\fIarrayOfFeatures\fP Array of detected features 
+.RE
+.PP
+
+.SS "int \fBLRM::ImageProcessor::SURF_Detector\fP (cv::Ptr< cv::FeatureDetector >det, cv::Matsrc, std::vector< cv::KeyPoint > &arrayOfFeatures)\fC [static]\fP"Method SURF: \fBFeature\fP detection using SURF methods for corner detection\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIsrc\fP Input image 
+.br
+\fIarrayOfFeatures\fP Array of detected features 
+.RE
+.PP
+
+.SH "Member Data Documentation"
+.PP 
+.SS "cv::Ptr<cv::FeatureDetector> \fBLRM::ImageProcessor::detector\fP\fC [private]\fP"
+.SS "cv::Ptr<cv::DescriptorExtractor> \fBLRM::ImageProcessor::extractor\fP\fC [private]\fP"
+.SS "\fBfeature_t\fP \fBLRM::ImageProcessor::feature_type\fP\fC [private]\fP"
+.SS "cv::Ptr<cv::DescriptorMatcher> \fBLRM::ImageProcessor::matcher\fP\fC [private]\fP"
+.SS "int \fBLRM::ImageProcessor::maxNumberOfFeatures\fP\fC [private]\fP"
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Mono Odometer from the source code\&.

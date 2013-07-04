@@ -8,7 +8,7 @@
  -->
  	<node pkg="tf" type="static_transform_publisher" name="camera_baselink_broadcaster" args="0 0 0 -1.57079632679 0 -1.57079632679  base_link camera 100" /> 	
 	<node name="motion_test" pkg="mono_odometer" type="motion_test" output="screen">  
-		<param name="base_path" value="/home/nishitani/Dropbox/usp/ros/mono_odometer_bkp/dataset/mesa/10/"/>
+		<param name="base_path" value="/home/nishitani/Dropbox/usp/ros/mono_odometer_bkp/dataset/rua/04/"/>
 		<param name="calib_path" value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml"/>
 		<param name="extension" value=".jpg"/>
 		<param name="feature_type" value="0"/>

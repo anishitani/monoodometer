@@ -1,0 +1,144 @@
+.TH "LRM::MotionProcessor" 3 "Wed Jul 3 2013" "Version 3.0" "Mono Odometer" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+LRM::MotionProcessor \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <motion_processor\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBMotionProcessor\fP ()"
+.br
+.ti -1c
+.RI "virtual \fB~MotionProcessor\fP ()"
+.br
+.ti -1c
+.RI "int \fBsetting\fP (\fBMotionProcessorParameter\fP param)"
+.br
+.ti -1c
+.RI "void \fBmatches2points\fP (const std::vector< cv::KeyPoint > &query, const std::vector< cv::KeyPoint > &train, const std::vector< cv::DMatch > &matches, std::vector< cv::Point2d > &\fBquery_pts\fP, std::vector< cv::Point2d > &\fBtrain_pts\fP)"
+.br
+.ti -1c
+.RI "void \fBestimate_motion\fP (std::vector< cv::Point2d > \fBtrain_pts\fP, std::vector< cv::Point2d > \fBquery_pts\fP, std::vector< cv::DMatch > matches, cv::Mat K)"
+.br
+.RI "\fIEstimates the rotation and translation between two frames\&. \fP"
+.ti -1c
+.RI "bool \fBfeature_point_normalization\fP (std::vector< cv::Point2d > \fBquery_pts\fP, std::vector< cv::Point2d > \fBtrain_pts\fP, std::vector< cv::Point2d > &norm_query_pts, std::vector< cv::Point2d > &norm_train_pts, cv::Mat &Tc, cv::Mat &Tp)"
+.br
+.ti -1c
+.RI "cv::Mat \fBcompute_F_matrix\fP (std::vector< cv::Point2d > \fBtrain_pts\fP, std::vector< cv::Point2d > \fBquery_pts\fP)"
+.br
+.ti -1c
+.RI "std::vector< cv::Mat > \fBcompute_Rt\fP (cv::Mat E, cv::Mat K)"
+.br
+.ti -1c
+.RI "int \fBtriangulateCheck\fP (std::vector< cv::Point2d > \fBtrain_pts\fP, std::vector< cv::Point2d > \fBquery_pts\fP, cv::Mat &K, cv::Mat \fBP\fP, std::vector< char > mask=std::vector< char >())"
+.br
+.ti -1c
+.RI "int \fBcheiralityCheck\fP (cv::Mat P2, cv::Mat K, std::vector< cv::Point2d > pp, std::vector< cv::Point2d > pc)"
+.br
+.ti -1c
+.RI "cv::Mat \fBRodrigues\fP (cv::Vec3d omega, double theta=-1)"
+.br
+.ti -1c
+.RI "double \fBtriple_product\fP (cv::Vec3d a, cv::Vec3d b, cv::Vec3d c)"
+.br
+.ti -1c
+.RI "cv::Mat \fBskew\fP (cv::Vec3d a)"
+.br
+.ti -1c
+.RI "std::vector< char > \fBgetInlierMask\fP ()"
+.br
+.ti -1c
+.RI "cv::Mat \fBgetCameraMatrix\fP ()"
+.br
+.in -1c
+.SS "Private Attributes"
+
+.in +1c
+.ti -1c
+.RI "std::vector< char > \fBinliers\fP"
+.br
+.ti -1c
+.RI "std::vector< cv::Point2d > \fBtrain_pts\fP"
+.br
+.ti -1c
+.RI "std::vector< cv::Point2d > \fBquery_pts\fP"
+.br
+.ti -1c
+.RI "cv::Mat \fBP\fP"
+.br
+.ti -1c
+.RI "double \fBconfidence\fP"
+.br
+.ti -1c
+.RI "double \fBepipolar_dist\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Motion Processor Class 
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "\fBLRM::MotionProcessor::MotionProcessor\fP ()"Motion Processor Class 
+.SS "\fBLRM::MotionProcessor::~MotionProcessor\fP ()\fC [virtual]\fP"
+.SH "Member Function Documentation"
+.PP 
+.SS "int \fBLRM::MotionProcessor::cheiralityCheck\fP (cv::MatP2, cv::MatK, std::vector< cv::Point2d >pp, std::vector< cv::Point2d >pc)"
+.SS "cv::Mat \fBLRM::MotionProcessor::compute_F_matrix\fP (std::vector< cv::Point2d >train_pts, std::vector< cv::Point2d >query_pts)"
+.SS "std::vector< cv::Mat > \fBLRM::MotionProcessor::compute_Rt\fP (cv::MatE, cv::MatK)"
+.SS "void \fBLRM::MotionProcessor::estimate_motion\fP (std::vector< cv::Point2d >train_pts, std::vector< cv::Point2d >query_pts, std::vector< cv::DMatch >matches, cv::MatK)"
+.PP
+Estimates the rotation and translation between two frames\&. \fBParameters:\fP
+.RS 4
+\fItrain_pts\fP Previous image feature points\&. 
+.br
+\fIquery_pts\fP Current image feature points\&. 
+.br
+\fImatches\fP Matches previous and current feature points indexers\&. 
+.br
+\fIK\fP Intrinsic parameters matrix\&. 
+.RE
+.PP
+
+.SS "bool \fBLRM::MotionProcessor::feature_point_normalization\fP (std::vector< cv::Point2d >query_pts, std::vector< cv::Point2d >train_pts, std::vector< cv::Point2d > &norm_query_pts, std::vector< cv::Point2d > &norm_train_pts, cv::Mat &Tc, cv::Mat &Tp)"
+.SS "cv::Mat \fBLRM::MotionProcessor::getCameraMatrix\fP ()\fC [inline]\fP"
+.SS "std::vector<char> \fBLRM::MotionProcessor::getInlierMask\fP ()\fC [inline]\fP"
+.SS "void \fBLRM::MotionProcessor::matches2points\fP (const std::vector< cv::KeyPoint > &query, const std::vector< cv::KeyPoint > &train, const std::vector< cv::DMatch > &matches, std::vector< cv::Point2d > &query_pts, std::vector< cv::Point2d > &train_pts)"matches2points: Tranform the keypoints matched in a matched list of points\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIquery\fP Current set of keypoints\&. 
+.br
+\fItrain\fP Last set of keypoints\&. 
+.br
+\fImatches\fP Matches between the current and last keypoints\&. 
+.br
+\fIquery_pts\fP Current set of 2D points\&. 
+.br
+\fItrain_pts\fP Last set of 2D points\&. 
+.RE
+.PP
+
+.SS "cv::Mat \fBLRM::MotionProcessor::Rodrigues\fP (cv::Vec3domega, doubletheta = \fC-1\fP)"
+.SS "int \fBLRM::MotionProcessor::setting\fP (\fBMotionProcessorParameter\fPparam)"
+.SS "cv::Mat \fBLRM::MotionProcessor::skew\fP (cv::Vec3da)"
+.SS "int \fBLRM::MotionProcessor::triangulateCheck\fP (std::vector< cv::Point2d >train_pts, std::vector< cv::Point2d >query_pts, cv::Mat &K, cv::MatP, std::vector< char >mask = \fCstd::vector<char>()\fP)"
+.SS "double \fBLRM::MotionProcessor::triple_product\fP (cv::Vec3da, cv::Vec3db, cv::Vec3dc)"
+.SH "Member Data Documentation"
+.PP 
+.SS "double \fBLRM::MotionProcessor::confidence\fP\fC [private]\fP"
+.SS "double \fBLRM::MotionProcessor::epipolar_dist\fP\fC [private]\fP"
+.SS "std::vector<char> \fBLRM::MotionProcessor::inliers\fP\fC [private]\fP"
+.SS "cv::Mat \fBLRM::MotionProcessor::P\fP\fC [private]\fP"
+.SS "std::vector<cv::Point2d> \fBLRM::MotionProcessor::query_pts\fP\fC [private]\fP"
+.SS "std::vector<cv::Point2d> \fBLRM::MotionProcessor::train_pts\fP\fC [private]\fP"
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Mono Odometer from the source code\&.

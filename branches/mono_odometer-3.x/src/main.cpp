@@ -5,6 +5,23 @@
  *      Author: nishitani
  */
 
+/*! \mainpage Mono Odometer Package Index Page
+ *
+ * \section intro_sec Introduction
+ *
+ * This is odometry package. The Mono Odometer package process monocular images
+ * and estimate the motion.
+ *
+ * This is a ROS package.
+ *
+ * \section usage_sec Usage
+ *
+ * The package can run without setting parameters. Default parameter configuration
+ * will be used.
+ *
+ * The use of a launch is recommended as a tool for parameter setting.
+ */
+
 #include <ros/ros.h>
 
 #include "mono_odometer.h"

@@ -1,10 +1,3 @@
-/*
- * motion.h
- *
- *  Created on: Sep 26, 2012
- *      Author: nishitani
- */
-
 #ifndef MOTION_H_
 #define MOTION_H_
 
@@ -32,11 +25,22 @@ public:
 
 };
 
+///////////////////////////////////////////////////////////////////////
+/**						Motion Processor Class						**/
+///////////////////////////////////////////////////////////////////////
 class MotionProcessor
 {
 private:
 	std::vector<char> inliers;
 	std::vector<cv::Point2d> train_pts, query_pts;
+
+	cv::Mat P;
+
+	/*
+	 * RANSAC Parameters
+	 */
+	double confidence;
+	double epipolar_dist;
 
 public:
 	MotionProcessor();
@@ -51,7 +55,7 @@ public:
 			std::vector<cv::Point2d> &train_pts);
 	void estimate_motion(std::vector<cv::Point2d> train_pts,
 			std::vector<cv::Point2d> query_pts, std::vector<cv::DMatch> matches,
-			cv::Mat K, cv::Mat &P);
+			cv::Mat K);
 	bool feature_point_normalization(std::vector<cv::Point2d> query_pts,
 			std::vector<cv::Point2d> train_pts,
 			std::vector<cv::Point2d> &norm_query_pts,
@@ -70,6 +74,7 @@ public:
 
 	//gets
 	std::vector<char> getInlierMask(){ return inliers; }
+	cv::Mat getCameraMatrix(){ return P; }
 };
 
 } /* namespace LRM */

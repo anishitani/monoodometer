@@ -5,13 +5,13 @@
  *      Author: nishitani
  */
 
-#include "core.h"
-#include "cv_bridge/cv_bridge.h"
-#include "opencv2/calib3d/calib3d.hpp"
-#include "opencv2/highgui/highgui.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/nonfree/nonfree.hpp"
+#include <core.h>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/nonfree/nonfree.hpp>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <nav_msgs/Odometry.h>
@@ -699,7 +699,7 @@ int main(int argc, char** argv)
 				double cx = cos(rx), cy = cos(ry), cz = cos(rz), sx = sin(rx),
 						sy = sin(ry), sz = sin(rz);
 
-//				std::cout << P << std::endl;
+				std::cout << P << std::endl;
 
 				Mat C(4, 4, CV_64F);
 				C.at<double>(0, 0) = +cy * cz;
@@ -719,7 +719,7 @@ int main(int argc, char** argv)
 				C.at<double>(3, 2) = 0;
 				C.at<double>(3, 3) = 1;
 
-//				std::cout << C << std::endl;
+				std::cout << C << std::endl;
 
 				C = C.inv();
 

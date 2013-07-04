@@ -7,7 +7,12 @@
 namespace LRM
 {
 
-#define DEFAULT_RADIUS 10.0
+/**
+ *  List of parameter regarding ROS configuration for the launch file.
+ *  	- @b FEATURE_TYPE: Type of feature to be detected. (@b Default: SIFT)
+ *  	- @b MAX_NUM_FEATURE_PTS: Maximum number of features to be detected. (@b Default: 100)
+ *  	- @b MATCH_RADIUS: Radius used as a filter for the feature match. (@b Default: 10.0)
+ */
 
 class ImageProcessorParameter: public Parameter
 {
@@ -38,7 +43,7 @@ private:
 
 	int maxNumberOfFeatures;
 	feature_t feature_type;
-//	double radius;
+	double radius;
 
 public:
 	ImageProcessor();
@@ -81,7 +86,12 @@ public:
 	static int draw_matches(cv::Mat inQueryImage,
 			std::vector<cv::KeyPoint> query_kpts, cv::Mat inTrainImage,
 			std::vector<cv::KeyPoint> train_kpts,
-			std::vector<cv::DMatch> matches, cv::Mat &outPairImage, std::vector<char> mask);
+			std::vector<cv::DMatch> matches, cv::Mat &outPairImage,
+			std::vector<char> mask);
+	static int draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
+			const std::vector<cv::KeyPoint>& query,
+			const std::vector<cv::KeyPoint>& train,
+			std::vector<cv::DMatch>& matches, const std::vector<char>& mask);
 };
 
 } /* namespace LRM */

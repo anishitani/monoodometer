@@ -1,18 +1,20 @@
 <launch>
-	<!-- <param name="/use_sim_time" value="true"/> <node name="rviz" pkg="rviz" 
-		type="rviz"/> -->
+	<!-- param name="/use_sim_time" value="true"/ --> 
+	<!-- node name="rviz" pkg="rviz" type="rviz"/ --> 
 	<!-- node pkg="tf" type="static_transform_publisher" name="map_broadcaster" 
 		args="0 0 0 0 0 0 /world /map 30" output="screen" / -->
 	<!-- node pkg="webcam" type="webcam" name="webcam_test"/ -->
-	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer"
-		output="screen">
-		
-		<param name="CAMERA_MATRIX_PATH"
+	<node pkg="tf" type="static_transform_publisher" name="camera_baselink_broadcaster" args="0 0 0 -1.57079632679 0 -1.57079632679  base_link camera 100" /> 	
+	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer" output="screen">
+	
+		<param name="INTRINSIC_MATRIX_PATH"
 			value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml" />
-		<param name="INPUT_IMAGE_TOPIC" value="/StereoCam/imageLeft" />
-		<!-- param name="FEATURE_IMAGE_TOPIC" value="image/feature" / -->
-		<!-- param name="MATCHES_IMAGE_TOPIC" value="image/matches" / -->
-		
+		<param name="INPUT_IMAGE_TOPIC" value="/camera/rgb/image_color" />
+		<param name="RANSAC_EPIPOLAR_DIST" value="1.0" />
+		<param name="RANSAC_CONFIDENCE" value="0.97" />
+		<param name="MATCH_RADIUS" value="70.0" />
+	
 	</node>
 
 </launch>
+

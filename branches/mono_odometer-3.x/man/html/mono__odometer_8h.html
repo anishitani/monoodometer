@@ -101,17 +101,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">include/mono_odometer.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;ros/ros.h&gt;</code><br/>
-<code>#include &lt;cv_bridge/cv_bridge.h&gt;</code><br/>
-<code>#include &lt;image_transport/image_transport.h&gt;</code><br/>
-<code>#include &quot;<a class="el" href="frame_8h_source.html">frame.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="motion_8h_source.html">motion.h</a>&quot;</code><br/>
+<div class="textblock"><code>#include &quot;<a class="el" href="core_8h_source.html">core.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="parameter_8h_source.html">parameter.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="image__processor_8h_source.html">image_processor.h</a>&quot;</code><br/>
+<code>#include &quot;<a class="el" href="motion__processor_8h_source.html">motion_processor.h</a>&quot;</code><br/>
+<code>#include &lt;fstream&gt;</code><br/>
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for mono_odometer.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="mono__odometer_8h__incl.png" border="0" usemap="#include_2mono__odometer_8h" alt=""/></div>
 <map name="include_2mono__odometer_8h" id="include_2mono__odometer_8h">
-<area shape="rect" id="node9" href="frame_8h.html" title="frame.h" alt="" coords="445,83,512,112"/><area shape="rect" id="node14" href="motion_8h.html" title="motion.h" alt="" coords="536,83,608,112"/></map>
+<area shape="rect" id="node3" href="core_8h.html" title="core.h" alt="" coords="1765,237,1824,267"/><area shape="rect" id="node43" href="parameter_8h.html" title="parameter.h" alt="" coords="1796,160,1887,189"/><area shape="rect" id="node46" href="image__processor_8h.html" title="image_processor.h" alt="" coords="1679,83,1809,112"/><area shape="rect" id="node50" href="motion__processor_8h.html" title="motion_processor.h" alt="" coords="1884,83,2020,112"/></map>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
@@ -125,6 +125,7 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLRM_1_1ROSParameter.html">LRM::ROSParameter</a></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classLRM_1_1MonoOdometer.html">LRM::MonoOdometer</a></td></tr>
 <tr><td colspan="2"><h2><a name="namespaces"></a>
 Namespaces</h2></td></tr>
@@ -137,7 +138,7 @@ Namespaces</h2></td></tr>
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Enumerator</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Defines</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -150,7 +151,7 @@ Namespaces</h2></td></tr>
     <ul>
       <li class="navelem"><a class="el" href="mono__odometer_8h.html">mono_odometer.h</a>      </li>
 
-    <li class="footer">Generated on Wed Sep 26 2012 16:02:55 for Mono Odometer by
+    <li class="footer">Generated on Wed Jul 3 2013 11:45:23 for Mono Odometer by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.6.1 </li>
    </ul>

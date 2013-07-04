@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['main',['main',['../feature__test_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;feature_test.cpp'],['../main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;main.cpp']]],
-  ['match',['match',['../classLRM_1_1Frame.html#a32abb5b5830bb7656b7234fe5ba92ef3',1,'LRM::Frame']]],
-  ['monoodometer',['MonoOdometer',['../classLRM_1_1MonoOdometer.html#a5088d327dfc86716a7886bb222ab7a3b',1,'LRM::MonoOdometer']]],
-  ['motion',['Motion',['../classLRM_1_1Motion.html#a42e6da69a192faa122baca4c4a3e558a',1,'LRM::Motion']]]
+  ['main',['main',['../feature__test_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;feature_test.cpp'],['../main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;main.cpp'],['../motion__test_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;motion_test.cpp']]],
+  ['match_5ffeatures',['match_features',['../classLRM_1_1ImageProcessor.html#a052b76bc4809897573ac3a0a3bf11ca8',1,'LRM::ImageProcessor']]],
+  ['matches2points',['matches2points',['../classLRM_1_1MotionProcessor.html#a2fa4b7f533a12a88058a63b87ad96f4a',1,'LRM::MotionProcessor::matches2points()'],['../motion__test_8cpp.html#aa7da89edf4c44153075d4084a5eccc4c',1,'matches2points():&#160;motion_test.cpp']]],
+  ['monoodometer',['MonoOdometer',['../classLRM_1_1MonoOdometer.html#a1ea1f329885905fcab0e3f790253df9d',1,'LRM::MonoOdometer::MonoOdometer()'],['../classLRM_1_1MonoOdometer.html#ae849abdcd3e0b49be6b1672b292c86ba',1,'LRM::MonoOdometer::MonoOdometer(ros::NodeHandle &amp;nh, image_transport::ImageTransport &amp;it)']]],
+  ['motionprocessor',['MotionProcessor',['../classLRM_1_1MotionProcessor.html#a76c8a7c000e36f3cb5c5f44b10440a85',1,'LRM::MotionProcessor']]],
+  ['motionprocessorparameter',['MotionProcessorParameter',['../classLRM_1_1MotionProcessorParameter.html#a755180a791ef857695b4484b1e887cfe',1,'LRM::MotionProcessorParameter']]]
 ];

@@ -1,4 +1,4 @@
-.TH "include/mono_odometer.h" 3 "Wed Sep 26 2012" "Version 0.01" "Mono Odometer" \" -*- nroff -*-
+.TH "include/mono_odometer.h" 3 "Wed Jul 3 2013" "Version 0.01" "Mono Odometer" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -6,20 +6,23 @@ include/mono_odometer.h \-
 .SH SYNOPSIS
 .br
 .PP
-\fC#include <ros/ros\&.h>\fP
+\fC#include 'core\&.h'\fP
 .br
-\fC#include <cv_bridge/cv_bridge\&.h>\fP
+\fC#include 'parameter\&.h'\fP
 .br
-\fC#include <image_transport/image_transport\&.h>\fP
+\fC#include 'image_processor\&.h'\fP
 .br
-\fC#include 'frame\&.h'\fP
+\fC#include 'motion_processor\&.h'\fP
 .br
-\fC#include 'motion\&.h'\fP
+\fC#include <fstream>\fP
 .br
 
 .SS "Classes"
 
 .in +1c
+.ti -1c
+.RI "class \fBLRM::ROSParameter\fP"
+.br
 .ti -1c
 .RI "class \fBLRM::MonoOdometer\fP"
 .br

@@ -106,16 +106,17 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &lt;ros/ros.h&gt;</code><br/>
 <code>#include &lt;image_transport/image_transport.h&gt;</code><br/>
 <code>#include &lt;sensor_msgs/Image.h&gt;</code><br/>
-<code>#include &lt;opencv2/imgproc/imgproc.hpp&gt;</code><br/>
-<code>#include &lt;opencv2/highgui/highgui.hpp&gt;</code><br/>
+<code>#include &quot;opencv2/calib3d/calib3d.hpp&quot;</code><br/>
+<code>#include &quot;opencv2/highgui/highgui.hpp&quot;</code><br/>
+<code>#include &quot;opencv2/imgproc/imgproc.hpp&quot;</code><br/>
+<code>#include &quot;opencv2/features2d/features2d.hpp&quot;</code><br/>
+<code>#include &quot;opencv2/nonfree/nonfree.hpp&quot;</code><br/>
 <code>#include &lt;cv_bridge/cv_bridge.h&gt;</code><br/>
-<code>#include &quot;<a class="el" href="feature_8cpp.html">feature.cpp</a>&quot;</code><br/>
+<code>#include &quot;feature.cpp&quot;</code><br/>
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for feature_test.cpp:</div>
 <div class="dyncontent">
 <div class="center"><img src="feature__test_8cpp__incl.png" border="0" usemap="#src_2feature__test_8cpp" alt=""/></div>
-<map name="src_2feature__test_8cpp" id="src_2feature__test_8cpp">
-<area shape="rect" id="node19" href="feature_8cpp.html" title="feature.cpp" alt="" coords="667,83,752,112"/><area shape="rect" id="node21" href="feature_8h.html" title="feature.h" alt="" coords="673,160,745,189"/></map>
 </div>
 </div><table class="memberdecls">
 <tr><td colspan="2"><h2><a name="func-members"></a>
@@ -125,7 +126,8 @@ Functions</h2></td></tr>
 <tr><td colspan="2"><h2><a name="var-members"></a>
 Variables</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">image_transport::Subscriber&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="feature__test_8cpp.html#a58a95828fcf20295c1f5b3a4f6d9974c">sub</a></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">image_transport::Publisher&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="feature__test_8cpp.html#aa3018a2730fde05a0032471af5d5dff2">pub</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">image_transport::Publisher&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="feature__test_8cpp.html#a83ff9d53a783c698e5eeffa0330d8835">corner_pub</a></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">image_transport::Publisher&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="feature__test_8cpp.html#aa11fe387ab41c5fe07c13071f2c9ec81">sift_pub</a></td></tr>
 </table>
 <hr/><h2>Function Documentation</h2>
 <a class="anchor" id="a54774dab71cf969f8b85a03bb9741d2d"></a><!-- doxytag: member="feature_test.cpp::ImageCb" ref="a54774dab71cf969f8b85a03bb9741d2d" args="(const sensor_msgs::ImageConstPtr &amp;msg)" -->
@@ -142,9 +144,6 @@ Variables</h2></td></tr>
       </table>
 </div>
 <div class="memdoc">
-<p>Parameters for Shi-Tomasi algorithm</p>
-<p>Apply corner detection</p>
-<p>Draw corners detected </p>
 
 </div>
 </div>
@@ -153,7 +152,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="main_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> </td>
+          <td class="memname">int <a class="el" href="motion__test_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627">main</a> </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>argc</em>, </td>
@@ -186,12 +185,25 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <hr/><h2>Variable Documentation</h2>
-<a class="anchor" id="aa3018a2730fde05a0032471af5d5dff2"></a><!-- doxytag: member="feature_test.cpp::pub" ref="aa3018a2730fde05a0032471af5d5dff2" args="" -->
+<a class="anchor" id="a83ff9d53a783c698e5eeffa0330d8835"></a><!-- doxytag: member="feature_test.cpp::corner_pub" ref="a83ff9d53a783c698e5eeffa0330d8835" args="" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">image_transport::Publisher <a class="el" href="feature__test_8cpp.html#aa3018a2730fde05a0032471af5d5dff2">pub</a></td>
+          <td class="memname">image_transport::Publisher <a class="el" href="feature__test_8cpp.html#a83ff9d53a783c698e5eeffa0330d8835">corner_pub</a></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa11fe387ab41c5fe07c13071f2c9ec81"></a><!-- doxytag: member="feature_test.cpp::sift_pub" ref="aa11fe387ab41c5fe07c13071f2c9ec81" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">image_transport::Publisher <a class="el" href="feature__test_8cpp.html#aa11fe387ab41c5fe07c13071f2c9ec81">sift_pub</a></td>
         </tr>
       </table>
 </div>
@@ -219,7 +231,7 @@ Here is the call graph for this function:</div>
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Enumerator</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Defines</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -232,7 +244,7 @@ Here is the call graph for this function:</div>
     <ul>
       <li class="navelem"><a class="el" href="feature__test_8cpp.html">feature_test.cpp</a>      </li>
 
-    <li class="footer">Generated on Wed Sep 26 2012 16:02:56 for Mono Odometer by
+    <li class="footer">Generated on Wed Jul 3 2013 11:45:23 for Mono Odometer by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.7.6.1 </li>
    </ul>

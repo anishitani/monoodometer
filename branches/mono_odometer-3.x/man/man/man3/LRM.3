@@ -1,4 +1,4 @@
-.TH "LRM" 3 "Wed Sep 26 2012" "Version 0.01" "Mono Odometer" \" -*- nroff -*-
+.TH "LRM" 3 "Wed Jul 3 2013" "Version 0.01" "Mono Odometer" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -13,33 +13,32 @@ LRM \-
 .RI "class \fBFeature\fP"
 .br
 .ti -1c
-.RI "class \fBDescriptor\fP"
+.RI "class \fBImageProcessorParameter\fP"
 .br
 .ti -1c
-.RI "class \fBFrame\fP"
+.RI "class \fBImageProcessor\fP"
+.br
+.ti -1c
+.RI "class \fBROSParameter\fP"
 .br
 .ti -1c
 .RI "class \fBMonoOdometer\fP"
 .br
 .ti -1c
-.RI "class \fBMotion\fP"
-.br
-.in -1c
-.SS "Typedefs"
-
-.in +1c
-.ti -1c
-.RI "typedef cv::Point2f \fBFeature\fP"
+.RI "class \fBMotionProcessorParameter\fP"
 .br
 .ti -1c
-.RI "typedef cv::Rect \fBDescriptor\fP"
+.RI "class \fBMotionProcessor\fP"
+.br
+.ti -1c
+.RI "class \fBParameter\fP"
 .br
 .in -1c
 .SS "Enumerations"
 
 .in +1c
 .ti -1c
-.RI "enum \fBfeature_t\fP { \fBSHI_TOMASI\fP, \fBHARRIS\fP }"
+.RI "enum \fBfeature_t\fP { \fBSHI_TOMASI\fP, \fBHARRIS\fP, \fBORB\fP, \fBFAST\fP, \fBSURF\fP, \fBSIFT\fP, \fBNO_FEATURE\fP }"
 .br
 .RI "\fITypes of possible features\&. \fP"
 .ti -1c
@@ -47,10 +46,6 @@ LRM \-
 .br
 .RI "\fITypes of possible descriptors\&. \fP"
 .in -1c
-.SH "Typedef Documentation"
-.PP 
-.SS "typedef cv::Rect \fBLRM::Descriptor\fP"
-.SS "typedef cv::Point2f \fBLRM::Feature\fP"
 .SH "Enumeration Type Documentation"
 .PP 
 .SS "enum \fBLRM::descriptor_t\fP"
@@ -72,6 +67,16 @@ Types of possible features\&.
 \fB\fISHI_TOMASI \fP\fP
 .TP
 \fB\fIHARRIS \fP\fP
+.TP
+\fB\fIORB \fP\fP
+.TP
+\fB\fIFAST \fP\fP
+.TP
+\fB\fISURF \fP\fP
+.TP
+\fB\fISIFT \fP\fP
+.TP
+\fB\fINO_FEATURE \fP\fP
 
 .SH "Author"
 .PP 

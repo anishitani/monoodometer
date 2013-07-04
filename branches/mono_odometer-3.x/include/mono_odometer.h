@@ -19,9 +19,24 @@
 
 namespace LRM
 {
+/**
+ *  List of parameter regarding ROS configuration for the launch file.
+ *    - @b INTRINSIC_MATRIX_PATH: Path to the intrinsic matrix K file. (@b File @b format:YAML - @b Default: empty)
+ *    - @b INPUT_IMAGE_TOPIC: Topic name of the input image. (@b Default: /camera/image)
+ *    - @b FEATURE_IMAGE_TOPIC: Name of the topic where the output image with the features detect will be published. (@b Default: images/feature)
+ *    - @b MATCHES_IMAGE_TOPIC: Name of the topic where the output image with the features matched will be published. (@b Default: images/matches)
+ *    - @b OPTFLOW_IMAGE_TOPIC: Name of the topic where the output image with the feature displacement will be published. (@b Default: images/optflow)
+ *    - @b ODOMETRY_TOPIC: Name of the topic where the odometry will be published. (@b Default: odom)
+ *    - @b ODOMETER_REFERENCE_FRAME: Fixed frame used as reference for the odometer. (@b Default: odom)
+ *    - @b ROBOT_FRAME: The frame which all sensors are referenced to. Usually the base link. (@b Default: base_link)
+ *    - @b SENSOR_FRAME: The image capturing sensor frame. (@b Default: camera)
+ */
 
 class ROSParameter: public Parameter
 {
+
+
+
 public:
 	ROSParameter()
 	{
@@ -42,7 +57,7 @@ private:
 	ros::Time query_timestamp;
 	ros::Time train_timestamp;
 
-	cv::Mat camera_matrix;
+	cv::Mat K;
 	/* ********************************** */
 
 	/* *****ROS Variables******* */
@@ -50,6 +65,8 @@ private:
 	image_transport::Subscriber input_image_subscriber;
 	image_transport::Publisher output_feature_advertiser;
 	image_transport::Publisher output_matches_advertiser;
+	image_transport::Publisher output_optflow_advertiser;
+	ros::Publisher odometry_advertiser;
 	/* ************************* */
 
 	/* *****Image Variables***** */
@@ -61,6 +78,7 @@ private:
 	cv_bridge::CvImageConstPtr query_image; ///< Current image
 	cv_bridge::CvImage feature_image;
 	cv_bridge::CvImage matches_image;
+	cv_bridge::CvImage optflow_image;
 
 	std::vector<cv::KeyPoint> train_kpts; ///< Previous image keypoints
 	std::vector<cv::KeyPoint> query_kpts; ///< Current image keypoints
@@ -80,7 +98,11 @@ private:
 	MotionProcessorParameter mot_proc_parameter;
 
 	tf::Transform pose;
+	tf::StampedTransform base_to_sensor;
 	tf::TransformBroadcaster odom_broadcaster;
+	tf::TransformListener tf_listener;
+
+	nav_msgs::Odometry odometry;
 	/* ************************** */
 
 	int update_pose();
@@ -88,6 +110,7 @@ private:
 			cv_bridge::CvImageConstPtr &image);
 	int drawFeatureImage();
 	int drawMatchesImage();
+	int drawOptFlowImage();
 
 public:
 	MonoOdometer();
@@ -102,28 +125,18 @@ public:
 //			std::vector<cv::Point2d> &query_pts,
 //			std::vector<cv::Point2d> &train_pts);
 
-	bool isCameraMatrixPath()
+	bool isIntrinsicMatrixPath()
 	{
-		std::string camera_matrix_path = ros_parameter.getParameterByName<std::string>("CAMERA_MATRIX_PATH");
-		return camera_matrix_path.compare("")==0 ? false : true;
+		std::string intrinsic_matrix_path = ros_parameter.getParameterByName<
+				std::string>("INTRINSIC_MATRIX_PATH");
+		return intrinsic_matrix_path.compare("") == 0 ? false : true;
 
 	}
 
-	bool isCameraMatrixTopic()
-	{
-		return false;
-	}
-
-	std::string getCameraMatrixPath()
+	std::string getIntrinsicMatrixPath()
 	{
 		return ros_parameter.getParameterByName<std::string>(
-				"CAMERA_MATRIX_PATH");
-	}
-
-	std::string getCameraMatrixTopic()
-	{
-		return ros_parameter.getParameterByName<std::string>(
-				"CAMERA_MATRIX_TOPIC");
+				"INTRINSIC_MATRIX_PATH");
 	}
 
 	std::string getInputImageTopic()
@@ -144,6 +157,17 @@ public:
 				"MATCHES_IMAGE_TOPIC");
 	}
 
+	std::string getOptFlowImageTopic()
+	{
+		return ros_parameter.getParameterByName<std::string>(
+				"OPTFLOW_IMAGE_TOPIC");
+	}
+
+	std::string getOdometryTopic()
+	{
+		return ros_parameter.getParameterByName<std::string>("ODOMETRY_TOPIC");
+	}
+
 	std::string getOdometerReferenceFrame()
 	{
 		return ros_parameter.getParameterByName<std::string>(
@@ -152,8 +176,12 @@ public:
 
 	std::string getRobotFrame()
 	{
-		return ros_parameter.getParameterByName<std::string>(
-				"ROBOT_FRAME");
+		return ros_parameter.getParameterByName<std::string>("ROBOT_FRAME");
+	}
+
+	std::string getSensorFrame()
+	{
+		return ros_parameter.getParameterByName<std::string>("SENSOR_FRAME");
 	}
 };
 

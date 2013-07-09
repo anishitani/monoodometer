@@ -69,6 +69,12 @@ private:
 	ros::Publisher odometry_advertiser;
 	/* ************************* */
 
+	/**
+	 * @todo The Image Processor object will store the points,
+	 * descriptors, matches and any other data pertinent to the image
+	 * processing step.
+	 */
+
 	/* *****Image Variables***** */
 	ImageProcessor img_proc;
 
@@ -105,6 +111,8 @@ private:
 	nav_msgs::Odometry odometry;
 	/* ************************** */
 
+	bool find_rich_match();
+	bool find_optflow_match();
 	int update_pose();
 	int convertSensorMsgToImage(const sensor_msgs::ImageConstPtr &msg,
 			cv_bridge::CvImageConstPtr &image);

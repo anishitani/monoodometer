@@ -44,6 +44,7 @@ private:
 	int maxNumberOfFeatures;
 	feature_t feature_type;
 	double radius;
+	double match_error;
 
 public:
 	ImageProcessor();
@@ -66,9 +67,32 @@ public:
 	void detect_features(cv::Mat image, std::vector<cv::KeyPoint> &kpts);
 	void extract_features(cv::Mat image, std::vector<cv::KeyPoint> &features,
 			cv::Mat &descriptors);
-	void match_features(std::vector<cv::KeyPoint> queryKeyPoints,
-			std::vector<cv::KeyPoint> trainKeyPoints, cv::Mat queryDescriptors,
-			cv::Mat trainDescriptors, std::vector<cv::DMatch> &matches);
+	void match_features(cv::Mat queryDescriptors, cv::Mat trainDescriptors,
+			std::vector<cv::DMatch> &matches);
+
+	/**
+	 * @brief Based on the matcher described by Daniel Lelis Baggio in Mastering OpenCV
+	 * with Practical Computer Vision Projects.
+	 * @param queryImg
+	 * @param trainImg
+	 * @param query_kpts
+	 * @param train_kpts
+	 * @param matches
+	 * @return
+	 */
+	int match_features_optflow(cv::Mat queryImg, cv::Mat trainImg,
+			std::vector<cv::KeyPoint> &query_kpts,
+			std::vector<cv::KeyPoint> &train_kpts,
+			std::vector<cv::DMatch> &matches);
+
+	/**
+	 * @todo Allow the type of point choose. (Point2d, Point2f,etc...)
+	 * @brief Converts a KeyPoint structure into a Point structure.
+	 * @param kpts
+	 * @param pts
+	 * @return
+	 */
+	int convertKeypointToPoint(std::vector<cv::KeyPoint> kpts, std::vector<cv::Point2f> &pts);
 
 	static int ShiTomasiCorner(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 			std::vector<cv::KeyPoint> &arrayOfFeatures);
@@ -91,7 +115,10 @@ public:
 	static int draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 			const std::vector<cv::KeyPoint>& query,
 			const std::vector<cv::KeyPoint>& train,
-			std::vector<cv::DMatch>& matches, const std::vector<char>& mask);
+			std::vector<cv::DMatch>& matches, const std::vector<char> mask);
+//	static int draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
+//			const std::vector<cv::Point2d>& query,
+//			const std::vector<cv::Point2d>& train);
 };
 
 } /* namespace LRM */

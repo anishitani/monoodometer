@@ -21,9 +21,13 @@ int ImageProcessorParameter::parse(ros::NodeHandle nh)
 	nh.param<double>("MATCH_RADIUS", value_double, 10.0);
 	parameter["MATCH_RADIUS"] = value_double;
 
+	nh.param<double>("MATCH_L1_ERROR", value_double, 10.0);
+	parameter["MATCH_L1_ERROR"] = value_double;
+
 	ROS_DEBUG("FEATURE_TYPE = %s", value_str.c_str());
 	ROS_DEBUG("MAX_NUM_FEATURE_PTS = %d", value_int);
-	ROS_DEBUG("MAX_NUM_FEATURE_PTS = %f", value_double);
+	ROS_DEBUG("MATCH_RADIUS = %f", value_double);
+	ROS_DEBUG("MATCH_L1_ERROR = %f", value_double);
 
 	return 0;
 }
@@ -36,6 +40,7 @@ ImageProcessor::ImageProcessor()
 	maxNumberOfFeatures = 100;
 	feature_type = SIFT;
 	radius = 10.0;
+	match_error = 10.0;
 }
 
 ImageProcessor::ImageProcessor(ImageProcessorParameter param)
@@ -44,6 +49,7 @@ ImageProcessor::ImageProcessor(ImageProcessorParameter param)
 	this->maxNumberOfFeatures = 100;
 	this->feature_type = SIFT;
 	this->radius = 10.0;
+	match_error = 10.0;
 
 	switch (feature_type)
 	{
@@ -65,12 +71,13 @@ ImageProcessor::ImageProcessor(ImageProcessorParameter param)
 		matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
 		break;
 	case FAST:
-		detector = new cv::GridAdaptedFeatureDetector(
-				new cv::FastFeatureDetector(10, true), maxNumberOfFeatures, 4,
-				4);
+//		detector = new cv::GridAdaptedFeatureDetector(
+//				new cv::FastFeatureDetector(10, true), maxNumberOfFeatures, 4,
+//				4);
 //		detector = new cv::PyramidAdaptedFeatureDetector( new cv::FastFeatureDetector(10, true) );
+		detector = new cv::FastFeatureDetector();
 		extractor = new cv::OrbDescriptorExtractor();
-		matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
+		matcher = cv::DescriptorMatcher::create("BruteForce");
 		break;
 	case SURF:
 		detector = new cv::SurfFeatureDetector(400.0);
@@ -174,37 +181,133 @@ void ImageProcessor::extract_features(cv::Mat image,
  * @param trainDescriptors
  * @param matches
  */
-void ImageProcessor::match_features(std::vector<cv::KeyPoint> queryKeyPoints,
-		std::vector<cv::KeyPoint> trainKeyPoints, cv::Mat queryDescriptors,
+void ImageProcessor::match_features(cv::Mat queryDescriptors,
 		cv::Mat trainDescriptors, std::vector<cv::DMatch> &matches)
 {
-	std::vector<std::vector<cv::DMatch> > radiusMatches;
-	matcher->radiusMatch(queryDescriptors, trainDescriptors, radiusMatches,
-			radius);
+	std::vector<std::vector<cv::DMatch> > _matches;
+	matcher->radiusMatch(queryDescriptors, trainDescriptors, _matches, radius);
+
 	matches.clear();
-	for (int i = 0; i < (int) radiusMatches.size(); i++)
+	for (int i = 0; i < (int) _matches.size(); i++)
 	{
-		if (radiusMatches[i].size())
+		if (_matches[i].size())
 		{
-			float dist = 10000.0;
+			float dist = radius;
 			int pos = 0;
-			for (int j = 0; j < (int) radiusMatches[i].size(); j++)
+			for (int j = 0; j < (int) _matches[i].size(); j++)
 			{
-				if (dist > radiusMatches[i][j].distance)
+				if (dist > _matches[i][j].distance)
 				{
-					dist = radiusMatches[i][j].distance;
+					dist = _matches[i][j].distance;
 					pos = j;
 				}
 			}
-			matches.push_back(radiusMatches[i][pos]);
+			if (dist > radius)
+				continue;
+			matches.push_back(_matches[i][pos]);
 		}
 	}
+}
+
+int ImageProcessor::match_features_optflow(cv::Mat queryImg, cv::Mat trainImg,
+		std::vector<cv::KeyPoint> &query_kpts,
+		std::vector<cv::KeyPoint> &train_kpts, std::vector<cv::DMatch> &matches)
+{
+	std::vector<cv::Point2f> query_pts, train_pts;
+	convertKeypointToPoint(query_kpts, query_pts);
+	convertKeypointToPoint(train_kpts, train_pts);
+
+	std::vector<cv::Point2f> query_optflow_pts(train_pts.size());
+
+	std::vector<uchar> status;
+	std::vector<float> error;
+
+	cv::calcOpticalFlowPyrLK(trainImg, queryImg, train_pts, query_optflow_pts,
+			status, error);
+	for (uint i = 0; i < status.size(); i++)
+	{
+		if (status[i] && error[i] > match_error)
+			status[i] = 0;
+	}
+
+	cv::Mat query_optflow_desc = cv::Mat(query_optflow_pts).reshape(1,
+			query_optflow_pts.size());
+	cv::Mat query_desc = cv::Mat(query_pts).reshape(1, query_pts.size());
+	std::vector<std::vector<cv::DMatch> > _matches;
+
+	cv::BFMatcher _matcher(cv::NORM_L2);
+
+	/**
+	 * @todo The matcher type definition should be revised later.
+	 */
+	_matcher.radiusMatch(query_optflow_desc, query_desc, _matches, 2.0f);
+
+	/**
+	 * @todo Think of a better solution then the flag.
+	 */
+	std::vector<bool> used_query(query_pts.size(),false);
+
+	matches.clear();
+
+	for (uint i = 0; i < _matches.size(); i++)
+	{
+		if (_matches[i].size() == 0)
+		{
+			/*
+			 * If there's no feature where the optical flow was expecting a feature.
+			 */
+			status[i] = 0;
+			continue;
+		}
+		else if (_matches[i].size() > 1)
+		{
+			// 2 neighbors – check how close they are
+			double ratio = _matches[i][0].distance / _matches[i][1].distance;
+			if (ratio < 0.7)
+			{
+				/*
+				 * If there're more then 1 features and the two closest are
+				 * closer than a ratio (0.7 in this case).
+				 */
+				status[i] = 0;
+				continue;
+			}
+		}
+		if(status[i] && !used_query[_matches[i][0].trainIdx]){
+			/*
+			 * The radius matcher related the points estimated by the optical flow
+			 * with the points detected by the feature detector. But it should be
+			 * inverted to fit the relation train query feature.
+			 */
+			cv::DMatch match;
+
+			match.trainIdx = _matches[i][0].queryIdx;
+			match.queryIdx = _matches[i][0].trainIdx;
+			matches.push_back(match);
+			used_query[_matches[i][0].trainIdx] = true;
+		}
+
+	}
+
+	return 0;
+}
+
+int ImageProcessor::convertKeypointToPoint(std::vector<cv::KeyPoint> kpts,
+		std::vector<cv::Point2f> &pts)
+{
+	pts.clear();
+	for (uint i = 0; i < kpts.size(); i++)
+	{
+		pts.push_back(kpts[i].pt);
+	}
+
+	return 0;
 }
 
 int ImageProcessor::ShiTomasiCorner(cv::Ptr<cv::FeatureDetector> det,
 		cv::Mat src, std::vector<cv::KeyPoint> &arrayOfFeatures)
 {
-	// Apply corner detection
+// Apply corner detection
 	det->detect(src, arrayOfFeatures);
 
 	return 0;
@@ -222,7 +325,7 @@ int ImageProcessor::ShiTomasiCorner(cv::Ptr<cv::FeatureDetector> det,
 int ImageProcessor::HarrisCorner(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 		std::vector<cv::KeyPoint> &arrayOfFeatures)
 {
-	// Apply corner detection
+// Apply corner detection
 	det->detect(src, arrayOfFeatures);
 
 	return 0;
@@ -239,7 +342,7 @@ int ImageProcessor::HarrisCorner(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 int ImageProcessor::ORB_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 		std::vector<cv::KeyPoint> &arrayOfFeatures)
 {
-	// Apply corner detection
+// Apply corner detection
 	det->detect(src, arrayOfFeatures);
 
 	return 0;
@@ -248,7 +351,7 @@ int ImageProcessor::ORB_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 int ImageProcessor::FAST_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 		std::vector<cv::KeyPoint> &arrayOfFeatures)
 {
-	// Apply corner detection
+// Apply corner detection
 	det->detect(src, arrayOfFeatures);
 
 	return 0;
@@ -257,7 +360,7 @@ int ImageProcessor::FAST_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 int ImageProcessor::SURF_Detector(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 		std::vector<cv::KeyPoint> &arrayOfFeatures)
 {
-	// Apply corner detection
+// Apply corner detection
 	det->detect(src, arrayOfFeatures);
 
 	return 0;
@@ -286,7 +389,7 @@ int ImageProcessor::draw_matches(cv::Mat inQueryImage,
 int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 		const std::vector<cv::KeyPoint>& query,
 		const std::vector<cv::KeyPoint>& train,
-		std::vector<cv::DMatch>& matches, const std::vector<char>& mask =
+		std::vector<cv::DMatch>& matches, const std::vector<char> mask =
 				std::vector<char>())
 {
 	cv::cvtColor(inImage, outImage, CV_GRAY2BGR);
@@ -325,5 +428,49 @@ int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 
 	return 0;
 }
+
+//int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
+//		const std::vector<cv::Point2d>& query,
+//		const std::vector<cv::Point2d>& train)
+//{
+//	int line_thickness = 1;
+//
+//	cv::cvtColor(inImage, outImage, CV_GRAY2BGR);
+//
+//	for (size_t i = 0; i < train.size(); ++i)
+//	{
+//		cv::Point p = train[i];
+//		cv::Point q = query[i];
+//
+//		double angle = atan2((double) p.y - q.y, (double) p.x - q.x);
+//
+//		double hypotenuse = sqrt(
+//				(double) (p.y - q.y) * (p.y - q.y)
+//						+ (double) (p.x - q.x) * (p.x - q.x));
+//
+//		if (hypotenuse < 1.0)
+//			continue;
+//
+//		// Here we lengthen the arrow by a factor of three.
+//		q.x = (int) (p.x - 3 * hypotenuse * cos(angle));
+//		q.y = (int) (p.y - 3 * hypotenuse * sin(angle));
+//
+//		// Now we draw the main line of the arrow.
+//		cv::line(outImage, p, q, cv::Scalar(0, 255, 0), line_thickness);
+//
+//		// Now draw the tips of the arrow. I do some scaling so that the
+//		// tips look proportional to the main line of the arrow.
+//
+//		p.x = (int) (q.x + 9 * cos(angle + CV_PI / 4));
+//		p.y = (int) (q.y + 9 * sin(angle + CV_PI / 4));
+//		cv::line(outImage, p, q, cv::Scalar(0, 255, 0), line_thickness);
+//
+//		p.x = (int) (q.x + 9 * cos(angle - CV_PI / 4));
+//		p.y = (int) (q.y + 9 * sin(angle - CV_PI / 4));
+//		cv::line(outImage, p, q, cv::Scalar(0, 255, 0), line_thickness);
+//	}
+//
+//	return 0;
+//}
 
 } /* namespace LRM */

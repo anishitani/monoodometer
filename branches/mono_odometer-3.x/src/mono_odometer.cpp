@@ -158,6 +158,42 @@ MonoOdometer::~MonoOdometer()
 	// TODO Auto-generated destructor stub
 }
 
+bool MonoOdometer::find_rich_match()
+{
+	/**
+	 * @todo Incorporate de descriptors extraction on the match process.
+	 */
+	// Detect features and extract the features descriptors
+	img_proc.detect_features(query_image->image, query_kpts);
+	img_proc.extract_features(query_image->image, query_kpts, query_desc);
+	if (train_desc.empty())
+		// Returns on first run
+		return false;
+	else
+	{ // Find Matches if it's not first run
+		img_proc.match_features(query_desc, train_desc, matches);
+		mot_proc.matches2points(train_kpts, query_kpts, matches, train_pts,
+				query_pts);
+
+		return true;
+	}
+}
+
+bool MonoOdometer::find_optflow_match()
+{
+	img_proc.detect_features(query_image->image, query_kpts);
+	if (train_kpts.empty())
+		return false;
+	else
+	{
+		img_proc.match_features_optflow(query_image->image, train_image->image,
+				query_kpts, train_kpts, matches);
+		mot_proc.matches2points(train_kpts, query_kpts, matches, train_pts,
+				query_pts);
+		return true;
+	}
+}
+
 int MonoOdometer::update_pose()
 {
 	cv::Mat P = mot_proc.getCameraMatrix();
@@ -252,11 +288,11 @@ int MonoOdometer::drawOptFlowImage()
 {
 	optflow_image.encoding = sensor_msgs::image_encodings::BGR8;
 
-	std::vector<char> inliers = mot_proc.getInlierMask();
-	inliers = inliers.size() == matches.size() ? inliers : std::vector<char>();
+//	std::vector<char> inliers = mot_proc.getInlierMask();
+//	inliers = inliers.size() == matches.size() ? inliers : std::vector<char>();
 
 	ImageProcessor::draw_optflow(query_image->image, optflow_image.image,
-			query_kpts, train_kpts, matches, inliers);
+			query_kpts, train_kpts, matches, std::vector<char>());
 
 	return 0;
 }
@@ -273,35 +309,35 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 	query_timestamp = msg->header.stamp;
 	convertSensorMsgToImage(msg, query_image);
 
-	// Detect features and extract the features descriptors
-	img_proc.detect_features(query_image->image, query_kpts);
-	img_proc.extract_features(query_image->image, query_kpts, query_desc);
-
-	if (!train_desc.empty())
+	if (find_optflow_match())
 	{
-		img_proc.match_features(query_kpts, train_kpts, query_desc, train_desc,
-				matches);
-
+		ROS_DEBUG("Matched features: %d",matches.size());
 		if (matches.size() > 8)
 		{
-			mot_proc.matches2points(train_kpts, query_kpts, matches, train_pts,
-					query_pts);
+			/**
+			 * @todo The only parameters to the estimate_motion() should be the train
+			 * and query points. K should be passed on Motion Processor construction.
+			 * The points are already matched, therefore there's no need for the
+			 * matches parameter.
+			 */
 			mot_proc.estimate_motion(train_pts, query_pts, matches, K);
 			update_pose();
+
+			/*
+			 * Publishing the transformation between the odometer and the robot
+			 * base link.
+			 */
+			odom_broadcaster.sendTransform(
+					tf::StampedTransform(pose, ros::Time::now(),
+							getOdometerReferenceFrame(), getRobotFrame()));
 		}
-		else{
+		else
+		{
 			/**
 			 * @todo What happens when it's not possible to estimate a motion? Kalman?
 			 */
 		}
 
-		/*
-		 * Publishing the transformation between the odometer and the robot
-		 * base link.
-		 */
-		odom_broadcaster.sendTransform(
-				tf::StampedTransform(pose, ros::Time::now(),
-						getOdometerReferenceFrame(), getRobotFrame()));
 
 		if (matches.size() > 8)
 		{
@@ -323,6 +359,7 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 		}
 	}
 
+	train_kpts.clear();
 	train_kpts = query_kpts;
 	train_desc = query_desc;
 	train_image = query_image;

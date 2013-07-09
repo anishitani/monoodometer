@@ -6,7 +6,6 @@ namespace LRM
 ///////////////////////////////////////////////////////////////////////
 /**				Motion Processor Parameter Class					**/
 ///////////////////////////////////////////////////////////////////////
-
 int MotionProcessorParameter::parse(ros::NodeHandle nh)
 {
 	double value_double;
@@ -17,8 +16,10 @@ int MotionProcessorParameter::parse(ros::NodeHandle nh)
 	nh.param<double>("RANSAC_CONFIDENCE", value_double, 0.95);
 	parameter["RANSAC_CONFIDENCE"] = value_double;
 
-	ROS_DEBUG("FEATURE_TYPE = %f", boost::any_cast<double>(parameter["RANSAC_EPIPOLAR_DIST"]));
-	ROS_DEBUG("RANSAC_EPIPOLAR_DIST = %f", boost::any_cast<double>(parameter["RANSAC_EPIPOLAR_DIST"]));
+	ROS_DEBUG("FEATURE_TYPE = %f",
+			boost::any_cast<double>(parameter["RANSAC_EPIPOLAR_DIST"]));
+	ROS_DEBUG("RANSAC_EPIPOLAR_DIST = %f",
+			boost::any_cast<double>(parameter["RANSAC_EPIPOLAR_DIST"]));
 
 	return 0;
 }
@@ -59,7 +60,8 @@ int MotionProcessor::setting(MotionProcessorParameter param)
 void MotionProcessor::matches2points(const std::vector<cv::KeyPoint>& query,
 		const std::vector<cv::KeyPoint>& train,
 		const std::vector<cv::DMatch>& matches,
-		std::vector<cv::Point2d> &query_pts, std::vector<cv::Point2d> &train_pts)
+		std::vector<cv::Point2d> &query_pts,
+		std::vector<cv::Point2d> &train_pts)
 {
 	train_pts.clear();
 	query_pts.clear();
@@ -94,7 +96,6 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 
 	//Fundamental matrix
 	cv::Mat F;
-
 
 	if (!feature_point_normalization(query_pts, train_pts, norm_query_pts,
 			norm_train_pts, Tc, Tp))
@@ -284,7 +285,7 @@ int MotionProcessor::triangulateCheck(std::vector<cv::Point2d> train_pts,
 
 	// projection matrices
 	P1 = K * cv::Mat::eye(3, 4, CV_64F);
-	P2 = K * P(cv::Range(0,3),cv::Range::all());
+	P2 = K * P(cv::Range(0, 3), cv::Range::all());
 
 	// triangulation via orthogonal regression
 	for (int i = 0; i < (int) mask.size(); i++)

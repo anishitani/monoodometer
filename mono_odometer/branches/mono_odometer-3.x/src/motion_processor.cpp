@@ -16,10 +16,10 @@ int MotionProcessorParameter::parse(ros::NodeHandle nh)
 	nh.param<double>("RANSAC_CONFIDENCE", value_double, 0.95);
 	parameter["RANSAC_CONFIDENCE"] = value_double;
 
-	ROS_DEBUG("FEATURE_TYPE = %f",
-			boost::any_cast<double>(parameter["RANSAC_EPIPOLAR_DIST"]));
 	ROS_DEBUG("RANSAC_EPIPOLAR_DIST = %f",
 			boost::any_cast<double>(parameter["RANSAC_EPIPOLAR_DIST"]));
+	ROS_DEBUG("RANSAC_CONFIDENCE = %f",
+			boost::any_cast<double>(parameter["RANSAC_CONFIDENCE"]));
 
 	return 0;
 }
@@ -203,8 +203,8 @@ cv::Mat MotionProcessor::compute_F_matrix(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts)
 {
 	cv::Mat mask;
-	cv::Mat F = cv::findFundamentalMat(train_pts, query_pts, cv::FM_RANSAC, 3,
-			0.95, mask);
+	cv::Mat F = cv::findFundamentalMat(train_pts, query_pts, cv::FM_RANSAC,
+			epipolar_dist, confidence, mask);
 
 	inliers = std::vector<char>(mask);
 

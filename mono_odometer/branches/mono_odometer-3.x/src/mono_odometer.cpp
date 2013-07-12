@@ -101,23 +101,17 @@ MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 	 */
 	if (isIntrinsicMatrixPath())
 	{
-		cv::FileStorage calib_data;
-		calib_data.open(getIntrinsicMatrixPath().c_str(),
-				cv::FileStorage::READ);
-		if (calib_data.isOpened())
-		{
-			calib_data["cameraMatrix"] >> K;
-		}
-		else
-		{
-			ROS_WARN("Could not open file %s",
-					getIntrinsicMatrixPath().c_str());
-		}
+		/*
+		 * Sets the image callback.
+		 */
+		input_image_subscriber = it.subscribe(getInputImageTopic(), 1,
+				&MonoOdometer::ImageCallback, this);
+
 	}
-	if (K.empty())
+	else
 	{
-		ROS_ERROR("No camera matrix was set.");
-		ros::shutdown();
+		input_camera_subscriber = it.subscribeCamera(getInputImageTopic(), 1,
+				&MonoOdometer::CameraCallback, this);
 	}
 
 	img_proc.setting(img_proc_parameter);
@@ -131,12 +125,6 @@ MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 	odom_broadcaster.sendTransform(
 			tf::StampedTransform(pose, ros::Time::now(),
 					getOdometerReferenceFrame(), getRobotFrame()));
-
-	/*
-	 * Sets the image callback.
-	 */
-	input_image_subscriber = it.subscribe(getInputImageTopic(), 1,
-			&MonoOdometer::ImageCallback, this);
 
 	/*
 	 * Sets the features image topic and matches image topic.
@@ -288,14 +276,15 @@ int MonoOdometer::drawOptFlowImage()
 {
 	optflow_image.encoding = sensor_msgs::image_encodings::BGR8;
 
-//	std::vector<char> inliers = mot_proc.getInlierMask();
-//	inliers = inliers.size() == matches.size() ? inliers : std::vector<char>();
+	std::vector<char> inliers = mot_proc.getInlierMask();
+	inliers = inliers.size() == matches.size() ? inliers : std::vector<char>();
 
 	ImageProcessor::draw_optflow(query_image->image, optflow_image.image,
-			query_kpts, train_kpts, matches, std::vector<char>());
+			query_kpts, train_kpts, matches, inliers);
 
 	return 0;
 }
+
 
 /**
  * 	@brief The Image Callback method is responsible for handling the income
@@ -304,14 +293,16 @@ int MonoOdometer::drawOptFlowImage()
  *
  * 	 @param[in]	msg		Income message from the defined camera topic.
  */
-void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
+void MonoOdometer::CallbackHandler(const sensor_msgs::ImageConstPtr& img,
+		const sensor_msgs::CameraInfoConstPtr& cam =
+				sensor_msgs::CameraInfoConstPtr())
 {
-	query_timestamp = msg->header.stamp;
-	convertSensorMsgToImage(msg, query_image);
+	query_timestamp = img->header.stamp;
+	convertSensorMsgToImage(img, query_image);
 
 	if (find_optflow_match())
 	{
-		ROS_DEBUG("Matched features: %d",matches.size());
+		ROS_DEBUG("Matched features: %d", matches.size());
 		if (matches.size() > 8)
 		{
 			/**
@@ -321,15 +312,15 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 			 * matches parameter.
 			 */
 			mot_proc.estimate_motion(train_pts, query_pts, matches, K);
-			update_pose();
+//			update_pose();
 
 			/*
 			 * Publishing the transformation between the odometer and the robot
 			 * base link.
 			 */
-			odom_broadcaster.sendTransform(
-					tf::StampedTransform(pose, ros::Time::now(),
-							getOdometerReferenceFrame(), getRobotFrame()));
+//			odom_broadcaster.sendTransform(
+//					tf::StampedTransform(pose, ros::Time::now(),
+//							getOdometerReferenceFrame(), getRobotFrame()));
 		}
 		else
 		{
@@ -337,7 +328,6 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 			 * @todo What happens when it's not possible to estimate a motion? Kalman?
 			 */
 		}
-
 
 		if (matches.size() > 8)
 		{
@@ -365,6 +355,31 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& msg)
 	train_image = query_image;
 	train_timestamp = query_timestamp;
 
+}
+
+
+void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& img)
+{
+	cv::FileStorage calib_data;
+	calib_data.open(getIntrinsicMatrixPath().c_str(), cv::FileStorage::READ);
+	if (calib_data.isOpened())
+	{
+		calib_data["cameraMatrix"] >> K;
+	}
+	else
+	{
+		ROS_ERROR("Could not open file %s", getIntrinsicMatrixPath().c_str());
+	}
+
+	CallbackHandler(img);
+}
+
+void MonoOdometer::CameraCallback(const sensor_msgs::ImageConstPtr& img,
+		const sensor_msgs::CameraInfoConstPtr& cam)
+{
+	K = cv::Mat(3,3,CV_64F,(double*)cam->K.elems);
+
+	CallbackHandler(img, cam);
 }
 
 } /* namespace LRM */

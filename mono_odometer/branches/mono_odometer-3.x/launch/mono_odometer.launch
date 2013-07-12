@@ -7,11 +7,11 @@
 	<node pkg="tf" type="static_transform_publisher" name="camera_baselink_broadcaster" args="0 0 0 -1.57079632679 0 -1.57079632679  base_link camera 100" /> 	
 	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer" output="screen">
 	
-		<param name="FEATURE_TYPE" value="SURF" />
-		<param name="INTRINSIC_MATRIX_PATH"
-			value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml" />
-		<param name="INPUT_IMAGE_TOPIC" value="/StereoCam/imageLeft" />
-		<param name="RANSAC_EPIPOLAR_DIST" value="1.0" />
+		<param name="FEATURE_TYPE" value="FAST" />
+		<!-- param name="INTRINSIC_MATRIX_PATH"
+			value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml" / -->
+		<param name="INPUT_IMAGE_TOPIC" value="/camera/rgb/image_color" />
+		<param name="RANSAC_EPIPOLAR_DIST" value="0.1" />
 		<param name="RANSAC_CONFIDENCE" value="0.99" />
 		<param name="MATCH_RADIUS" value="100.0" />
 	

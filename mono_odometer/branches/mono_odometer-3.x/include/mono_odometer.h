@@ -35,8 +35,6 @@ namespace LRM
 class ROSParameter: public Parameter
 {
 
-
-
 public:
 	ROSParameter()
 	{
@@ -63,6 +61,7 @@ private:
 	/* *****ROS Variables******* */
 	ROSParameter ros_parameter;
 	image_transport::Subscriber input_image_subscriber;
+	image_transport::CameraSubscriber input_camera_subscriber;
 	image_transport::Publisher output_feature_advertiser;
 	image_transport::Publisher output_matches_advertiser;
 	image_transport::Publisher output_optflow_advertiser;
@@ -125,7 +124,11 @@ public:
 	MonoOdometer(ros::NodeHandle &nh, image_transport::ImageTransport &it);
 	~MonoOdometer();
 
-	void ImageCallback(const sensor_msgs::ImageConstPtr& msg);
+	void CallbackHandler(const sensor_msgs::ImageConstPtr& img,
+			const sensor_msgs::CameraInfoConstPtr& cam);
+	void ImageCallback(const sensor_msgs::ImageConstPtr& img);
+	void CameraCallback(const sensor_msgs::ImageConstPtr& img,
+			const sensor_msgs::CameraInfoConstPtr& cam);
 
 //	void matches2points(const std::vector<cv::KeyPoint>& query,
 //			const std::vector<cv::KeyPoint>& train,

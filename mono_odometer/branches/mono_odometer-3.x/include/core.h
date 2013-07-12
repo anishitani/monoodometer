@@ -32,6 +32,8 @@
 
 #include <boost/smart_ptr.hpp>
 
+#include <cmath>
+
 #include <algorithm>
 #include <vector>
 #include <deque>

@@ -8,9 +8,9 @@
 	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer" output="screen">
 	
 		<param name="FEATURE_TYPE" value="FAST" />
-		<!-- param name="INTRINSIC_MATRIX_PATH"
-			value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml" / -->
-		<param name="INPUT_IMAGE_TOPIC" value="/camera/rgb/image_color" />
+		<param name="INTRINSIC_MATRIX_PATH"
+			value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml" />
+		<param name="INPUT_IMAGE_TOPIC" value="/image" />
 		<param name="RANSAC_EPIPOLAR_DIST" value="0.1" />
 		<param name="RANSAC_CONFIDENCE" value="0.99" />
 		<param name="MATCH_RADIUS" value="100.0" />

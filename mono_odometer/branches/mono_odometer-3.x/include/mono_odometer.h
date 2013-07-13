@@ -65,6 +65,7 @@ private:
 	image_transport::Publisher output_feature_advertiser;
 	image_transport::Publisher output_matches_advertiser;
 	image_transport::Publisher output_optflow_advertiser;
+	image_transport::Publisher output_displacement_advertiser;
 	ros::Publisher odometry_advertiser;
 	/* ************************* */
 
@@ -84,6 +85,7 @@ private:
 	cv_bridge::CvImage feature_image;
 	cv_bridge::CvImage matches_image;
 	cv_bridge::CvImage optflow_image;
+	cv_bridge::CvImage displacement_image;
 
 	std::vector<cv::KeyPoint> train_kpts; ///< Previous image keypoints
 	std::vector<cv::KeyPoint> query_kpts; ///< Current image keypoints
@@ -118,6 +120,7 @@ private:
 	int drawFeatureImage();
 	int drawMatchesImage();
 	int drawOptFlowImage();
+	int drawDisplacementImage();
 
 public:
 	MonoOdometer();
@@ -172,6 +175,12 @@ public:
 	{
 		return ros_parameter.getParameterByName<std::string>(
 				"OPTFLOW_IMAGE_TOPIC");
+	}
+
+	std::string getDisplacementImageTopic()
+	{
+		return ros_parameter.getParameterByName<std::string>(
+				"DISPLACEMENT_IMAGE_TOPIC");
 	}
 
 	std::string getOdometryTopic()

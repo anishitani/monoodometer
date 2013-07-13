@@ -37,6 +37,10 @@ int ROSParameter::parse(ros::NodeHandle nh)
 	nh.param<std::string>("MATCHES_IMAGE_TOPIC", value_str, "images/matches");
 	parameter["MATCHES_IMAGE_TOPIC"] = value_str;
 
+	nh.param<std::string>("DISPLACEMENT_IMAGE_TOPIC", value_str,
+			"images/displacement");
+	parameter["DISPLACEMENT_IMAGE_TOPIC"] = value_str;
+
 	nh.param<std::string>("ODOMETRY_TOPIC", value_str, "odom");
 	parameter["ODOMETRY_TOPIC"] = value_str;
 
@@ -132,6 +136,8 @@ MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 	output_feature_advertiser = it.advertise(getFeatureImageTopic(), 1);
 	output_matches_advertiser = it.advertise(getMatchesImageTopic(), 1);
 	output_optflow_advertiser = it.advertise(getOptFlowImageTopic(), 1);
+	output_displacement_advertiser = it.advertise(getDisplacementImageTopic(),
+			1);
 
 	odometry_advertiser = nh.advertise<nav_msgs::Odometry>(getOdometryTopic(),
 			1);
@@ -217,23 +223,32 @@ int MonoOdometer::update_pose()
 	pose *= motion;
 
 	/*
-	 //next, we'll publish the odometry message over ROS
-	 odometry.header.stamp = ros::Time::now();
-	 odometry.header.frame_id = getOdometerReferenceFrame();
-	 odometry.child_frame_id = getSensorFrame();
-
-	 tf::poseTFToMsg(pose, odometry.pose.pose);
-
-	 double delta_t = 1.0;//(query_timestamp-train_timestamp).toSec();
-	 odometry.twist.twist.linear.x = motion.getOrigin().getX() / delta_t;
-	 odometry.twist.twist.linear.y = motion.getOrigin().getY() / delta_t;
-	 odometry.twist.twist.linear.z = motion.getOrigin().getZ() / delta_t;
-	 double yaw, pitch, roll;
-	 motion.getBasis().getEulerYPR(yaw, pitch, roll);
-	 odometry.twist.twist.angular.x = roll / delta_t;
-	 odometry.twist.twist.angular.y = pitch / delta_t;
-	 odometry.twist.twist.angular.z = yaw / delta_t;
+	 * Publishing the transformation between the odometer and the robot
+	 * base link.
 	 */
+	odom_broadcaster.sendTransform(
+			tf::StampedTransform(pose, query_timestamp,
+					getOdometerReferenceFrame(), getRobotFrame()));
+
+	//next, we'll publish the odometry message over ROS
+	odometry.header.stamp = ros::Time::now();
+	odometry.header.frame_id = getOdometerReferenceFrame();
+	odometry.child_frame_id = getSensorFrame();
+
+	tf::poseTFToMsg(pose, odometry.pose.pose);
+
+	double delta_t = 1.0; //(query_timestamp-train_timestamp).toSec();
+	odometry.twist.twist.linear.x = motion.getOrigin().getX() / delta_t;
+	odometry.twist.twist.linear.y = motion.getOrigin().getY() / delta_t;
+	odometry.twist.twist.linear.z = motion.getOrigin().getZ() / delta_t;
+	double yaw, pitch, roll;
+	motion.getBasis().getEulerYPR(yaw, pitch, roll);
+	odometry.twist.twist.angular.x = roll / delta_t;
+	odometry.twist.twist.angular.y = pitch / delta_t;
+	odometry.twist.twist.angular.z = yaw / delta_t;
+
+	odometry_advertiser.publish(odometry);
+
 	return 0;
 }
 
@@ -285,6 +300,18 @@ int MonoOdometer::drawOptFlowImage()
 	return 0;
 }
 
+int MonoOdometer::drawDisplacementImage()
+{
+	displacement_image.encoding = sensor_msgs::image_encodings::BGR8;
+
+	std::vector<char> inliers = mot_proc.getInlierMask();
+	inliers = inliers.size() == matches.size() ? inliers : std::vector<char>();
+
+	ImageProcessor::draw_displacement(query_image->image,
+			displacement_image.image, query_kpts, train_kpts, matches, inliers);
+
+	return 0;
+}
 
 /**
  * 	@brief The Image Callback method is responsible for handling the income
@@ -300,10 +327,21 @@ void MonoOdometer::CallbackHandler(const sensor_msgs::ImageConstPtr& img,
 	query_timestamp = img->header.stamp;
 	convertSensorMsgToImage(img, query_image);
 
-	if (find_optflow_match())
+	if (find_optflow_match())	// Choose between optflow or rich matching
 	{
 		ROS_DEBUG("Matched features: %d", matches.size());
-		if (matches.size() > 8)
+
+		cv::Mat A = cv::abs( cv::Mat(train_pts) - cv::Mat(query_pts) );
+		/*
+		 * displacement verifies wether there was a great displacement
+		 * between the features in two consecutives frames
+		 */
+		double displacement =
+				cv::sum(A).val[0]
+						/ train_pts.size();
+		ROS_INFO("Sum of all displacements: %f", displacement);
+
+		if ((displacement > 10) && (matches.size() > 8))
 		{
 			/**
 			 * @todo The only parameters to the estimate_motion() should be the train
@@ -312,40 +350,45 @@ void MonoOdometer::CallbackHandler(const sensor_msgs::ImageConstPtr& img,
 			 * matches parameter.
 			 */
 			mot_proc.estimate_motion(train_pts, query_pts, matches, K);
-//			update_pose();
-
-			/*
-			 * Publishing the transformation between the odometer and the robot
-			 * base link.
-			 */
-//			odom_broadcaster.sendTransform(
-//					tf::StampedTransform(pose, ros::Time::now(),
-//							getOdometerReferenceFrame(), getRobotFrame()));
 		}
 		else
 		{
 			/**
 			 * @todo What happens when it's not possible to estimate a motion? Kalman?
+			 * For now, the no motion politicy was taken. So meaning the robot stand
+			 * still for a frame. May cause some mayheim on the next frame due the large
+			 * displacement caused by the one-frame-gap.
 			 */
+			mot_proc.noMotion();
 		}
 
-		if (matches.size() > 8)
+		/*
+		 * Sets the new pose.
+		 */
+		update_pose();
+	}
+	if (matches.size() > 8)
+	{
+		if (output_feature_advertiser.getNumSubscribers() > 0)
 		{
-			if (output_feature_advertiser.getNumSubscribers() > 0)
-			{
-				drawFeatureImage();
-				output_feature_advertiser.publish(feature_image.toImageMsg());
-			}
-			if (output_matches_advertiser.getNumSubscribers() > 0)
-			{
-				drawMatchesImage();
-				output_matches_advertiser.publish(matches_image.toImageMsg());
-			}
-			if (output_optflow_advertiser.getNumSubscribers() > 0)
-			{
-				drawOptFlowImage();
-				output_optflow_advertiser.publish(optflow_image.toImageMsg());
-			}
+			drawFeatureImage();
+			output_feature_advertiser.publish(feature_image.toImageMsg());
+		}
+		if (output_matches_advertiser.getNumSubscribers() > 0)
+		{
+			drawMatchesImage();
+			output_matches_advertiser.publish(matches_image.toImageMsg());
+		}
+		if (output_optflow_advertiser.getNumSubscribers() > 0)
+		{
+			drawOptFlowImage();
+			output_optflow_advertiser.publish(optflow_image.toImageMsg());
+		}
+		if (output_displacement_advertiser.getNumSubscribers() > 0)
+		{
+			drawDisplacementImage();
+			output_displacement_advertiser.publish(
+					displacement_image.toImageMsg());
 		}
 	}
 
@@ -356,7 +399,6 @@ void MonoOdometer::CallbackHandler(const sensor_msgs::ImageConstPtr& img,
 	train_timestamp = query_timestamp;
 
 }
-
 
 void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& img)
 {
@@ -377,7 +419,7 @@ void MonoOdometer::ImageCallback(const sensor_msgs::ImageConstPtr& img)
 void MonoOdometer::CameraCallback(const sensor_msgs::ImageConstPtr& img,
 		const sensor_msgs::CameraInfoConstPtr& cam)
 {
-	K = cv::Mat(3,3,CV_64F,(double*)cam->K.elems);
+	K = cv::Mat(3, 3, CV_64F, (double*) cam->K.elems);
 
 	CallbackHandler(img, cam);
 }

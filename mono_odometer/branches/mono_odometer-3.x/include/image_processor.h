@@ -92,7 +92,8 @@ public:
 	 * @param pts
 	 * @return
 	 */
-	int convertKeypointToPoint(std::vector<cv::KeyPoint> kpts, std::vector<cv::Point2f> &pts);
+	int convertKeypointToPoint(std::vector<cv::KeyPoint> kpts,
+			std::vector<cv::Point2f> &pts);
 
 	static int ShiTomasiCorner(cv::Ptr<cv::FeatureDetector> det, cv::Mat src,
 			std::vector<cv::KeyPoint> &arrayOfFeatures);
@@ -116,9 +117,10 @@ public:
 			const std::vector<cv::KeyPoint>& query,
 			const std::vector<cv::KeyPoint>& train,
 			std::vector<cv::DMatch>& matches, const std::vector<char> mask);
-//	static int draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
-//			const std::vector<cv::Point2d>& query,
-//			const std::vector<cv::Point2d>& train);
+	static int draw_displacement(const cv::Mat inImage, cv::Mat &outImage,
+			const std::vector<cv::KeyPoint>& query,
+			const std::vector<cv::KeyPoint>& train,
+			std::vector<cv::DMatch>& matches, const std::vector<char> mask);
 };
 
 } /* namespace LRM */

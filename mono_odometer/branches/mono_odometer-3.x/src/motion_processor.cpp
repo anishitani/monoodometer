@@ -381,6 +381,12 @@ int MotionProcessor::cheiralityCheck(cv::Mat P2, cv::Mat K,
 	return (positive_depth + positive_vol);
 }
 
+int MotionProcessor::noMotion()
+{
+	P = cv::Mat::eye(4,4,CV_64F);
+	return 0;
+}
+
 cv::Mat MotionProcessor::Rodrigues(cv::Vec3d omega, double theta)
 {
 	double norm_omega = cv::norm(omega);

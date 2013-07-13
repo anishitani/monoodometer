@@ -12,7 +12,7 @@ int ImageProcessorParameter::parse(ros::NodeHandle nh)
 	int value_int;
 	double value_double;
 
-	nh.param < std::string > ("FEATURE_TYPE", value_str, "SIFT");
+	nh.param<std::string>("FEATURE_TYPE", value_str, "SIFT");
 	parameter["FEATURE_TYPE"] = Feature::getFeatureByName(value_str);
 
 	nh.param<int>("MAX_NUM_FEATURE_PTS", value_int, 1000);
@@ -186,7 +186,7 @@ void ImageProcessor::extract_features(cv::Mat image,
 void ImageProcessor::match_features(cv::Mat queryDescriptors,
 		cv::Mat trainDescriptors, std::vector<cv::DMatch> &matches)
 {
-	std::vector < std::vector<cv::DMatch> > _matches;
+	std::vector<std::vector<cv::DMatch> > _matches;
 	matcher->radiusMatch(queryDescriptors, trainDescriptors, _matches, radius);
 
 	matches.clear();
@@ -219,9 +219,9 @@ int ImageProcessor::match_features_optflow(cv::Mat queryImg, cv::Mat trainImg,
 	convertKeypointToPoint(query_kpts, query_pts);
 	convertKeypointToPoint(train_kpts, train_pts);
 
-	std::vector < cv::Point2f > query_optflow_pts(train_pts.size());
+	std::vector<cv::Point2f> query_optflow_pts(train_pts.size());
 
-	std::vector < uchar > status;
+	std::vector<uchar> status;
 	std::vector<float> error;
 
 	cv::calcOpticalFlowPyrLK(trainImg, queryImg, train_pts, query_optflow_pts,
@@ -235,7 +235,7 @@ int ImageProcessor::match_features_optflow(cv::Mat queryImg, cv::Mat trainImg,
 	cv::Mat query_optflow_desc = cv::Mat(query_optflow_pts).reshape(1,
 			query_optflow_pts.size());
 	cv::Mat query_desc = cv::Mat(query_pts).reshape(1, query_pts.size());
-	std::vector < std::vector<cv::DMatch> > _matches;
+	std::vector<std::vector<cv::DMatch> > _matches;
 
 	cv::BFMatcher _matcher(cv::NORM_L2);
 
@@ -389,49 +389,6 @@ int ImageProcessor::draw_matches(cv::Mat inQueryImage,
 	return 0;
 }
 
-//int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
-//		const std::vector<cv::KeyPoint>& query,
-//		const std::vector<cv::KeyPoint>& train,
-//		std::vector<cv::DMatch>& matches, const std::vector<char> mask =
-//				std::vector<char>())
-//{
-//	cv::cvtColor(inImage, outImage, CV_GRAY2BGR);
-//	for (uint i = 0; i < matches.size(); i++)
-//	{
-//		if (!mask.empty())
-//		{
-//			if (!mask[i])
-//			{
-//				cv::Point2d pt_new = query[matches[i].queryIdx].pt;
-//				cv::Point2d pt_old = train[matches[i].trainIdx].pt;
-//
-//				cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 125, 255),
-//						1);
-//				cv::circle(outImage, pt_new, 2, cv::Scalar(0, 0, 255), 1);
-//			}
-//			else
-//			{
-//				cv::Point2d pt_new = query[matches[i].queryIdx].pt;
-//				cv::Point2d pt_old = train[matches[i].trainIdx].pt;
-//
-//				cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 255, 125),
-//						1);
-//				cv::circle(outImage, pt_new, 2, cv::Scalar(0, 255, 0), 1);
-//			}
-//		}
-//		else
-//		{
-//			cv::Point2d pt_new = query[matches[i].queryIdx].pt;
-//			cv::Point2d pt_old = train[matches[i].trainIdx].pt;
-//
-//			cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 255, 125), 1);
-//			cv::circle(outImage, pt_new, 2, cv::Scalar(0, 255, 0), 1);
-//		}
-//	}
-//
-//	return 0;
-//}
-
 int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 		const std::vector<cv::KeyPoint>& query,
 		const std::vector<cv::KeyPoint>& train,
@@ -440,6 +397,7 @@ int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 {
 	cv::cvtColor(inImage, outImage, CV_GRAY2BGR);
 	int line_thickness = 1;
+	float scale = 5.0;
 	for (uint i = 0; i < matches.size(); i++)
 	{
 		cv::Point pt_new = query[matches[i].queryIdx].pt;
@@ -453,52 +411,101 @@ int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 						+ (double) (pt_old.x - pt_new.x)
 								* (pt_old.x - pt_new.x));
 
-		if (hypotenuse < 1.0)
+		if (hypotenuse < 8.0)
 			continue;
 
 		if (!mask.empty() && !mask[i])
 		{
-//			cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 125, 255), 1);
-//			cv::circle(outImage, pt_new, 2, cv::Scalar(0, 0, 255), 1);
-
 			// Here we lengthen the arrow by a factor of three.
-			pt_new.x = (int) (pt_old.x - 1 * hypotenuse * cos(angle));
-			pt_new.y = (int) (pt_old.y - 1 * hypotenuse * sin(angle));
+			pt_new.x = (int) (pt_old.x - hypotenuse * cos(angle));
+			pt_new.y = (int) (pt_old.y - hypotenuse * sin(angle));
 
 			// Now we draw the main line of the arrow.
-			cv::line(outImage, pt_old, pt_new, cv::Scalar(0,0,255), line_thickness);
+			cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 0, 255),
+					line_thickness, CV_AA);
 
 			// Now draw the tips of the arrow. I do some scaling so that the
 			// tips look proportional to the main line of the arrow.
 
-			pt_old.x = (int) (pt_new.x + 9 * cos(angle + CV_PI / 4));
-			pt_old.y = (int) (pt_new.y + 9 * sin(angle + CV_PI / 4));
-			cv::line(outImage, pt_old, pt_new, cv::Scalar(0,0,255), line_thickness);
+			pt_old.x = (int) (pt_new.x + scale * cos(angle + CV_PI / 4));
+			pt_old.y = (int) (pt_new.y + scale * sin(angle + CV_PI / 4));
+			cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 0, 255),
+					line_thickness, CV_AA);
 
-			pt_old.x = (int) (pt_new.x + 9 * cos(angle - CV_PI / 4));
-			pt_old.y = (int) (pt_new.y + 9 * sin(angle - CV_PI / 4));
-			cv::line(outImage, pt_old, pt_new, cv::Scalar(0,0,255), line_thickness);
+			pt_old.x = (int) (pt_new.x + scale * cos(angle - CV_PI / 4));
+			pt_old.y = (int) (pt_new.y + scale * sin(angle - CV_PI / 4));
+			cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 0, 255),
+					line_thickness, CV_AA);
 
 			continue;
 		}
 
 		// Here we lengthen the arrow by a factor of three.
-		pt_new.x = (int) (pt_old.x - 3 * hypotenuse * cos(angle));
-		pt_new.y = (int) (pt_old.y - 3 * hypotenuse * sin(angle));
+		pt_new.x = (int) (pt_old.x - hypotenuse * cos(angle));
+		pt_new.y = (int) (pt_old.y - hypotenuse * sin(angle));
 
 		// Now we draw the main line of the arrow.
-		cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 255, 0), line_thickness);
+		cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 255, 0),
+				line_thickness, CV_AA);
 
 		// Now draw the tips of the arrow. I do some scaling so that the
 		// tips look proportional to the main line of the arrow.
 
-		pt_old.x = (int) (pt_new.x + 9 * cos(angle + CV_PI / 4));
-		pt_old.y = (int) (pt_new.y + 9 * sin(angle + CV_PI / 4));
-		cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 255, 0), line_thickness);
+		pt_old.x = (int) (pt_new.x + scale * cos(angle + CV_PI / 4));
+		pt_old.y = (int) (pt_new.y + scale * sin(angle + CV_PI / 4));
+		cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 255, 0),
+				line_thickness, CV_AA);
 
-		pt_old.x = (int) (pt_new.x + 9 * cos(angle - CV_PI / 4));
-		pt_old.y = (int) (pt_new.y + 9 * sin(angle - CV_PI / 4));
-		cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 255, 0), line_thickness);
+		pt_old.x = (int) (pt_new.x + scale * cos(angle - CV_PI / 4));
+		pt_old.y = (int) (pt_new.y + scale * sin(angle - CV_PI / 4));
+		cv::line(outImage, pt_old, pt_new, cv::Scalar(0, 255, 0),
+				line_thickness, CV_AA);
+	}
+
+	return 0;
+}
+
+int ImageProcessor::draw_displacement(const cv::Mat inImage, cv::Mat &outImage,
+		const std::vector<cv::KeyPoint>& query,
+		const std::vector<cv::KeyPoint>& train,
+		std::vector<cv::DMatch>& matches, const std::vector<char> mask =
+				std::vector<char>())
+{
+	cv::cvtColor(inImage, outImage, CV_GRAY2BGR);
+	for (uint i = 0; i < matches.size(); i++)
+	{
+		if (!mask.empty())
+		{
+			if (!mask[i])
+			{
+				cv::Point2d pt_new = query[matches[i].queryIdx].pt;
+				cv::Point2d pt_old = train[matches[i].trainIdx].pt;
+
+				cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 125, 255), 1,
+						CV_AA);
+				cv::circle(outImage, pt_new, 2, cv::Scalar(0, 0, 255), 1,
+						CV_AA);
+			}
+			else
+			{
+				cv::Point2d pt_new = query[matches[i].queryIdx].pt;
+				cv::Point2d pt_old = train[matches[i].trainIdx].pt;
+
+				cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 255, 125), 1,
+						CV_AA);
+				cv::circle(outImage, pt_new, 2, cv::Scalar(0, 255, 0), 1,
+						CV_AA);
+			}
+		}
+		else
+		{
+			cv::Point2d pt_new = query[matches[i].queryIdx].pt;
+			cv::Point2d pt_old = train[matches[i].trainIdx].pt;
+
+			cv::line(outImage, pt_new, pt_old, cv::Scalar(125, 255, 125), 1,
+					CV_AA);
+			cv::circle(outImage, pt_new, 2, cv::Scalar(0, 255, 0), 1, CV_AA);
+		}
 	}
 
 	return 0;

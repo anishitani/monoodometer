@@ -68,6 +68,7 @@ public:
 			std::vector<char> mask = std::vector<char>());
 	int cheiralityCheck(cv::Mat P2, cv::Mat K, std::vector<cv::Point2d> pp,
 			std::vector<cv::Point2d> pc);
+	int noMotion();
 	cv::Mat Rodrigues(cv::Vec3d omega, double theta = -1);
 	double triple_product(cv::Vec3d a, cv::Vec3d b, cv::Vec3d c);
 	cv::Mat skew(cv::Vec3d a);

@@ -339,9 +339,9 @@ void MonoOdometer::CallbackHandler(const sensor_msgs::ImageConstPtr& img,
 		double displacement =
 				cv::sum(A).val[0]
 						/ train_pts.size();
-		ROS_INFO("Sum of all displacements: %f", displacement);
+//		ROS_INFO("Sum of all displacements: %f", displacement);
 
-		if ((displacement > 10) && (matches.size() > 8))
+		if (/*(displacement > 10) &&*/ (matches.size() > 8))
 		{
 			/**
 			 * @todo The only parameters to the estimate_motion() should be the train

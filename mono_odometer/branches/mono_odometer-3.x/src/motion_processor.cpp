@@ -10,7 +10,7 @@ int MotionProcessorParameter::parse(ros::NodeHandle nh)
 {
 	double value_double;
 
-	nh.param<double>("RANSAC_EPIPOLAR_DIST", value_double, 3.0);
+	nh.param<double>("RANSAC_EPIPOLAR_DIST", value_double, 0.001);
 	parameter["RANSAC_EPIPOLAR_DIST"] = value_double;
 
 	nh.param<double>("RANSAC_CONFIDENCE", value_double, 0.95);
@@ -43,6 +43,8 @@ int MotionProcessor::setting(MotionProcessorParameter param)
 
 	epipolar_dist = param.getParameterByName<double>("RANSAC_EPIPOLAR_DIST");
 	confidence = param.getParameterByName<double>("RANSAC_CONFIDENCE");
+
+	srand(time(NULL));
 
 	return MP_ERR_CODE;
 }
@@ -87,6 +89,7 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts, std::vector<cv::DMatch> matches,
 		cv::Mat K)
 {
+
 	//Normalization transformations
 	cv::Mat Tp, Tc;
 
@@ -104,19 +107,48 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 		return;
 	}
 
-	F = compute_F_matrix(norm_train_pts, norm_query_pts);
-	if (!cv::countNonZero(F))
+	std::vector<cv::Point2d> _train_pts, _query_pts;
+	inliers.clear();
+	for (int i = 0; i < 1000; i++)
+	{
+		getRandSample(8, norm_train_pts, norm_query_pts, _train_pts,
+				_query_pts);
+		F = compute_F_matrix(_train_pts, _query_pts);
+
+		std::vector<char> _inliers = score(F, norm_train_pts, norm_query_pts);
+		if (inliers.empty() || (_inliers.size() > inliers.size()))
+		{
+			inliers = _inliers;
+		}
+	}
+
+	if (cv::countNonZero(inliers) > 8)
+	{
+		_train_pts.clear();
+		_query_pts.clear();
+		for (uint i = 0; i < norm_train_pts.size(); i++)
+		{
+			if (inliers[i])
+			{
+				_train_pts.push_back(norm_train_pts[i]);
+				_query_pts.push_back(norm_query_pts[i]);
+			}
+		}
+		cv::Mat tp = cv::Mat(_train_pts).reshape(1, _train_pts.size()), qp =
+				cv::Mat(_query_pts).reshape(1, _query_pts.size());
+		F = compute_F_matrix(_train_pts, _query_pts);
+	}
+	else
 	{
 		P = cv::Mat::eye(4, 4, CV_64F);
 		return;
 	}
 
-	cv::SVD svd(F);
-	svd.w.at<double>(0) = 1;
-	svd.w.at<double>(1) = 1;
-	svd.w.at<double>(2) = 0;
-
-	F = svd.u * cv::Mat().diag(svd.w) * svd.vt;
+	if (cv::countNonZero(F) < 2)
+	{
+		P = cv::Mat::eye(4, 4, CV_64F);
+		return;
+	}
 
 	cv::Mat E = K.t() * Tc.t() * F * Tp * K;
 
@@ -130,6 +162,8 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 
 	std::vector<std::vector<char> > mask_vec;
 
+	ROS_DEBUG_STREAM(
+			"Possibilities:\n" << P_vec[0] << std::endl << P_vec[1] << std::endl << P_vec[2] << std::endl << P_vec[3] << std::endl);
 	for (size_t i = 0; i < P_vec.size(); i++)
 	{
 		std::vector<char> _mask(inliers);
@@ -144,6 +178,8 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 	}
 
 	P = P_vec[pos];
+	ROS_DEBUG_STREAM(
+			"Solution:\n" << P);
 
 	inliers = mask_vec[pos];
 
@@ -202,13 +238,45 @@ bool MotionProcessor::feature_point_normalization(
 cv::Mat MotionProcessor::compute_F_matrix(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts)
 {
-	cv::Mat mask;
-	cv::Mat F = cv::findFundamentalMat(train_pts, query_pts, cv::FM_RANSAC,
-			epipolar_dist, confidence, mask);
 
-	inliers = std::vector<char>(mask);
+// number of active p_matched
+	int N = train_pts.size();
 
-	//	std::cout << F << std::endl;
+// create constraint matrix A
+	cv::Mat A(N, 9, CV_64F);
+
+	for (int i = 0; i < N; i++)
+	{
+//    Matcher::p_match m = p_matched[active[i]];
+		A.at<double>(i, 0) = query_pts[i].x * train_pts[i].x;
+		A.at<double>(i, 1) = query_pts[i].x * train_pts[i].y;
+		A.at<double>(i, 2) = query_pts[i].x;
+		A.at<double>(i, 3) = query_pts[i].y * train_pts[i].x;
+		A.at<double>(i, 4) = query_pts[i].y * train_pts[i].y;
+		A.at<double>(i, 5) = query_pts[i].y;
+		A.at<double>(i, 6) = train_pts[i].x;
+		A.at<double>(i, 7) = train_pts[i].y;
+		A.at<double>(i, 8) = 1;
+	}
+
+// compute singular value decomposition of A
+//  Mat U,W,V;
+	cv::SVD svd(A);
+
+// extract fundamental matrix from the column of V corresponding to the smallest singular value
+	cv::Mat F = cv::Mat(svd.vt.row(8)); // Matrix::reshape(V.getMat(0,8,8,8),3,3);
+	F = F.reshape(1, 3).t();
+
+	if (N > 8)
+	{
+		svd(F);
+
+		svd.w.at<double>(0) = 1;
+		svd.w.at<double>(1) = 1;
+		svd.w.at<double>(2) = 0;
+
+		F = svd.u * cv::Mat::diag(svd.w) * svd.vt;
+	}
 
 	return F;
 }
@@ -222,13 +290,7 @@ std::vector<cv::Mat> MotionProcessor::compute_Rt(cv::Mat E, cv::Mat K)
 	{ 0, -1, 0 },
 	{ +1, 0, 0 },
 	{ 0, 0, 1 } };
-	double z[3][3] =
-	{
-	{ 0, +1, 0 },
-	{ -1, 0, 0 },
-	{ 0, 0, 0 } };
 	cv::Mat W = cv::Mat(3, 3, CV_64F, w);
-	cv::Mat Z = cv::Mat(3, 3, CV_64F, z);
 
 	// extract T,R1,R2 (8 solutions)
 	cv::SVD svd;
@@ -327,7 +389,13 @@ int MotionProcessor::triangulateCheck(std::vector<cv::Point2d> train_pts,
 //		}
 		if (x1.at<double>(2, 0) * X.at<double>(3, 0) > 0
 				&& x2.at<double>(2, 0) * X.at<double>(3, 0) > 0)
+		{
 			num_inliers++;
+			inliers[i] = 1;
+		}
+		else{
+			inliers[i] = 0;
+		}
 		/**************************/
 
 		X /= X.at<double>(3, 0);
@@ -383,8 +451,76 @@ int MotionProcessor::cheiralityCheck(cv::Mat P2, cv::Mat K,
 
 int MotionProcessor::noMotion()
 {
-	P = cv::Mat::eye(4,4,CV_64F);
+	P = cv::Mat::eye(4, 4, CV_64F);
 	return 0;
+}
+
+int MotionProcessor::getRandSample(int size,
+		std::vector<cv::Point2d> norm_train_pts,
+		std::vector<cv::Point2d> norm_query_pts,
+		std::vector<cv::Point2d> &_train_pts,
+		std::vector<cv::Point2d> &_query_pts)
+{
+	std::vector<int> used(norm_train_pts.size(), 0);
+
+	_train_pts.clear();
+	_query_pts.clear();
+
+	for (int i = 0; i <= size; i++)
+	{
+		int p = rand() % norm_train_pts.size();
+		while (used[p])
+			p = rand() % norm_train_pts.size();
+		_train_pts.push_back(norm_train_pts[p]);
+		_query_pts.push_back(norm_query_pts[p]);
+		used[p] = 1;
+	}
+
+	return size;
+}
+
+std::vector<char> MotionProcessor::score(cv::Mat F,
+		std::vector<cv::Point2d> train, std::vector<cv::Point2d> query)
+{
+	//Based on the libviso2 getInlier() function
+
+	int n = train.size();
+	std::vector<double> f = cv::Mat_<double>(F.reshape(1, 1));
+
+	// loop variables
+	double x2tFx1;
+	double Fx1u, Fx1v, Fx1w;
+	double Ftx2u, Ftx2v;
+
+	// vector with inliers
+	std::vector<char> inliers(n, 0);
+
+	// for all matches do
+	for (int i = 0; i < n; i++)
+	{
+		// F*x1
+		Fx1u = f[0] * train[i].x + f[1] * train[i].y + f[2];
+		Fx1v = f[3] * train[i].x + f[4] * train[i].y + f[5];
+		Fx1w = f[6] * train[i].x + f[7] * train[i].y + f[8];
+
+		// F'*x2
+		Ftx2u = f[0] * query[i].x + f[3] * query[i].y + f[6];
+		Ftx2v = f[1] * query[i].x + f[4] * query[i].y + f[7];
+
+		// x2'*F*x1
+		x2tFx1 = query[i].x * Fx1u + query[i].y * Fx1v + Fx1w;
+
+		// sampson distance
+		double d = x2tFx1 * x2tFx1
+				/ (Fx1u * Fx1u + Fx1v * Fx1v + Ftx2u * Ftx2u + Ftx2v * Ftx2v);
+
+		// check threshold
+		if (fabs(d) < epipolar_dist)
+			inliers[i] = 1;
+	}
+
+	// return set of all inliers
+	return inliers;
 }
 
 cv::Mat MotionProcessor::Rodrigues(cv::Vec3d omega, double theta)

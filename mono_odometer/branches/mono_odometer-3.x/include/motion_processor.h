@@ -69,13 +69,25 @@ public:
 	int cheiralityCheck(cv::Mat P2, cv::Mat K, std::vector<cv::Point2d> pp,
 			std::vector<cv::Point2d> pc);
 	int noMotion();
+	int getRandSample(int size, std::vector<cv::Point2d> norm_train_pts,
+			std::vector<cv::Point2d> norm_query_pts,
+			std::vector<cv::Point2d> &_train_pts,
+			std::vector<cv::Point2d> &_query_pts);
+	std::vector<char> score(cv::Mat F, std::vector<cv::Point2d> train,
+			std::vector<cv::Point2d> query);
 	cv::Mat Rodrigues(cv::Vec3d omega, double theta = -1);
 	double triple_product(cv::Vec3d a, cv::Vec3d b, cv::Vec3d c);
 	cv::Mat skew(cv::Vec3d a);
 
 	//gets
-	std::vector<char> getInlierMask(){ return inliers; }
-	cv::Mat getCameraMatrix(){ return P; }
+	std::vector<char> getInlierMask()
+	{
+		return inliers;
+	}
+	cv::Mat getCameraMatrix()
+	{
+		return P;
+	}
 };
 
 } /* namespace LRM */

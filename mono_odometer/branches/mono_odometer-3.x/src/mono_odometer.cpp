@@ -44,6 +44,9 @@ int ROSParameter::parse(ros::NodeHandle nh)
 	nh.param<std::string>("ODOMETRY_TOPIC", value_str, "odom");
 	parameter["ODOMETRY_TOPIC"] = value_str;
 
+	nh.param<std::string>("POSE_TOPIC", value_str, "pose");
+	parameter["POSE_TOPIC"] = value_str;
+
 	nh.param<std::string>("ODOMETER_REFERENCE_FRAME", value_str, "odom");
 	parameter["ODOMETER_REFERENCE_FRAME"] = value_str;
 
@@ -67,6 +70,8 @@ int ROSParameter::parse(ros::NodeHandle nh)
 			boost::any_cast<std::string>(parameter["OPTFLOW_IMAGE_TOPIC"]).c_str());
 	ROS_DEBUG("ODOMETRY_TOPIC = %s",
 			boost::any_cast<std::string>(parameter["ODOMETRY_TOPIC"]).c_str());
+	ROS_DEBUG("POSE_TOPIC = %s",
+			boost::any_cast<std::string>(parameter["POSE_TOPIC"]).c_str());
 	ROS_DEBUG("ODOMETER_REFERENCE_FRAME = %s",
 			boost::any_cast<std::string>(parameter["ODOMETER_REFERENCE_FRAME"]).c_str());
 	ROS_DEBUG("ROBOT_FRAME = %s",
@@ -140,6 +145,8 @@ MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 			1);
 
 	odometry_advertiser = nh.advertise<nav_msgs::Odometry>(getOdometryTopic(),
+			1);
+	pose_advertiser = nh.advertise<geometry_msgs::PoseStamped>(getPoseTopic(),
 			1);
 
 	query_timestamp = train_timestamp = ros::Time::now();
@@ -218,36 +225,67 @@ int MonoOdometer::update_pose()
 		base_to_sensor.setIdentity();
 	}
 
-	motion = base_to_sensor * motion * base_to_sensor.inverse();
-
 	pose *= motion;
 
-	/*
-	 * Publishing the transformation between the odometer and the robot
-	 * base link.
-	 */
+	tf::Transform base_transform = base_to_sensor * pose
+			* base_to_sensor.inverse();
+
+//	nav_msgs::Odometry odometry_msg;
+//	odometry_msg.header.stamp = query_timestamp;
+//	odometry_msg.header.frame_id = getOdometerReferenceFrame();
+//	odometry_msg.child_frame_id = getRobotFrame();
+//	tf::poseTFToMsg(base_transform, odometry_msg.pose.pose);
+//
+//	// calculate twist (not possible for first run as no delta_t can be computed)
+//	tf::Transform delta_base_transform = base_to_sensor * motion
+//			* base_to_sensor.inverse();
+//
+//	double delta_t = (query_timestamp - train_timestamp).toSec();
+//	odometry_msg.twist.twist.linear.x = delta_base_transform.getOrigin().getX()
+//			/ delta_t;
+//	odometry_msg.twist.twist.linear.y = delta_base_transform.getOrigin().getY()
+//			/ delta_t;
+//	odometry_msg.twist.twist.linear.z = delta_base_transform.getOrigin().getZ()
+//			/ delta_t;
+//	double yaw, pitch, roll;
+//	delta_base_transform.getBasis().getEulerYPR(yaw, pitch, roll);
+//	odometry_msg.twist.twist.angular.x = roll / delta_t;
+//	odometry_msg.twist.twist.angular.y = pitch / delta_t;
+//	odometry_msg.twist.twist.angular.z = yaw / delta_t;
+//
+////	odometry_msg.pose.covariance = pose_covariance_;
+////	odometry_msg.twist.covariance = twist_covariance_;
+//	odometry_advertiser.publish(odometry_msg);
+//
+//	geometry_msgs::PoseStamped pose_msg;
+//	pose_msg.header.stamp = odometry_msg.header.stamp;
+//	pose_msg.header.frame_id = odometry_msg.header.frame_id;
+//	pose_msg.pose = odometry_msg.pose.pose;
+//
+//	pose_advertiser.publish(pose_msg);
+
 	odom_broadcaster.sendTransform(
-			tf::StampedTransform(pose, query_timestamp,
+			tf::StampedTransform(base_transform, query_timestamp,
 					getOdometerReferenceFrame(), getRobotFrame()));
 
-	//next, we'll publish the odometry message over ROS
-	odometry.header.stamp = ros::Time::now();
-	odometry.header.frame_id = getOdometerReferenceFrame();
-	odometry.child_frame_id = getSensorFrame();
-
-	tf::poseTFToMsg(pose, odometry.pose.pose);
-
-	double delta_t = 1.0; //(query_timestamp-train_timestamp).toSec();
-	odometry.twist.twist.linear.x = motion.getOrigin().getX() / delta_t;
-	odometry.twist.twist.linear.y = motion.getOrigin().getY() / delta_t;
-	odometry.twist.twist.linear.z = motion.getOrigin().getZ() / delta_t;
-	double yaw, pitch, roll;
-	motion.getBasis().getEulerYPR(yaw, pitch, roll);
-	odometry.twist.twist.angular.x = roll / delta_t;
-	odometry.twist.twist.angular.y = pitch / delta_t;
-	odometry.twist.twist.angular.z = yaw / delta_t;
-
-	odometry_advertiser.publish(odometry);
+//	//next, we'll publish the odometry message over ROS
+//	odometry.header.stamp = ros::Time::now();
+//	odometry.header.frame_id = getOdometerReferenceFrame();
+//	odometry.child_frame_id = getSensorFrame();
+//
+//	tf::poseTFToMsg(base_transform, odometry.pose.pose);
+//
+//	double delta_t = 1.0; //(query_timestamp-train_timestamp).toSec();
+//	odometry.twist.twist.linear.x = motion.getOrigin().getX() / delta_t;
+//	odometry.twist.twist.linear.y = motion.getOrigin().getY() / delta_t;
+//	odometry.twist.twist.linear.z = motion.getOrigin().getZ() / delta_t;
+//	double yaw, pitch, roll;
+//	motion.getBasis().getEulerYPR(yaw, pitch, roll);
+//	odometry.twist.twist.angular.x = roll / delta_t;
+//	odometry.twist.twist.angular.y = pitch / delta_t;
+//	odometry.twist.twist.angular.z = yaw / delta_t;
+//
+//	odometry_advertiser.publish(odometry);
 
 	return 0;
 }
@@ -331,17 +369,14 @@ void MonoOdometer::CallbackHandler(const sensor_msgs::ImageConstPtr& img,
 	{
 		ROS_DEBUG("Matched features: %d", matches.size());
 
-		cv::Mat A = cv::abs( cv::Mat(train_pts) - cv::Mat(query_pts) );
+		cv::Mat A = cv::abs(cv::Mat(train_pts) - cv::Mat(query_pts));
 		/*
 		 * displacement verifies wether there was a great displacement
 		 * between the features in two consecutives frames
 		 */
-		double displacement =
-				cv::sum(A).val[0]
-						/ train_pts.size();
+//		double displacement = cv::sum(A).val[0] / train_pts.size();
 //		ROS_INFO("Sum of all displacements: %f", displacement);
-
-		if (/*(displacement > 10) &&*/ (matches.size() > 8))
+		if (/*(displacement > 10) &&*/(matches.size() > 8))
 		{
 			/**
 			 * @todo The only parameters to the estimate_motion() should be the train

@@ -67,6 +67,7 @@ private:
 	image_transport::Publisher output_optflow_advertiser;
 	image_transport::Publisher output_displacement_advertiser;
 	ros::Publisher odometry_advertiser;
+	ros::Publisher pose_advertiser;
 	/* ************************* */
 
 	/**
@@ -186,6 +187,11 @@ public:
 	std::string getOdometryTopic()
 	{
 		return ros_parameter.getParameterByName<std::string>("ODOMETRY_TOPIC");
+	}
+
+	std::string getPoseTopic()
+	{
+		return ros_parameter.getParameterByName<std::string>("POSE_TOPIC");
 	}
 
 	std::string getOdometerReferenceFrame()

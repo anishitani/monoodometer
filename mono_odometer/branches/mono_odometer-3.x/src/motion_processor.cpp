@@ -10,7 +10,7 @@ int MotionProcessorParameter::parse(ros::NodeHandle nh)
 {
 	double value_double;
 
-	nh.param<double>("RANSAC_EPIPOLAR_DIST", value_double, 0.001);
+	nh.param<double>("RANSAC_EPIPOLAR_DIST", value_double, 0.0001);
 	parameter["RANSAC_EPIPOLAR_DIST"] = value_double;
 
 	nh.param<double>("RANSAC_CONFIDENCE", value_double, 0.95);
@@ -30,7 +30,7 @@ int MotionProcessorParameter::parse(ros::NodeHandle nh)
 MotionProcessor::MotionProcessor()
 {
 	confidence = 0.95;
-	epipolar_dist = 3.0;
+	epipolar_dist = 0.00001;
 }
 
 MotionProcessor::~MotionProcessor()
@@ -89,6 +89,20 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts, std::vector<cv::DMatch> matches,
 		cv::Mat K)
 {
+	// Order the matches if needed
+	int m_size = matches.size();
+	if (!matches.empty())
+	{
+		std::vector<cv::Point2d> t, q;
+		for (int i = 0; i < m_size; i++)
+		{
+			cv::DMatch m = matches[i];
+			t.push_back(train_pts[m.trainIdx]);
+			q.push_back(query_pts[m.queryIdx]);
+		}
+		train_pts = t;
+		query_pts = q;
+	}
 
 	//Normalization transformations
 	cv::Mat Tp, Tc;
@@ -113,10 +127,12 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 	{
 		getRandSample(8, norm_train_pts, norm_query_pts, _train_pts,
 				_query_pts);
+
 		F = compute_F_matrix(_train_pts, _query_pts);
 
 		std::vector<char> _inliers = score(F, norm_train_pts, norm_query_pts);
-		if (inliers.empty() || (_inliers.size() > inliers.size()))
+		if (inliers.empty()
+				|| cv::countNonZero(_inliers) > cv::countNonZero(inliers))
 		{
 			inliers = _inliers;
 		}
@@ -178,8 +194,7 @@ void MotionProcessor::estimate_motion(std::vector<cv::Point2d> train_pts,
 	}
 
 	P = P_vec[pos];
-	ROS_DEBUG_STREAM(
-			"Solution:\n" << P);
+	ROS_DEBUG_STREAM("Solution:\n" << P);
 
 	inliers = mask_vec[pos];
 
@@ -238,7 +253,6 @@ bool MotionProcessor::feature_point_normalization(
 cv::Mat MotionProcessor::compute_F_matrix(std::vector<cv::Point2d> train_pts,
 		std::vector<cv::Point2d> query_pts)
 {
-
 // number of active p_matched
 	int N = train_pts.size();
 
@@ -261,22 +275,20 @@ cv::Mat MotionProcessor::compute_F_matrix(std::vector<cv::Point2d> train_pts,
 
 // compute singular value decomposition of A
 //  Mat U,W,V;
-	cv::SVD svd(A);
+	cv::SVD svd(A, cv::SVD::FULL_UV);
 
 // extract fundamental matrix from the column of V corresponding to the smallest singular value
 	cv::Mat F = cv::Mat(svd.vt.row(8)); // Matrix::reshape(V.getMat(0,8,8,8),3,3);
-	F = F.reshape(1, 3).t();
+	F = F.reshape(1, 3);
 
-	if (N > 8)
-	{
-		svd(F);
+	svd(F);
 
-		svd.w.at<double>(0) = 1;
-		svd.w.at<double>(1) = 1;
-		svd.w.at<double>(2) = 0;
+	/**
+	 * @todo Find out why the hell W=(1,1,0) fails
+	 */
+	svd.w.at<double>(2) = 0;
 
-		F = svd.u * cv::Mat::diag(svd.w) * svd.vt;
-	}
+	F = svd.u * cv::Mat::diag(svd.w) * svd.vt;
 
 	return F;
 }
@@ -393,7 +405,8 @@ int MotionProcessor::triangulateCheck(std::vector<cv::Point2d> train_pts,
 			num_inliers++;
 			inliers[i] = 1;
 		}
-		else{
+		else
+		{
 			inliers[i] = 0;
 		}
 		/**************************/
@@ -466,7 +479,7 @@ int MotionProcessor::getRandSample(int size,
 	_train_pts.clear();
 	_query_pts.clear();
 
-	for (int i = 0; i <= size; i++)
+	for (int i = 0; i < size; i++)
 	{
 		int p = rand() % norm_train_pts.size();
 		while (used[p])
@@ -484,6 +497,8 @@ std::vector<char> MotionProcessor::score(cv::Mat F,
 {
 	//Based on the libviso2 getInlier() function
 
+//	std::cout << "F:\n" << F << std::endl;
+
 	int n = train.size();
 	std::vector<double> f = cv::Mat_<double>(F.reshape(1, 1));
 
@@ -498,21 +513,33 @@ std::vector<char> MotionProcessor::score(cv::Mat F,
 	// for all matches do
 	for (int i = 0; i < n; i++)
 	{
+//		printf("Train (%f,%f) - Query (%f,%f)\n", train[i].x,
+//				train[i].y, query[i].x, query[i].y);
+
 		// F*x1
 		Fx1u = f[0] * train[i].x + f[1] * train[i].y + f[2];
 		Fx1v = f[3] * train[i].x + f[4] * train[i].y + f[5];
 		Fx1w = f[6] * train[i].x + f[7] * train[i].y + f[8];
 
+//		printf("Fx1u = %f\nFx1v = %f\nFx1w = %f\n", Fx1u,Fx1v,Fx1w);
+
 		// F'*x2
 		Ftx2u = f[0] * query[i].x + f[3] * query[i].y + f[6];
 		Ftx2v = f[1] * query[i].x + f[4] * query[i].y + f[7];
 
+//		printf("Ftx2u = %f\nFtx2v = %f\n", Ftx2u,Ftx2v);
+
 		// x2'*F*x1
 		x2tFx1 = query[i].x * Fx1u + query[i].y * Fx1v + Fx1w;
+
+//		printf("x2tFx1 = %f\n", x2tFx1);
 
 		// sampson distance
 		double d = x2tFx1 * x2tFx1
 				/ (Fx1u * Fx1u + Fx1v * Fx1v + Ftx2u * Ftx2u + Ftx2v * Ftx2v);
+
+//		printf("Error = %f\n", d);
+//				getchar();
 
 		// check threshold
 		if (fabs(d) < epipolar_dist)

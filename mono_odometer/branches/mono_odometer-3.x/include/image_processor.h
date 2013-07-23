@@ -112,7 +112,7 @@ public:
 			std::vector<cv::KeyPoint> query_kpts, cv::Mat inTrainImage,
 			std::vector<cv::KeyPoint> train_kpts,
 			std::vector<cv::DMatch> matches, cv::Mat &outPairImage,
-			std::vector<char> mask);
+			std::vector<char> mask=std::vector<char>());
 	static int draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 			const std::vector<cv::KeyPoint>& query,
 			const std::vector<cv::KeyPoint>& train,
@@ -120,7 +120,8 @@ public:
 	static int draw_displacement(const cv::Mat inImage, cv::Mat &outImage,
 			const std::vector<cv::KeyPoint>& query,
 			const std::vector<cv::KeyPoint>& train,
-			std::vector<cv::DMatch>& matches, const std::vector<char> mask);
+			std::vector<cv::DMatch>& matches, const std::vector<char> mask =
+					std::vector<char>());
 };
 
 } /* namespace LRM */

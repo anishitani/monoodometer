@@ -1,21 +1,28 @@
 <launch>
-	<!-- param name="/use_sim_time" value="true"/ --> 
+	<!--  param name="/use_sim_time" value="true"/ --> 
 	<!-- node name="rviz" pkg="rviz" type="rviz"/ --> 
 	<!-- node pkg="tf" type="static_transform_publisher" name="map_broadcaster" 
 		args="0 0 0 0 0 0 /world /map 30" output="screen" / -->
 	<!-- node pkg="webcam" type="webcam" name="webcam_test"/ -->
-	<node pkg="image_player" type="player" name="image_player" args="/home/nishitani/Dropbox/Photos/Mestrado/dataset/corredor/03/rectified png"/>
-	<node pkg="tf" type="static_transform_publisher" name="camera_baselink_broadcaster" args="0 0 0 0.5 0.5 -0.5 -0.5 base_link camera 100" /> 	
+	<node pkg="image_player" type="player" name="image_player" args="/home/nishitani/Dropbox/Photos/Mestrado/dataset/rua/01 jpg"/>
+	<!-- node pkg="tf" type="static_transform_publisher" name="odom_world_broadcaster" args="0 0 0 0 0 0 /world odom 100" / -->
+	<!-- node pkg="tf" type="static_transform_publisher" name="camera_baselink_broadcaster" args="0 0 0 -1.57079632679 0 -1.57079632679  base_link camera 100" / -->
+	<node pkg="tf" type="static_transform_publisher" name="camera_baselink_broadcaster" args="0 0 0 0.5 0.5 -0.5 -0.5 base_link camera 100" />
 	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer" output="screen">
 	
+		<!-- Image Processor -->
 		<param name="FEATURE_TYPE" value="FAST" />
-		<param name="INTRINSIC_MATRIX_PATH"
-			value="/home/nishitani/Dropbox/Photos/Mestrado/dataset/corredor/03/files/param.yaml" />
-		<param name="INPUT_IMAGE_TOPIC" value="/image" />
-		<param name="RANSAC_EPIPOLAR_DIST" value="0.1" />
-		<param name="RANSAC_CONFIDENCE" value="0.95" />
 		<param name="MATCH_RADIUS" value="100.0" />
-	
+		
+		<!-- ROS -->
+		<param name="INTRINSIC_MATRIX_PATH"
+			value="/home/nishitani/ros/mono_odometer/calib/camera_left.yaml" />
+		<param name="INPUT_IMAGE_TOPIC" value="/image" />
+		<!-- param name="ODOMETER_REFERENCE_FRAME" value="odom" / -->
+		
+		<!-- Motion Processor -->
+		<param name="RANSAC_EPIPOLAR_DIST" value="0.00001" />
+		<param name="RANSAC_CONFIDENCE" value="0.95" />
 	</node>
 
 </launch>

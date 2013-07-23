@@ -78,7 +78,7 @@ public:
 
 	int setParameterByName(std::string name, boost::any value)
 	{
-		(parameter[name] = value);
+		parameter[name] = value;
 		return 0;
 	}
 

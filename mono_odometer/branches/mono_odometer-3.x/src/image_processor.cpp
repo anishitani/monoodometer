@@ -468,8 +468,7 @@ int ImageProcessor::draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 int ImageProcessor::draw_displacement(const cv::Mat inImage, cv::Mat &outImage,
 		const std::vector<cv::KeyPoint>& query,
 		const std::vector<cv::KeyPoint>& train,
-		std::vector<cv::DMatch>& matches, const std::vector<char> mask =
-				std::vector<char>())
+		std::vector<cv::DMatch>& matches, const std::vector<char> mask)
 {
 	cv::cvtColor(inImage, outImage, CV_GRAY2BGR);
 	for (uint i = 0; i < matches.size(); i++)

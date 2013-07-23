@@ -35,7 +35,10 @@ rosbuild_add_library( odometry_tools src/mono_odometer.cpp src/parameter.cpp src
 # creates the executables
 #rosbuild_add_executable(feature_test src/feature_test.cpp)
 rosbuild_add_executable(motion_test src/motion_test.cpp)
-rosbuild_add_executable(oxford_corridor src/oxford_corridor.cpp)
+rosbuild_add_executable(motion_test2 src/motion_test2.cpp)
+rosbuild_add_executable(motion_test3 src/motion_test3.cpp)
+rosbuild_add_executable(motion_test4 src/motion_test4.cpp)
+rosbuild_add_executable(motion_test5 src/motion_test5.cpp)
 rosbuild_add_executable(${PROJECT_NAME} src/main.cpp)
 
 #link boost
@@ -45,5 +48,8 @@ rosbuild_add_boost_directories()
 # links the odometer library to the project 
 #target_link_libraries( feature_test odometry_tools )
 target_link_libraries( motion_test odometry_tools )
-target_link_libraries( oxford_corridor odometry_tools )
+target_link_libraries( motion_test2 odometry_tools )
+target_link_libraries( motion_test3 odometry_tools )
+target_link_libraries( motion_test4 odometry_tools )
+target_link_libraries( motion_test5 odometry_tools )
 target_link_libraries( ${PROJECT_NAME} odometry_tools )

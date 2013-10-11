@@ -1,0 +1,253 @@
+\hypertarget{motion__test_8cpp}{\section{src/motion\-\_\-test.cpp \-File \-Reference}
+\label{motion__test_8cpp}\index{src/motion\-\_\-test.\-cpp@{src/motion\-\_\-test.\-cpp}}
+}
+{\ttfamily \#include $<$core.\-h$>$}\*
+{\ttfamily \#include $<$cv\-\_\-bridge/cv\-\_\-bridge.\-h$>$}\*
+{\ttfamily \#include $<$opencv2/calib3d/calib3d.\-hpp$>$}\*
+{\ttfamily \#include $<$opencv2/highgui/highgui.\-hpp$>$}\*
+{\ttfamily \#include $<$opencv2/imgproc/imgproc.\-hpp$>$}\*
+{\ttfamily \#include $<$opencv2/features2d/features2d.\-hpp$>$}\*
+{\ttfamily \#include $<$opencv2/nonfree/nonfree.\-hpp$>$}\*
+{\ttfamily \#include $<$tf/transform\-\_\-broadcaster.\-h$>$}\*
+{\ttfamily \#include $<$tf/transform\-\_\-listener.\-h$>$}\*
+{\ttfamily \#include $<$nav\-\_\-msgs/\-Odometry.\-h$>$}\*
+{\ttfamily \#include $<$iostream$>$}\*
+{\ttfamily \#include $<$cstdio$>$}\*
+{\ttfamily \#include $<$list$>$}\*
+{\ttfamily \#include $<$vector$>$}\*
+{\ttfamily \#include $<$fstream$>$}\*
+\-Include dependency graph for motion\-\_\-test.\-cpp\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{motion__test_8cpp__incl}
+\end{center}
+\end{figure}
+\subsection*{\-Functions}
+\begin{DoxyCompactItemize}
+\item 
+double \hyperlink{motion__test_8cpp_ad71ec851896bb003290612760ae0c451}{rad2deg} (double rad)
+\item 
+void \hyperlink{motion__test_8cpp_ad6cc3561c5a6b356883025e45df41d6b}{compare} (vector$<$ \-Point2d $>$ train\-\_\-pts, vector$<$ \-Point2d $>$ query\-\_\-pts, vector$<$ \-D\-Match $>$ matches, const vector$<$ \-Key\-Point $>$ \&train\-\_\-kpts, const vector$<$ \-Key\-Point $>$ \&query\-\_\-kpts)
+\item 
+void \hyperlink{motion__test_8cpp_ab54f5f19b469869b8826b14e8a0e3eb9}{draw\-Matches\-Relative} (const vector$<$ \-Key\-Point $>$ \&train, const vector$<$ \-Key\-Point $>$ \&query, std\-::vector$<$ cv\-::\-D\-Match $>$ \&matches, \-Mat \&img, const vector$<$ char $>$ \&mask=vector$<$ char $>$())
+\item 
+void \hyperlink{motion__test_8cpp_a7102482faad319b0c626517487bc3a8d}{draw\-Matches\-Relative} (const vector$<$ \-Point2d $>$ train, const vector$<$ \-Point2d $>$ query, \-Mat input, \-Mat \&output, const vector$<$ char $>$ \&mask=vector$<$ char $>$())
+\item 
+void \hyperlink{motion__test_8cpp_a2ead4be82bace1ccb746e85cc6a18a1b}{keypoints2points} (const vector$<$ \-Key\-Point $>$ \&in, vector$<$ \-Point2d $>$ \&out)
+\item 
+void \hyperlink{motion__test_8cpp_ab2cdddad2ede52e4c1556e11968b57ff}{points2keypoints} (const vector$<$ \-Point2d $>$ \&in, vector$<$ \-Key\-Point $>$ \&out)
+\item 
+void \hyperlink{motion__test_8cpp_aac8dea2a53335e1b49e1c9521385d9bb}{warp\-Keypoints} (const \-Mat \&\-H, const vector$<$ \-Key\-Point $>$ \&in, vector$<$ \-Key\-Point $>$ \&out)
+\item 
+void \hyperlink{motion__test_8cpp_aa7da89edf4c44153075d4084a5eccc4c}{matches2points} (const vector$<$ \-Key\-Point $>$ \&train, const vector$<$ \-Key\-Point $>$ \&query, const std\-::vector$<$ cv\-::\-D\-Match $>$ \&matches, vector$<$ cv\-::\-Point2d $>$ \&pts\-\_\-train, vector$<$ \-Point2d $>$ \&pts\-\_\-query)
+\item 
+bool \hyperlink{motion__test_8cpp_a1231c81755b04ee8e2127379b7e62338}{feature\-\_\-point\-\_\-normalization} (std\-::vector$<$ cv\-::\-Point2d $>$ prev\-\_\-pts, std\-::vector$<$ cv\-::\-Point2d $>$ curr\-\_\-pts, std\-::vector$<$ cv\-::\-Point2d $>$ \&norm\-\_\-prev\-\_\-pts, std\-::vector$<$ cv\-::\-Point2d $>$ \&norm\-\_\-curr\-\_\-pts, cv\-::\-Mat \&\-Tp, cv\-::\-Mat \&\-Tc)
+\item 
+cv\-::\-Mat \hyperlink{motion__test_8cpp_aea0991814f393f3de120e6f6468ca5c8}{compute\-\_\-\-F\-\_\-matrix} (std\-::vector$<$ cv\-::\-Point2d $>$ train\-\_\-pts, std\-::vector$<$ cv\-::\-Point2d $>$ query\-\_\-pts, \-Mat \&mask)
+\item 
+vector$<$ cv\-::\-Mat $>$ \hyperlink{motion__test_8cpp_a13435401c930bf1464bb55e5a947611d}{compute\-\_\-\-Rt} (cv\-::\-Mat \-E, cv\-::\-Mat \-K)
+\item 
+int \hyperlink{motion__test_8cpp_a8ee05d2e3d1efa5c7eb77b58a5e5bff2}{triangulate\-Check} (vector$<$ \-Point2d $>$ train\-\_\-pts, vector$<$ \-Point2d $>$ query\-\_\-pts, \-Mat \&\-K, \-Mat \-P, vector$<$ char $>$ mask=vector$<$ char $>$())
+\item 
+void \hyperlink{motion__test_8cpp_a5002f475f51bb211098467dc59e4f753}{estimate\-\_\-motion} (vector$<$ \-Point2d $>$ train\-\_\-pts, vector$<$ \-Point2d $>$ query\-\_\-pts, vector$<$ \-D\-Match $>$ matches, \-Mat \-K, \-Mat \&\-P, vector$<$ char $>$ \&inlier\-\_\-mask)
+\item 
+void \hyperlink{motion__test_8cpp_a7405eee1eadfce6d82763901454133e8}{reset\-H} (\-Mat \&\-H)
+\item 
+int \hyperlink{motion__test_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}{main} (int argc, char $\ast$$\ast$argv)
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Function \-Documentation}
+\hypertarget{motion__test_8cpp_ad6cc3561c5a6b356883025e45df41d6b}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!compare@{compare}}
+\index{compare@{compare}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{compare}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf compare} (
+\begin{DoxyParamCaption}
+\item[{vector$<$ \-Point2d $>$}]{train\-\_\-pts, }
+\item[{vector$<$ \-Point2d $>$}]{query\-\_\-pts, }
+\item[{vector$<$ \-D\-Match $>$}]{matches, }
+\item[{const vector$<$ \-Key\-Point $>$ \&}]{train\-\_\-kpts, }
+\item[{const vector$<$ \-Key\-Point $>$ \&}]{query\-\_\-kpts}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_ad6cc3561c5a6b356883025e45df41d6b}
+\hypertarget{motion__test_8cpp_aea0991814f393f3de120e6f6468ca5c8}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!compute\-\_\-\-F\-\_\-matrix@{compute\-\_\-\-F\-\_\-matrix}}
+\index{compute\-\_\-\-F\-\_\-matrix@{compute\-\_\-\-F\-\_\-matrix}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{compute\-\_\-\-F\-\_\-matrix}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Mat {\bf compute\-\_\-\-F\-\_\-matrix} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ cv\-::\-Point2d $>$}]{train\-\_\-pts, }
+\item[{std\-::vector$<$ cv\-::\-Point2d $>$}]{query\-\_\-pts, }
+\item[{\-Mat \&}]{mask}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_aea0991814f393f3de120e6f6468ca5c8}
+\hypertarget{motion__test_8cpp_a13435401c930bf1464bb55e5a947611d}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!compute\-\_\-\-Rt@{compute\-\_\-\-Rt}}
+\index{compute\-\_\-\-Rt@{compute\-\_\-\-Rt}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{compute\-\_\-\-Rt}]{\setlength{\rightskip}{0pt plus 5cm}vector$<$cv\-::\-Mat$>$ {\bf compute\-\_\-\-Rt} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{\-E, }
+\item[{cv\-::\-Mat}]{\-K}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_a13435401c930bf1464bb55e5a947611d}
+\hypertarget{motion__test_8cpp_ab54f5f19b469869b8826b14e8a0e3eb9}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!draw\-Matches\-Relative@{draw\-Matches\-Relative}}
+\index{draw\-Matches\-Relative@{draw\-Matches\-Relative}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{draw\-Matches\-Relative}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf draw\-Matches\-Relative} (
+\begin{DoxyParamCaption}
+\item[{const vector$<$ \-Key\-Point $>$ \&}]{train, }
+\item[{const vector$<$ \-Key\-Point $>$ \&}]{query, }
+\item[{std\-::vector$<$ cv\-::\-D\-Match $>$ \&}]{matches, }
+\item[{\-Mat \&}]{img, }
+\item[{const vector$<$ char $>$ \&}]{mask = {\ttfamily vector$<$char$>$()}}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_ab54f5f19b469869b8826b14e8a0e3eb9}
+\hypertarget{motion__test_8cpp_a7102482faad319b0c626517487bc3a8d}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!draw\-Matches\-Relative@{draw\-Matches\-Relative}}
+\index{draw\-Matches\-Relative@{draw\-Matches\-Relative}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{draw\-Matches\-Relative}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf draw\-Matches\-Relative} (
+\begin{DoxyParamCaption}
+\item[{const vector$<$ \-Point2d $>$}]{train, }
+\item[{const vector$<$ \-Point2d $>$}]{query, }
+\item[{\-Mat}]{input, }
+\item[{\-Mat \&}]{output, }
+\item[{const vector$<$ char $>$ \&}]{mask = {\ttfamily vector$<$char$>$()}}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_a7102482faad319b0c626517487bc3a8d}
+\hypertarget{motion__test_8cpp_a5002f475f51bb211098467dc59e4f753}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!estimate\-\_\-motion@{estimate\-\_\-motion}}
+\index{estimate\-\_\-motion@{estimate\-\_\-motion}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{estimate\-\_\-motion}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf estimate\-\_\-motion} (
+\begin{DoxyParamCaption}
+\item[{vector$<$ \-Point2d $>$}]{train\-\_\-pts, }
+\item[{vector$<$ \-Point2d $>$}]{query\-\_\-pts, }
+\item[{vector$<$ \-D\-Match $>$}]{matches, }
+\item[{\-Mat}]{\-K, }
+\item[{\-Mat \&}]{\-P, }
+\item[{vector$<$ char $>$ \&}]{inlier\-\_\-mask}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_a5002f475f51bb211098467dc59e4f753}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=342pt]{motion__test_8cpp_a5002f475f51bb211098467dc59e4f753_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{motion__test_8cpp_a1231c81755b04ee8e2127379b7e62338}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!feature\-\_\-point\-\_\-normalization@{feature\-\_\-point\-\_\-normalization}}
+\index{feature\-\_\-point\-\_\-normalization@{feature\-\_\-point\-\_\-normalization}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{feature\-\_\-point\-\_\-normalization}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf feature\-\_\-point\-\_\-normalization} (
+\begin{DoxyParamCaption}
+\item[{std\-::vector$<$ cv\-::\-Point2d $>$}]{prev\-\_\-pts, }
+\item[{std\-::vector$<$ cv\-::\-Point2d $>$}]{curr\-\_\-pts, }
+\item[{std\-::vector$<$ cv\-::\-Point2d $>$ \&}]{norm\-\_\-prev\-\_\-pts, }
+\item[{std\-::vector$<$ cv\-::\-Point2d $>$ \&}]{norm\-\_\-curr\-\_\-pts, }
+\item[{cv\-::\-Mat \&}]{\-Tp, }
+\item[{cv\-::\-Mat \&}]{\-Tc}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_a1231c81755b04ee8e2127379b7e62338}
+\hypertarget{motion__test_8cpp_a2ead4be82bace1ccb746e85cc6a18a1b}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!keypoints2points@{keypoints2points}}
+\index{keypoints2points@{keypoints2points}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{keypoints2points}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf keypoints2points} (
+\begin{DoxyParamCaption}
+\item[{const vector$<$ \-Key\-Point $>$ \&}]{in, }
+\item[{vector$<$ \-Point2d $>$ \&}]{out}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_a2ead4be82bace1ccb746e85cc6a18a1b}
+\hypertarget{motion__test_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!main@{main}}
+\index{main@{main}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{main}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf main} (
+\begin{DoxyParamCaption}
+\item[{int}]{argc, }
+\item[{char $\ast$$\ast$}]{argv}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}
+\hyperlink{feature__test_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}{main()} $<$ \-Image publisher
+
+$<$ \-Image publisher
+
+$<$ \-Image publisher
+
+\-Feature and \-Descriptor
+
+\-Images
+
+\-Calibration \-Matrix
+
+\-Motion \-Structures
+
+\-Leitura da \-Image
+
+\-Calcula as correspondencias proximas 
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{motion__test_8cpp_a3c04138a5bfe5d72780bb7e82a18e627_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{motion__test_8cpp_aa7da89edf4c44153075d4084a5eccc4c}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!matches2points@{matches2points}}
+\index{matches2points@{matches2points}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{matches2points}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf matches2points} (
+\begin{DoxyParamCaption}
+\item[{const vector$<$ \-Key\-Point $>$ \&}]{train, }
+\item[{const vector$<$ \-Key\-Point $>$ \&}]{query, }
+\item[{const std\-::vector$<$ cv\-::\-D\-Match $>$ \&}]{matches, }
+\item[{vector$<$ cv\-::\-Point2d $>$ \&}]{pts\-\_\-train, }
+\item[{vector$<$ \-Point2d $>$ \&}]{pts\-\_\-query}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_aa7da89edf4c44153075d4084a5eccc4c}
+\hypertarget{motion__test_8cpp_ab2cdddad2ede52e4c1556e11968b57ff}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!points2keypoints@{points2keypoints}}
+\index{points2keypoints@{points2keypoints}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{points2keypoints}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf points2keypoints} (
+\begin{DoxyParamCaption}
+\item[{const vector$<$ \-Point2d $>$ \&}]{in, }
+\item[{vector$<$ \-Key\-Point $>$ \&}]{out}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_ab2cdddad2ede52e4c1556e11968b57ff}
+\hypertarget{motion__test_8cpp_ad71ec851896bb003290612760ae0c451}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!rad2deg@{rad2deg}}
+\index{rad2deg@{rad2deg}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{rad2deg}]{\setlength{\rightskip}{0pt plus 5cm}double {\bf rad2deg} (
+\begin{DoxyParamCaption}
+\item[{double}]{rad}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_ad71ec851896bb003290612760ae0c451}
+\hypertarget{motion__test_8cpp_a7405eee1eadfce6d82763901454133e8}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!reset\-H@{reset\-H}}
+\index{reset\-H@{reset\-H}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{reset\-H}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf reset\-H} (
+\begin{DoxyParamCaption}
+\item[{\-Mat \&}]{\-H}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_a7405eee1eadfce6d82763901454133e8}
+\hypertarget{motion__test_8cpp_a8ee05d2e3d1efa5c7eb77b58a5e5bff2}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!triangulate\-Check@{triangulate\-Check}}
+\index{triangulate\-Check@{triangulate\-Check}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{triangulate\-Check}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf triangulate\-Check} (
+\begin{DoxyParamCaption}
+\item[{vector$<$ \-Point2d $>$}]{train\-\_\-pts, }
+\item[{vector$<$ \-Point2d $>$}]{query\-\_\-pts, }
+\item[{\-Mat \&}]{\-K, }
+\item[{\-Mat}]{\-P, }
+\item[{vector$<$ char $>$}]{mask = {\ttfamily vector$<$char$>$()}}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_a8ee05d2e3d1efa5c7eb77b58a5e5bff2}
+\-Checa a profundidade \hypertarget{motion__test_8cpp_aac8dea2a53335e1b49e1c9521385d9bb}{\index{motion\-\_\-test.\-cpp@{motion\-\_\-test.\-cpp}!warp\-Keypoints@{warp\-Keypoints}}
+\index{warp\-Keypoints@{warp\-Keypoints}!motion_test.cpp@{motion\-\_\-test.\-cpp}}
+\subsubsection[{warp\-Keypoints}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf warp\-Keypoints} (
+\begin{DoxyParamCaption}
+\item[{const \-Mat \&}]{\-H, }
+\item[{const vector$<$ \-Key\-Point $>$ \&}]{in, }
+\item[{vector$<$ \-Key\-Point $>$ \&}]{out}
+\end{DoxyParamCaption}
+)}}\label{motion__test_8cpp_aac8dea2a53335e1b49e1c9521385d9bb}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=288pt]{motion__test_8cpp_aac8dea2a53335e1b49e1c9521385d9bb_cgraph}
+\end{center}
+\end{figure}
+
+

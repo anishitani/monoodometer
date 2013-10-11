@@ -1,0 +1,6 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classLRM_1_1MotionProcessor.html#aa5cf91a28041e8897469a9ba9bd4b35b" title="LRM::MotionProcessor::feature_point_normalization" alt="" coords="315,5,637,35"/>
+<area shape="rect" id="node5" href="$classLRM_1_1MotionProcessor.html#aa06b8d787d57f51f99a0281582a136bc" title="LRM::MotionProcessor::compute_F_matrix" alt="" coords="340,59,612,88"/>
+<area shape="rect" id="node7" href="$classLRM_1_1MotionProcessor.html#af5cedadc3cafc249f88012884909b138" title="LRM::MotionProcessor::compute_Rt" alt="" coords="359,112,593,141"/>
+<area shape="rect" id="node9" href="$classLRM_1_1MotionProcessor.html#a14ef29f158bf0fe19d05dbadc81e64a0" title="LRM::MotionProcessor::triangulateCheck" alt="" coords="345,165,607,195"/>
+</map>

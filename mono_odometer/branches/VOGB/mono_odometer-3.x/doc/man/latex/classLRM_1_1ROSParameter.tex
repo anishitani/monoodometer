@@ -1,0 +1,85 @@
+\hypertarget{classLRM_1_1ROSParameter}{\section{\-L\-R\-M\-:\-:\-R\-O\-S\-Parameter \-Class \-Reference}
+\label{classLRM_1_1ROSParameter}\index{\-L\-R\-M\-::\-R\-O\-S\-Parameter@{\-L\-R\-M\-::\-R\-O\-S\-Parameter}}
+}
+
+
+{\ttfamily \#include $<$mono\-\_\-odometer.\-h$>$}
+
+
+
+\-Inheritance diagram for \-L\-R\-M\-:\-:\-R\-O\-S\-Parameter\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classLRM_1_1ROSParameter__inherit__graph}
+\end{center}
+\end{figure}
+
+
+\-Collaboration diagram for \-L\-R\-M\-:\-:\-R\-O\-S\-Parameter\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=190pt]{classLRM_1_1ROSParameter__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classLRM_1_1ROSParameter_a1829f2f498ed9baa732c5653a29fa18d}{\-R\-O\-S\-Parameter} ()
+\item 
+\hyperlink{classLRM_1_1ROSParameter_a858dfa2e9ab046a7dba1699cb712f810}{$\sim$\-R\-O\-S\-Parameter} ()
+\item 
+int \hyperlink{classLRM_1_1ROSParameter_adfd704986bd8a4c12e1139b2a8d08871}{parse} (ros\-::\-Node\-Handle nh)
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Detailed \-Description}
+\-List of parameter regarding \-R\-O\-S configuration for the launch file.
+\begin{DoxyItemize}
+\item {\bfseries \-I\-N\-T\-R\-I\-N\-S\-I\-C\-\_\-\-M\-A\-T\-R\-I\-X\-\_\-\-P\-A\-T\-H\-:} \-Path to the intrinsic matrix \-K file. ({\bfseries \-File} {\bfseries format\-:\-Y\-A\-M\-L} -\/ {\bfseries \-Default\-:} empty)
+\item {\bfseries \-I\-N\-P\-U\-T\-\_\-\-I\-M\-A\-G\-E\-\_\-\-T\-O\-P\-I\-C\-:} \-Topic name of the input image. ({\bfseries \-Default\-:} /camera/image)
+\item {\bfseries \-F\-E\-A\-T\-U\-R\-E\-\_\-\-I\-M\-A\-G\-E\-\_\-\-T\-O\-P\-I\-C\-:} \-Name of the topic where the output image with the features detect will be published. ({\bfseries \-Default\-:} images/feature)
+\item {\bfseries \-M\-A\-T\-C\-H\-E\-S\-\_\-\-I\-M\-A\-G\-E\-\_\-\-T\-O\-P\-I\-C\-:} \-Name of the topic where the output image with the features matched will be published. ({\bfseries \-Default\-:} images/matches)
+\item {\bfseries \-O\-P\-T\-F\-L\-O\-W\-\_\-\-I\-M\-A\-G\-E\-\_\-\-T\-O\-P\-I\-C\-:} \-Name of the topic where the output image with the feature displacement will be published. ({\bfseries \-Default\-:} images/optflow)
+\item {\bfseries \-O\-D\-O\-M\-E\-T\-R\-Y\-\_\-\-T\-O\-P\-I\-C\-:} \-Name of the topic where the odometry will be published. ({\bfseries \-Default\-:} odom)
+\item {\bfseries \-O\-D\-O\-M\-E\-T\-E\-R\-\_\-\-R\-E\-F\-E\-R\-E\-N\-C\-E\-\_\-\-F\-R\-A\-M\-E\-:} \-Fixed frame used as reference for the odometer. ({\bfseries \-Default\-:} odom)
+\item {\bfseries \-R\-O\-B\-O\-T\-\_\-\-F\-R\-A\-M\-E\-:} \-The frame which all sensors are referenced to. \-Usually the base link. ({\bfseries \-Default\-:} base\-\_\-link)
+\item {\bfseries \-S\-E\-N\-S\-O\-R\-\_\-\-F\-R\-A\-M\-E\-:} \-The image capturing sensor frame. ({\bfseries \-Default\-:} camera) 
+\end{DoxyItemize}
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classLRM_1_1ROSParameter_a1829f2f498ed9baa732c5653a29fa18d}{\index{\-L\-R\-M\-::\-R\-O\-S\-Parameter@{\-L\-R\-M\-::\-R\-O\-S\-Parameter}!\-R\-O\-S\-Parameter@{\-R\-O\-S\-Parameter}}
+\index{\-R\-O\-S\-Parameter@{\-R\-O\-S\-Parameter}!LRM::ROSParameter@{\-L\-R\-M\-::\-R\-O\-S\-Parameter}}
+\subsubsection[{\-R\-O\-S\-Parameter}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-L\-R\-M\-::\-R\-O\-S\-Parameter\-::\-R\-O\-S\-Parameter} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{classLRM_1_1ROSParameter_a1829f2f498ed9baa732c5653a29fa18d}
+\hypertarget{classLRM_1_1ROSParameter_a858dfa2e9ab046a7dba1699cb712f810}{\index{\-L\-R\-M\-::\-R\-O\-S\-Parameter@{\-L\-R\-M\-::\-R\-O\-S\-Parameter}!$\sim$\-R\-O\-S\-Parameter@{$\sim$\-R\-O\-S\-Parameter}}
+\index{$\sim$\-R\-O\-S\-Parameter@{$\sim$\-R\-O\-S\-Parameter}!LRM::ROSParameter@{\-L\-R\-M\-::\-R\-O\-S\-Parameter}}
+\subsubsection[{$\sim$\-R\-O\-S\-Parameter}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-L\-R\-M\-::\-R\-O\-S\-Parameter\-::$\sim$\-R\-O\-S\-Parameter} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{classLRM_1_1ROSParameter_a858dfa2e9ab046a7dba1699cb712f810}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classLRM_1_1ROSParameter_adfd704986bd8a4c12e1139b2a8d08871}{\index{\-L\-R\-M\-::\-R\-O\-S\-Parameter@{\-L\-R\-M\-::\-R\-O\-S\-Parameter}!parse@{parse}}
+\index{parse@{parse}!LRM::ROSParameter@{\-L\-R\-M\-::\-R\-O\-S\-Parameter}}
+\subsubsection[{parse}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf \-L\-R\-M\-::\-R\-O\-S\-Parameter\-::parse} (
+\begin{DoxyParamCaption}
+\item[{ros\-::\-Node\-Handle}]{nh}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}\label{classLRM_1_1ROSParameter_adfd704986bd8a4c12e1139b2a8d08871}
+\-R\-O\-S \hyperlink{classLRM_1_1Parameter}{\-Parameter} \-Class 
+
+\-Implements \hyperlink{classLRM_1_1Parameter_ad53ef22f20e18578caa644866aaa234b}{\-L\-R\-M\-::\-Parameter}.
+
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+include/\hyperlink{mono__odometer_8h}{mono\-\_\-odometer.\-h}\item 
+src/\hyperlink{mono__odometer_8cpp}{mono\-\_\-odometer.\-cpp}\end{DoxyCompactItemize}

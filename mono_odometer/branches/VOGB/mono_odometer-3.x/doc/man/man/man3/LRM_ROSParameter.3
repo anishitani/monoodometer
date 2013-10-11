@@ -1,0 +1,61 @@
+.TH "LRM::ROSParameter" 3 "Thu Jul 4 2013" "Version 3.0" "Mono Odometer" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+LRM::ROSParameter \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <mono_odometer\&.h>\fP
+.PP
+Inherits \fBLRM::Parameter\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBROSParameter\fP ()"
+.br
+.ti -1c
+.RI "\fB~ROSParameter\fP ()"
+.br
+.ti -1c
+.RI "int \fBparse\fP (ros::NodeHandle nh)"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+List of parameter regarding ROS configuration for the launch file\&.
+.IP "\(bu" 2
+\fBINTRINSIC_MATRIX_PATH:\fP Path to the intrinsic matrix K file\&. (\fBFile\fP \fBformat:YAML\fP - \fBDefault:\fP empty)
+.IP "\(bu" 2
+\fBINPUT_IMAGE_TOPIC:\fP Topic name of the input image\&. (\fBDefault:\fP /camera/image)
+.IP "\(bu" 2
+\fBFEATURE_IMAGE_TOPIC:\fP Name of the topic where the output image with the features detect will be published\&. (\fBDefault:\fP images/feature)
+.IP "\(bu" 2
+\fBMATCHES_IMAGE_TOPIC:\fP Name of the topic where the output image with the features matched will be published\&. (\fBDefault:\fP images/matches)
+.IP "\(bu" 2
+\fBOPTFLOW_IMAGE_TOPIC:\fP Name of the topic where the output image with the feature displacement will be published\&. (\fBDefault:\fP images/optflow)
+.IP "\(bu" 2
+\fBODOMETRY_TOPIC:\fP Name of the topic where the odometry will be published\&. (\fBDefault:\fP odom)
+.IP "\(bu" 2
+\fBODOMETER_REFERENCE_FRAME:\fP Fixed frame used as reference for the odometer\&. (\fBDefault:\fP odom)
+.IP "\(bu" 2
+\fBROBOT_FRAME:\fP The frame which all sensors are referenced to\&. Usually the base link\&. (\fBDefault:\fP base_link)
+.IP "\(bu" 2
+\fBSENSOR_FRAME:\fP The image capturing sensor frame\&. (\fBDefault:\fP camera) 
+.PP
+
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "\fBLRM::ROSParameter::ROSParameter\fP ()\fC [inline]\fP"
+.SS "\fBLRM::ROSParameter::~ROSParameter\fP ()\fC [inline]\fP"
+.SH "Member Function Documentation"
+.PP 
+.SS "int \fBLRM::ROSParameter::parse\fP (ros::NodeHandlenh)\fC [virtual]\fP"ROS \fBParameter\fP Class 
+.PP
+Implements \fBLRM::Parameter\fP\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Mono Odometer from the source code\&.

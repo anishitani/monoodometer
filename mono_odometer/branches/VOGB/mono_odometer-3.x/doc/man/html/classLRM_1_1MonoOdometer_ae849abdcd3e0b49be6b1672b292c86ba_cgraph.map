@@ -1,0 +1,39 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classLRM_1_1ROSParameter.html#adfd704986bd8a4c12e1139b2a8d08871" title="LRM::ROSParameter::parse" alt="" coords="351,5,537,35"/>
+<area shape="rect" id="node5" href="$classLRM_1_1ImageProcessorParameter.html#a381448a39d6b41c8f44fd5b45f975b4a" title="LRM::ImageProcessorParameter::parse" alt="" coords="317,59,571,88"/>
+<area shape="rect" id="node9" href="$classLRM_1_1MotionProcessorParameter.html#a773949b98bb0c02dd8c03f9c74af0481" title="LRM::MotionProcessorParameter::parse" alt="" coords="316,112,572,141"/>
+<area shape="rect" id="node11" href="$classLRM_1_1MonoOdometer.html#aaea86d0c2fc1119b066b310451be4a67" title="LRM::MonoOdometer::isIntrinsicMatrixPath" alt="" coords="1037,1112,1312,1141"/>
+<area shape="rect" id="node15" href="$classLRM_1_1MonoOdometer.html#ab75736159a13ba537ed8615c84853243" title="LRM::MonoOdometer::getIntrinsicMatrixPath" alt="" coords="303,1163,585,1192"/>
+<area shape="rect" id="node18" href="$classLRM_1_1ImageProcessor.html#aa5ddc6b267ccb4afcb3871fc730f2c93" title="LRM::ImageProcessor::setting" alt="" coords="344,1216,544,1245"/>
+<area shape="rect" id="node21" href="$classLRM_1_1MotionProcessor.html#a64c33eeeac78f7f8358c77daa4635689" title="LRM::MotionProcessor::setting" alt="" coords="343,165,545,195"/>
+<area shape="rect" id="node24" href="$classLRM_1_1MonoOdometer.html#ac989d0a61c0b18c7e538732668953fa1" title="LRM::MonoOdometer::getOdometerReferenceFrame" alt="" coords="639,272,964,301"/>
+<area shape="rect" id="node27" href="$classLRM_1_1MonoOdometer.html#a3550a896dd2e212fa177d7401f1a5b61" title="LRM::MonoOdometer::getRobotFrame" alt="" coords="1052,587,1297,616"/>
+<area shape="rect" id="node30" href="$classLRM_1_1MonoOdometer.html#a3174620fdca5f375ec38bc0709c2e1e0" title="LRM::MonoOdometer::getInputImageTopic" alt="" coords="309,219,579,248"/>
+<area shape="rect" id="node33" href="$classLRM_1_1MonoOdometer.html#a7205e77893b1f9d4c37de616519ef5ed" title="The Image Callback method is responsible for handling the income messages from the camera device and ..." alt="" coords="323,637,565,667"/>
+<area shape="rect" id="node81" href="$classLRM_1_1MonoOdometer.html#a68f5f4b33141cd2a2ea92db6197db65c" title="LRM::MonoOdometer::getFeatureImageTopic" alt="" coords="301,272,587,301"/>
+<area shape="rect" id="node84" href="$classLRM_1_1MonoOdometer.html#a0b5b603776c1c011d1268dc029dee6ae" title="LRM::MonoOdometer::getMatchesImageTopic" alt="" coords="299,376,589,405"/>
+<area shape="rect" id="node87" href="$classLRM_1_1MonoOdometer.html#acde0fd05b19f524bace7c71de9a0cc36" title="LRM::MonoOdometer::getOptFlowImageTopic" alt="" coords="299,769,589,799"/>
+<area shape="rect" id="node90" href="$classLRM_1_1MonoOdometer.html#a16eaa3716cb077ef993fa66a582fe65e" title="LRM::MonoOdometer::getOdometryTopic" alt="" coords="313,980,575,1009"/>
+<area shape="rect" id="node7" href="$classLRM_1_1Feature.html#ad9c5e3c4db26357168ba34ae1f3e566c" title="LRM::Feature::getFeatureByName" alt="" coords="691,59,912,88"/>
+<area shape="rect" id="node13" href="$classLRM_1_1Parameter.html#a1e39678803d61a1cfe74b9f2fcc2d847" title="LRM::Parameter::getParameterByName" alt="" coords="1385,640,1639,669"/>
+<area shape="rect" id="node35" href="$classLRM_1_1MonoOdometer.html#ab33c598738d4c565cae80ca110f3ab63" title="Converts a sensor message to a grayscale image." alt="" coords="644,637,959,667"/>
+<area shape="rect" id="node37" href="$classLRM_1_1ImageProcessor.html#aa2d39abc2246936ab5cfc35ecde020fe" title="LRM::ImageProcessor::detect_features" alt="" coords="676,691,927,720"/>
+<area shape="rect" id="node39" href="$classLRM_1_1ImageProcessor.html#adb6fe6e1383ede9271232b7f96ea7699" title="LRM::ImageProcessor::extract_features" alt="" coords="675,744,928,773"/>
+<area shape="rect" id="node41" href="$classLRM_1_1ImageProcessor.html#a052b76bc4809897573ac3a0a3bf11ca8" title="LRM::ImageProcessor::match_features" alt="" coords="676,797,927,827"/>
+<area shape="rect" id="node43" href="$classLRM_1_1MonoOdometer.html#acdfde454162a9fba808c5e99069e5831" title="LRM::MonoOdometer::drawFeatureImage" alt="" coords="671,851,932,880"/>
+<area shape="rect" id="node49" href="$classLRM_1_1MotionProcessor.html#a2fa4b7f533a12a88058a63b87ad96f4a" title="LRM::MotionProcessor::matches2points" alt="" coords="673,904,929,933"/>
+<area shape="rect" id="node51" href="$classLRM_1_1MotionProcessor.html#a13ac0902eb981cacc1dee1a2d586362d" title="Estimates the rotation and translation between two frames." alt="" coords="672,376,931,405"/>
+<area shape="rect" id="node61" href="$classLRM_1_1MonoOdometer.html#a8c7914efde9c07323c171d7adfaf656e" title="LRM::MonoOdometer::update_pose" alt="" coords="687,531,916,560"/>
+<area shape="rect" id="node71" href="$classLRM_1_1MonoOdometer.html#a0e648fa164c12e1bb405c5e0de9607cf" title="LRM::MonoOdometer::drawMatchesImage" alt="" coords="667,957,936,987"/>
+<area shape="rect" id="node76" href="$classLRM_1_1MonoOdometer.html#ac3e11ffd664dfd8b06068f77dd475ed4" title="LRM::MonoOdometer::drawOptFlowImage" alt="" coords="668,584,935,613"/>
+<area shape="rect" id="node45" href="$classLRM_1_1MotionProcessor.html#afea20e7bd776f189fabdd259c22e6b4e" title="LRM::MotionProcessor::getInlierMask" alt="" coords="1053,879,1296,908"/>
+<area shape="rect" id="node47" href="$classLRM_1_1ImageProcessor.html#a54467c3da8a338bac8f89c4d7f7a4dc2" title="LRM::ImageProcessor::draw_feature" alt="" coords="1057,825,1292,855"/>
+<area shape="rect" id="node53" href="$classLRM_1_1MotionProcessor.html#aa5cf91a28041e8897469a9ba9bd4b35b" title="LRM::MotionProcessor::feature_point_normalization" alt="" coords="1013,373,1336,403"/>
+<area shape="rect" id="node55" href="$classLRM_1_1MotionProcessor.html#aa06b8d787d57f51f99a0281582a136bc" title="LRM::MotionProcessor::compute_F_matrix" alt="" coords="1039,427,1311,456"/>
+<area shape="rect" id="node57" href="$classLRM_1_1MotionProcessor.html#af5cedadc3cafc249f88012884909b138" title="LRM::MotionProcessor::compute_Rt" alt="" coords="1057,480,1292,509"/>
+<area shape="rect" id="node59" href="$classLRM_1_1MotionProcessor.html#a14ef29f158bf0fe19d05dbadc81e64a0" title="LRM::MotionProcessor::triangulateCheck" alt="" coords="1044,533,1305,563"/>
+<area shape="rect" id="node63" href="$classLRM_1_1MotionProcessor.html#a8029258b4e6d79233b7340eb7695b4f0" title="LRM::MotionProcessor::getCameraMatrix" alt="" coords="1043,640,1307,669"/>
+<area shape="rect" id="node66" href="$classLRM_1_1MonoOdometer.html#a72b47de741d2c273a34c7d4e9a093092" title="LRM::MonoOdometer::getSensorFrame" alt="" coords="1049,693,1300,723"/>
+<area shape="rect" id="node74" href="$classLRM_1_1ImageProcessor.html#a4c6bffe3c04f2580a49399bf9a285d9d" title="LRM::ImageProcessor::draw_matches" alt="" coords="1052,957,1297,987"/>
+<area shape="rect" id="node79" href="$classLRM_1_1ImageProcessor.html#a23b4e5f58559a566cf15b204acf0aa22" title="LRM::ImageProcessor::draw_optflow" alt="" coords="1056,747,1293,776"/>
+</map>

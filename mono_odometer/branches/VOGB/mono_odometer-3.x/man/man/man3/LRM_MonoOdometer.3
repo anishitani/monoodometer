@@ -1,0 +1,279 @@
+.TH "LRM::MonoOdometer" 3 "Wed Jul 3 2013" "Version 0.01" "Mono Odometer" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+LRM::MonoOdometer \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <mono_odometer\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBMonoOdometer\fP ()"
+.br
+.ti -1c
+.RI "\fBMonoOdometer\fP (ros::NodeHandle &nh, image_transport::ImageTransport &it)"
+.br
+.RI "\fIThe constructor of the Mono Odometer class\&. Captures and process a new frame and estimates the momentaneous motion\&. \fP"
+.ti -1c
+.RI "\fB~MonoOdometer\fP ()"
+.br
+.ti -1c
+.RI "void \fBImageCallback\fP (const sensor_msgs::ImageConstPtr &msg)"
+.br
+.RI "\fIThe Image Callback method is responsible for handling the income messages from the camera device and extract the frame features and descriptors\&. \fP"
+.ti -1c
+.RI "bool \fBisIntrinsicMatrixPath\fP ()"
+.br
+.ti -1c
+.RI "bool \fBisIntrinsicMatrixTopic\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetIntrinsicMatrixPath\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetIntrinsicMatrixTopic\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetInputImageTopic\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetFeatureImageTopic\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetMatchesImageTopic\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetOptFlowImageTopic\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetOdometryTopic\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetOdometerReferenceFrame\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetRobotFrame\fP ()"
+.br
+.ti -1c
+.RI "std::string \fBgetSensorFrame\fP ()"
+.br
+.in -1c
+.SS "Private Member Functions"
+
+.in +1c
+.ti -1c
+.RI "int \fBupdate_pose\fP ()"
+.br
+.ti -1c
+.RI "int \fBconvertSensorMsgToImage\fP (const sensor_msgs::ImageConstPtr &msg, cv_bridge::CvImageConstPtr &image)"
+.br
+.RI "\fIConverts a sensor message to a grayscale image\&. \fP"
+.ti -1c
+.RI "int \fBdrawFeatureImage\fP ()"
+.br
+.ti -1c
+.RI "int \fBdrawMatchesImage\fP ()"
+.br
+.ti -1c
+.RI "int \fBdrawOptFlowImage\fP ()"
+.br
+.in -1c
+.SS "Private Attributes"
+
+.in +1c
+.ti -1c
+.RI "ros::Time \fBquery_timestamp\fP"
+.br
+.ti -1c
+.RI "ros::Time \fBtrain_timestamp\fP"
+.br
+.ti -1c
+.RI "cv::Mat \fBK\fP"
+.br
+.ti -1c
+.RI "\fBROSParameter\fP \fBros_parameter\fP"
+.br
+.ti -1c
+.RI "image_transport::Subscriber \fBinput_image_subscriber\fP"
+.br
+.ti -1c
+.RI "image_transport::Publisher \fBoutput_feature_advertiser\fP"
+.br
+.ti -1c
+.RI "image_transport::Publisher \fBoutput_matches_advertiser\fP"
+.br
+.ti -1c
+.RI "image_transport::Publisher \fBoutput_optflow_advertiser\fP"
+.br
+.ti -1c
+.RI "ros::Publisher \fBodometry_advertiser\fP"
+.br
+.ti -1c
+.RI "\fBImageProcessor\fP \fBimg_proc\fP"
+.br
+.ti -1c
+.RI "\fBImageProcessorParameter\fP \fBimg_proc_parameter\fP"
+.br
+.ti -1c
+.RI "cv_bridge::CvImageConstPtr \fBtrain_image\fP"
+.br
+.RI "\fIPrevious image\&. \fP"
+.ti -1c
+.RI "cv_bridge::CvImageConstPtr \fBquery_image\fP"
+.br
+.RI "\fICurrent image\&. \fP"
+.ti -1c
+.RI "cv_bridge::CvImage \fBfeature_image\fP"
+.br
+.ti -1c
+.RI "cv_bridge::CvImage \fBmatches_image\fP"
+.br
+.ti -1c
+.RI "cv_bridge::CvImage \fBoptflow_image\fP"
+.br
+.ti -1c
+.RI "std::vector< cv::KeyPoint > \fBtrain_kpts\fP"
+.br
+.RI "\fIPrevious image keypoints\&. \fP"
+.ti -1c
+.RI "std::vector< cv::KeyPoint > \fBquery_kpts\fP"
+.br
+.RI "\fICurrent image keypoints\&. \fP"
+.ti -1c
+.RI "std::vector< cv::Point2d > \fBtrain_pts\fP"
+.br
+.ti -1c
+.RI "std::vector< cv::Point2d > \fBquery_pts\fP"
+.br
+.ti -1c
+.RI "cv::Mat \fBtrain_desc\fP"
+.br
+.ti -1c
+.RI "cv::Mat \fBquery_desc\fP"
+.br
+.ti -1c
+.RI "std::vector< cv::DMatch > \fBmatches\fP"
+.br
+.ti -1c
+.RI "\fBMotionProcessor\fP \fBmot_proc\fP"
+.br
+.ti -1c
+.RI "\fBMotionProcessorParameter\fP \fBmot_proc_parameter\fP"
+.br
+.ti -1c
+.RI "tf::Transform \fBpose\fP"
+.br
+.ti -1c
+.RI "tf::StampedTransform \fBbase_to_sensor\fP"
+.br
+.ti -1c
+.RI "tf::TransformBroadcaster \fBodom_broadcaster\fP"
+.br
+.ti -1c
+.RI "tf::TransformListener \fBtf_listener\fP"
+.br
+.ti -1c
+.RI "nav_msgs::Odometry \fBodometry\fP"
+.br
+.in -1c
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "\fBLRM::MonoOdometer::MonoOdometer\fP ()"\fBMonoOdometer\fP Class 
+.SS "\fBLRM::MonoOdometer::MonoOdometer\fP (ros::NodeHandle &nh, image_transport::ImageTransport &it)"
+.PP
+The constructor of the Mono Odometer class\&. Captures and process a new frame and estimates the momentaneous motion\&. \fBParameters:\fP
+.RS 4
+\fInh\fP Node handle of the node of the monocular odometer\&. 
+.RE
+.PP
+
+.SS "\fBLRM::MonoOdometer::~MonoOdometer\fP ()"
+.SH "Member Function Documentation"
+.PP 
+.SS "int \fBLRM::MonoOdometer::convertSensorMsgToImage\fP (const sensor_msgs::ImageConstPtr &msg, cv_bridge::CvImageConstPtr &image)\fC [private]\fP"
+.PP
+Converts a sensor message to a grayscale image\&. \fBParameters:\fP
+.RS 4
+\fImsg\fP Sensor image 
+.br
+\fIimage\fP Output image 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Error code 
+.RE
+.PP
+
+.SS "int \fBLRM::MonoOdometer::drawFeatureImage\fP ()\fC [private]\fP"
+.SS "int \fBLRM::MonoOdometer::drawMatchesImage\fP ()\fC [private]\fP"
+.SS "int \fBLRM::MonoOdometer::drawOptFlowImage\fP ()\fC [private]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getFeatureImageTopic\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getInputImageTopic\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getIntrinsicMatrixPath\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getIntrinsicMatrixTopic\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getMatchesImageTopic\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getOdometerReferenceFrame\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getOdometryTopic\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getOptFlowImageTopic\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getRobotFrame\fP ()\fC [inline]\fP"
+.SS "std::string \fBLRM::MonoOdometer::getSensorFrame\fP ()\fC [inline]\fP"
+.SS "void \fBLRM::MonoOdometer::ImageCallback\fP (const sensor_msgs::ImageConstPtr &msg)"
+.PP
+The Image Callback method is responsible for handling the income messages from the camera device and extract the frame features and descriptors\&. \fBParameters:\fP
+.RS 4
+\fImsg\fP Income message from the defined camera topic\&. 
+.RE
+.PP
+
+.SS "bool \fBLRM::MonoOdometer::isIntrinsicMatrixPath\fP ()\fC [inline]\fP"
+.SS "bool \fBLRM::MonoOdometer::isIntrinsicMatrixTopic\fP ()\fC [inline]\fP"
+.SS "int \fBLRM::MonoOdometer::update_pose\fP ()\fC [private]\fP"
+.SH "Member Data Documentation"
+.PP 
+.SS "tf::StampedTransform \fBLRM::MonoOdometer::base_to_sensor\fP\fC [private]\fP"
+.SS "cv_bridge::CvImage \fBLRM::MonoOdometer::feature_image\fP\fC [private]\fP"
+.SS "\fBImageProcessor\fP \fBLRM::MonoOdometer::img_proc\fP\fC [private]\fP"
+.SS "\fBImageProcessorParameter\fP \fBLRM::MonoOdometer::img_proc_parameter\fP\fC [private]\fP"
+.SS "image_transport::Subscriber \fBLRM::MonoOdometer::input_image_subscriber\fP\fC [private]\fP"
+.SS "cv::Mat \fBLRM::MonoOdometer::K\fP\fC [private]\fP"
+.SS "std::vector<cv::DMatch> \fBLRM::MonoOdometer::matches\fP\fC [private]\fP"
+.SS "cv_bridge::CvImage \fBLRM::MonoOdometer::matches_image\fP\fC [private]\fP"
+.SS "\fBMotionProcessor\fP \fBLRM::MonoOdometer::mot_proc\fP\fC [private]\fP"
+.SS "\fBMotionProcessorParameter\fP \fBLRM::MonoOdometer::mot_proc_parameter\fP\fC [private]\fP"
+.SS "tf::TransformBroadcaster \fBLRM::MonoOdometer::odom_broadcaster\fP\fC [private]\fP"
+.SS "nav_msgs::Odometry \fBLRM::MonoOdometer::odometry\fP\fC [private]\fP"
+.SS "ros::Publisher \fBLRM::MonoOdometer::odometry_advertiser\fP\fC [private]\fP"
+.SS "cv_bridge::CvImage \fBLRM::MonoOdometer::optflow_image\fP\fC [private]\fP"
+.SS "image_transport::Publisher \fBLRM::MonoOdometer::output_feature_advertiser\fP\fC [private]\fP"
+.SS "image_transport::Publisher \fBLRM::MonoOdometer::output_matches_advertiser\fP\fC [private]\fP"
+.SS "image_transport::Publisher \fBLRM::MonoOdometer::output_optflow_advertiser\fP\fC [private]\fP"
+.SS "tf::Transform \fBLRM::MonoOdometer::pose\fP\fC [private]\fP"
+.SS "cv::Mat \fBLRM::MonoOdometer::query_desc\fP\fC [private]\fP"
+.SS "cv_bridge::CvImageConstPtr \fBLRM::MonoOdometer::query_image\fP\fC [private]\fP"
+.PP
+Current image\&. 
+.SS "std::vector<cv::KeyPoint> \fBLRM::MonoOdometer::query_kpts\fP\fC [private]\fP"
+.PP
+Current image keypoints\&. 
+.SS "std::vector<cv::Point2d> \fBLRM::MonoOdometer::query_pts\fP\fC [private]\fP"
+.SS "ros::Time \fBLRM::MonoOdometer::query_timestamp\fP\fC [private]\fP"
+.SS "\fBROSParameter\fP \fBLRM::MonoOdometer::ros_parameter\fP\fC [private]\fP"
+.SS "tf::TransformListener \fBLRM::MonoOdometer::tf_listener\fP\fC [private]\fP"
+.SS "cv::Mat \fBLRM::MonoOdometer::train_desc\fP\fC [private]\fP"
+.SS "cv_bridge::CvImageConstPtr \fBLRM::MonoOdometer::train_image\fP\fC [private]\fP"
+.PP
+Previous image\&. 
+.SS "std::vector<cv::KeyPoint> \fBLRM::MonoOdometer::train_kpts\fP\fC [private]\fP"
+.PP
+Previous image keypoints\&. 
+.SS "std::vector<cv::Point2d> \fBLRM::MonoOdometer::train_pts\fP\fC [private]\fP"
+.SS "ros::Time \fBLRM::MonoOdometer::train_timestamp\fP\fC [private]\fP"
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Mono Odometer from the source code\&.

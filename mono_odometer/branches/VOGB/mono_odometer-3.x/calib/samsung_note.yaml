@@ -1,0 +1,21 @@
+%YAML:1.0
+image_width: 640
+image_height: 480
+camera_name: webcam
+camera_matrix:
+  rows: 3
+  cols: 3
+  data: [616.740534, 0, 320.205588, 0, 617.339024, 240.436747, 0, 0, 1]
+distortion_model: plumb_bob
+distortion_coefficients:
+  rows: 1
+  cols: 5
+  data: [0.122608, -0.296572, 0.004949, 0.000804, 0]
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+projection_matrix:
+  rows: 3
+  cols: 4
+  data: [623.38269, 0, 320.112049, 0, 0, 624.042664, 241.484329, 0, 0, 0, 1, 0]

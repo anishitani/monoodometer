@@ -13,6 +13,7 @@
 #include "parameter.h"
 #include "image_processor.h"
 #include "motion_processor.h"
+#include "matcher.h"
 
 //TEMPORARY
 #include <fstream>
@@ -98,6 +99,9 @@ private:
 	cv::Mat query_desc;
 
 	std::vector<cv::DMatch> matches;
+
+	Matcher::parameters matcher_parameter;
+	Matcher *matcher;
 	/* ************************* */
 
 	/* *****Motion Variables***** */
@@ -115,6 +119,7 @@ private:
 
 	bool find_rich_match();
 	bool find_optflow_match();
+	bool find_optflow_libviso();
 	int update_pose();
 	int convertSensorMsgToImage(const sensor_msgs::ImageConstPtr &msg,
 			cv_bridge::CvImageConstPtr &image);

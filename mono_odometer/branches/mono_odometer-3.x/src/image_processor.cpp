@@ -41,15 +41,41 @@ ImageProcessor::ImageProcessor()
 	feature_type = SIFT;
 	radius = 10.0;
 	match_error = 10.0;
+	setting(maxNumberOfFeatures, feature_type, radius, match_error);
 }
 
 ImageProcessor::ImageProcessor(ImageProcessorParameter param)
 {
+	setting(param);
+}
 
-	this->maxNumberOfFeatures = 100;
-	this->feature_type = SIFT;
-	this->radius = 10.0;
-	match_error = 10.0;
+ImageProcessor::~ImageProcessor()
+{
+	// TODO Auto-generated destructor stub
+//	delete detector;
+//	delete extractor;
+}
+
+int ImageProcessor::setting(ImageProcessorParameter param)
+{
+	int IP_ERR_CODE = 0; //Error Code
+
+	maxNumberOfFeatures = param.getParameterByName<int>("MAX_NUM_FEATURE_PTS");
+	feature_type = param.getParameterByName<feature_t>("FEATURE_TYPE");
+	radius = param.getParameterByName<double>("MATCH_RADIUS");
+	match_error = param.getParameterByName<double>("MATCH_L1_ERROR");
+
+	setting(maxNumberOfFeatures, feature_type, radius, match_error);
+
+	return IP_ERR_CODE;
+}
+
+int ImageProcessor::setting(int maxNumberOfFeatures, feature_t feature_type, double radius, double match_error)
+{
+	this->maxNumberOfFeatures = maxNumberOfFeatures;
+	this->feature_type = feature_type;
+	this->radius = radius;
+	this->match_error = match_error;
 
 	switch (feature_type)
 	{
@@ -71,10 +97,10 @@ ImageProcessor::ImageProcessor(ImageProcessorParameter param)
 		matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
 		break;
 	case FAST:
-//		detector = new cv::GridAdaptedFeatureDetector(
-//				new cv::FastFeatureDetector(10, true), maxNumberOfFeatures, 4,
-//				4);
-//		detector = new cv::PyramidAdaptedFeatureDetector( new cv::FastFeatureDetector(10, true) );
+		//		detector = new cv::GridAdaptedFeatureDetector(
+		//				new cv::FastFeatureDetector(10, true), maxNumberOfFeatures, 4,
+		//				4);
+		//		detector = new cv::PyramidAdaptedFeatureDetector( new cv::FastFeatureDetector(10, true) );
 		detector = new cv::FastFeatureDetector();
 		extractor = new cv::OrbDescriptorExtractor();
 		matcher = cv::DescriptorMatcher::create("BruteForce");
@@ -92,73 +118,8 @@ ImageProcessor::ImageProcessor(ImageProcessorParameter param)
 	default:
 		break;
 	}
-	matcher = new cv::FlannBasedMatcher();
-	matcher = new cv::BFMatcher(cv::NORM_L2);
-}
 
-ImageProcessor::~ImageProcessor()
-{
-	// TODO Auto-generated destructor stub
-//	delete detector;
-//	delete extractor;
-}
-
-int ImageProcessor::setting(ImageProcessorParameter param)
-{
-	int IP_ERR_CODE = 0; //Error Code
-
-	maxNumberOfFeatures = param.getParameterByName<int>("MAX_NUM_FEATURE_PTS");
-	feature_type = param.getParameterByName<feature_t>("FEATURE_TYPE");
-	radius = param.getParameterByName<double>("MATCH_RADIUS");
-
-	switch (feature_type)
-	{
-	/*
-	 * GoodFeaturesToTrackDetector( int maxCorners, double qualityLevel,
-	 *                           	double minDistance, int blockSize=3,
-	 *                           	bool useHarrisDetector=false, double k=0.04 );
-	 */
-	case SHI_TOMASI:
-		detector = new cv::GoodFeaturesToTrackDetector(maxNumberOfFeatures,
-				0.01, 10.0, 3, false);
-		extractor = new cv::BriefDescriptorExtractor();
-		matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
-		break;
-	case HARRIS:
-		detector = new cv::GoodFeaturesToTrackDetector(maxNumberOfFeatures,
-				0.01, 10.0, 3, true);
-		extractor = new cv::BriefDescriptorExtractor();
-		matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
-		break;
-	case ORB:
-		detector = new cv::ORB(maxNumberOfFeatures);
-		extractor = new cv::OrbDescriptorExtractor(maxNumberOfFeatures);
-		matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
-		break;
-	case FAST:
-//		detector = new cv::GridAdaptedFeatureDetector(
-//				new cv::FastFeatureDetector(10, true), maxNumberOfFeatures, 4,
-//				4);
-//		detector = new cv::PyramidAdaptedFeatureDetector( new cv::FastFeatureDetector(10, true) );
-		detector = new cv::FastFeatureDetector();
-		extractor = new cv::OrbDescriptorExtractor();
-		matcher = cv::DescriptorMatcher::create("BruteForce-Hamming");
-		break;
-	case SURF:
-		detector = new cv::SurfFeatureDetector(400.0);
-		extractor = new cv::SurfDescriptorExtractor();
-		matcher = cv::DescriptorMatcher::create("BruteForce");
-		break;
-	case SIFT:
-		detector = new cv::SiftFeatureDetector();
-		extractor = new cv::SiftDescriptorExtractor();
-		matcher = cv::DescriptorMatcher::create("BruteForce");
-		break;
-	default:
-		break;
-	}
-
-	return IP_ERR_CODE;
+	return 0;
 }
 
 void ImageProcessor::detect_features(cv::Mat image,

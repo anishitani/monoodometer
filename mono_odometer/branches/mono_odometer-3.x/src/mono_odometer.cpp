@@ -89,6 +89,8 @@ MonoOdometer::MonoOdometer()
 {
 	// TODO Auto-generated destructor stub
 	query_timestamp = train_timestamp = ros::Time::now();
+
+	matcher = new Matcher(matcher_parameter);
 }
 
 /**
@@ -104,6 +106,8 @@ MonoOdometer::MonoOdometer(ros::NodeHandle &nh,
 	ros_parameter.parse(nh);
 	img_proc_parameter.parse(nh);
 	mot_proc_parameter.parse(nh);
+
+	matcher = new Matcher(matcher_parameter);
 
 	/*
 	 * Loads intrinsic parameters matrix.
@@ -195,25 +199,57 @@ bool MonoOdometer::find_optflow_match()
 	}
 }
 
+bool MonoOdometer::find_optflow_libviso()
+{
+	int r=query_image->image.rows,c = query_image->image.cols;
+	int dims[3] = {c,r,c};
+	if (train_kpts.empty()){
+		ROS_INFO("First RUN!");
+		query_kpts.push_back(cv::KeyPoint(1,1,1));
+		matcher->pushBack(query_image->image.data,dims,false);
+		return false;
+	}
+	else
+	{
+		train_kpts.clear();
+		query_kpts.clear();
+		matches.clear();
+		matcher->pushBack(query_image->image.data,dims,false);
+		matcher->matchFeatures(0);
+		matcher->bucketFeatures(2,50,50);
+		cv::vector<Matcher::p_match> p_matches = matcher->getMatches();
+		for(size_t i=0 ; i<p_matches.size() ; i++){
+			Matcher::p_match m = p_matches[i];
+			train_kpts.push_back(cv::KeyPoint(m.u1p,m.v1p,1));
+			query_kpts.push_back(cv::KeyPoint(m.u1c,m.v1c,1));
+			matches.push_back(cv::DMatch(i,i,1));
+		}
+		mot_proc.matches2points(train_kpts, query_kpts, matches, train_pts,
+				query_pts);
+		return true;
+	}
+}
+
 int MonoOdometer::update_pose()
 {
 	cv::Mat P = mot_proc.getCameraMatrix();
 
-	P = P.inv();
+//	P = P.inv();
 
 	tf::Matrix3x3 R(P.at<double>(0, 0), P.at<double>(0, 1), P.at<double>(0, 2),
 			P.at<double>(1, 0), P.at<double>(1, 1), P.at<double>(1, 2),
 			P.at<double>(2, 0), P.at<double>(2, 1), P.at<double>(2, 2));
 
 	tf::Vector3 T(P.at<double>(0, 3), P.at<double>(1, 3), P.at<double>(2, 3));
-	tf::Transform motion(R, T);
+	/// @todo Remove the factor over the translation.
+	tf::Transform motion(R, 0.5*T);
 
 	std::string error_msg;
 	if (tf_listener.canTransform(getRobotFrame(), getSensorFrame(),
-			ros::Time(0), &error_msg))
+			ros::Time::now(), &error_msg))
 	{
 		tf_listener.lookupTransform(getRobotFrame(), getSensorFrame(),
-				ros::Time(0), base_to_sensor);
+				ros::Time::now(), base_to_sensor);
 	}
 	else
 	{
@@ -365,7 +401,7 @@ void MonoOdometer::CallbackHandler(const sensor_msgs::ImageConstPtr& img,
 	query_timestamp = img->header.stamp;
 	convertSensorMsgToImage(img, query_image);
 
-	if (find_optflow_match())	// Choose between optflow or rich matching
+	if (find_optflow_libviso())	// Choose between optflow or rich matching
 	{
 		ROS_DEBUG("Matched features: %d", matches.size());
 

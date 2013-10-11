@@ -58,6 +58,8 @@ public:
 	 * @return
 	 */
 	int setting(ImageProcessorParameter param);
+	int setting(int maxNumberOfFeatures, feature_t feature_type, double radius,
+			double match_error);
 
 //	void setRadius(double radius)
 //	{
@@ -112,7 +114,7 @@ public:
 			std::vector<cv::KeyPoint> query_kpts, cv::Mat inTrainImage,
 			std::vector<cv::KeyPoint> train_kpts,
 			std::vector<cv::DMatch> matches, cv::Mat &outPairImage,
-			std::vector<char> mask=std::vector<char>());
+			std::vector<char> mask = std::vector<char>());
 	static int draw_optflow(const cv::Mat inImage, cv::Mat &outImage,
 			const std::vector<cv::KeyPoint>& query,
 			const std::vector<cv::KeyPoint>& train,

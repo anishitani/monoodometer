@@ -1,6 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classLRM_1_1MotionProcessor.html#a8029258b4e6d79233b7340eb7695b4f0" title="LRM::MotionProcessor::getCameraMatrix" alt="" coords="283,5,547,35"/>
-<area shape="rect" id="node5" href="$classLRM_1_1MonoOdometer.html#a3550a896dd2e212fa177d7401f1a5b61" title="LRM::MonoOdometer::getRobotFrame" alt="" coords="292,59,537,88"/>
-<area shape="rect" id="node9" href="$classLRM_1_1MonoOdometer.html#a72b47de741d2c273a34c7d4e9a093092" title="LRM::MonoOdometer::getSensorFrame" alt="" coords="289,112,540,141"/>
-<area shape="rect" id="node7" href="$classLRM_1_1Parameter.html#a1e39678803d61a1cfe74b9f2fcc2d847" title="LRM::Parameter::getParameterByName" alt="" coords="596,85,849,115"/>
-</map>

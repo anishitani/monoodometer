@@ -1,8 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node2" href="$classLRM_1_1ImageProcessor.html" title="LRM::ImageProcessor" alt="" coords="208,5,360,35"/>
-<area shape="rect" id="node4" href="$classLRM_1_1MotionProcessor.html" title="LRM::MotionProcessor" alt="" coords="207,59,361,88"/>
-<area shape="rect" id="node6" href="$classLRM_1_1ImageProcessorParameter.html" title="LRM::ImageProcessorParameter" alt="" coords="177,112,391,141"/>
-<area shape="rect" id="node8" href="$classLRM_1_1Parameter.html" title="LRM::Parameter" alt="" coords="7,165,124,195"/>
-<area shape="rect" id="node10" href="$classLRM_1_1MotionProcessorParameter.html" title="LRM::MotionProcessorParameter" alt="" coords="176,165,392,195"/>
-<area shape="rect" id="node13" href="$classLRM_1_1ROSParameter.html" title="LRM::ROSParameter" alt="" coords="211,219,357,248"/>
-</map>

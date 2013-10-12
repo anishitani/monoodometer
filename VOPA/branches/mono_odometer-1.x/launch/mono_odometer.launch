@@ -1,0 +1,22 @@
+<launch>
+<!-- 
+	<param name="/use_sim_time" value="true"/>
+	
+	<node name="rviz" pkg="rviz" type="rviz"/>
+ -->
+ 	<!-- node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 /world /map 30" output="screen" /-->
+	<node name="mono_odometer" pkg="mono_odometer" type="mono_odometer" output="screen">
+		<param name="image_topic" value="/StereoCam/imageLeft"/>
+		<param name="feature_image_topic" value="/image/feature_image"/>
+		<param name="feature_type" value="FAST" />
+		<param name="number_of_features" value="1000"/>
+		<param name="show_features" value="false"/>
+		<param name="show_tracks" value="true"/>
+		<param name="calib_filename" value="/home/nishitani/Dropbox/usp/ros/mono_odometer/calib/camera_left.yaml"/>
+    </node>
+
+    <node name="image_view" pkg="image_view" type="image_view">
+    	<remap from="image" to="/image/feature_image"/>
+    </node>
+
+</launch>

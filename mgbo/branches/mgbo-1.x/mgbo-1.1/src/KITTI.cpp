@@ -19,7 +19,7 @@
 #include <viso_mono.h>
 #include <viso_stereo.h>
 
-#include "ESM.h"
+#include <ESM.h>
 
 int main(int argc, char** argv)
 {
@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 	bool imaging = false;
 
 	char seq_path[256];
-	sprintf(seq_path, "/media/4EAE3065AE30482B/nishitani/usp/dataset/%02d",
+	sprintf(seq_path, "/media/4EAE3065AE30482B/nishitani/usp/dataset/KITTI/%02d",
 			seq);
 	std::string dir(seq_path);
 	char *filename = new char[256];
@@ -122,6 +122,8 @@ int main(int argc, char** argv)
 	// init visual odometry
 	VisualOdometryMono monoOdom(monoParam);
 	VisualOdometryStereo stereoOdom(stereoParam);
+
+	ESM esmOdom;
 
 	sprintf(filename, "%06d.png", i);
 	_I0 = cv::imread(dir + "/image_0/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
@@ -250,7 +252,7 @@ int main(int argc, char** argv)
 			esmMotion = cv::Mat::eye(4, 4, CV_32F);
 			cv::Mat(monoMotion).copyTo(esmMotion);
 
-			minSSDSE2Motion(TRef, _I0, TRef.cols, TRef.rows, K,
+			esmOdom.minSSDSE2Motion(TRef, _I0, TRef.cols, TRef.rows, K,
 					norm_vec / cam_height, Warp, esmMotion);
 
 			esmPose *= esmMotion.inv();

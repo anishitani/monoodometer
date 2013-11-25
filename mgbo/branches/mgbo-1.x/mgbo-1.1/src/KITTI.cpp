@@ -32,8 +32,8 @@ int main(int argc, char** argv)
 	bool imaging = false;
 
 	char seq_path[256];
-	sprintf(seq_path, "/media/4EAE3065AE30482B/nishitani/usp/dataset/KITTI/%02d",
-			seq);
+	sprintf(seq_path,
+			"/media/4EAE3065AE30482B/nishitani/usp/dataset/KITTI/%02d", seq);
 	std::string dir(seq_path);
 	char *filename = new char[256];
 	bool mono_fail = false;
@@ -84,9 +84,9 @@ int main(int argc, char** argv)
 
 	cv::Mat K =
 			(cv::Mat_<float>(3, 3) << 707.0912, 0, 601.8873, 0, 707.0912, 183.1104, 0, 0, 1);
-	cv::Mat Rx = (cv::Mat_<float>(3, 3) << 1, 0, 0, 0, cos(cam_pitch), -sin(
-			cam_pitch), 0, sin(cam_pitch), cos(cam_pitch));
-	norm_vec = Rx * norm_vec;
+	cv::Mat Rx = (cv::Mat_<float>(4, 4) << 1, 0, 0, 0, 0, cos(cam_pitch), sin(
+			cam_pitch), 0, 0, -sin(cam_pitch), cos(cam_pitch), 0, 0, 0, 0, 1);
+	norm_vec = Rx(cv::Rect(0, 0, 3, 3)) * norm_vec;
 
 	std::vector<std::string> win;
 	win.push_back("ESM");
@@ -343,7 +343,7 @@ int main(int argc, char** argv)
 				cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
 
 		cv::imshow("Current", Warped);
-		char key = cv::waitKey(0);
+		char key = cv::waitKey(10);
 		if (key == 'q')
 			break;
 

@@ -7,16 +7,18 @@
 
 #include <ESM.h>
 
-void ESM::minSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width, float height,
-		cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
+void ESM::minSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width,
+		float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
 {
-	A = std::vector<cv::Mat>(dof);
+	A = std::vector<cv::Mat>(dof + 1);
 	A[0] =
 			(cv::Mat_<float>(4, 4) << 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	A[1] =
 			(cv::Mat_<float>(4, 4) << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
 	A[2] =
 			(cv::Mat_<float>(4, 4) << 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0);
+	A[3] =
+			(cv::Mat_<float>(4, 4) << 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	int iter = 50;
 	float RMS;
@@ -54,8 +56,9 @@ void ESM::minSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width, float height
 
 }
 
-bool ESM::updateSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width, float height,
-		cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T, float &RMS)
+bool ESM::updateSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width,
+		float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T,
+		float &RMS)
 {
 	/// @todo Constants K and K^-1
 
@@ -80,6 +83,12 @@ bool ESM::updateSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width, float hei
 		if (TICur.at<uchar>(i) < 0)
 			mask.at<uchar>(i) = 0;
 	cv::subtract(TIRef, TICur, di, mask, CV_32F);
+
+	// Root mean square error calculation
+	cv::Mat di2;
+	cv::pow(di, 2, di2);
+	RMS = (float) cv::mean(di2, mask).val[0];
+	RMS = std::sqrt(RMS);
 
 	/* **********************************
 	 * BEGIN TESTING
@@ -107,12 +116,6 @@ bool ESM::updateSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width, float hei
 	 * END TESTING
 	 * **********************************/
 
-	// Root mean square error calculation
-	cv::Mat di2;
-	cv::pow(di, 2, di2);
-	RMS = (float) cv::mean(di2, mask).val[0];
-	RMS = std::sqrt(RMS);
-
 	// Gradient of Reference and Current images
 	cv::Mat dxRef, dyRef;
 	cv::Mat dxCur, dyCur;
@@ -137,19 +140,17 @@ bool ESM::updateSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width, float hei
 	cv::Mat xA(4, 4, CV_32F, cv::Scalar(0));
 	for (int i = 0; i < (int) A.size(); i++)
 		xA += d.at<float>(i) * A[i];
-	cv::Mat dT = expm(Veh2Cam * xA);
+	cv::Mat dT = expm(xA);
 
 	T = T * dT;
 
 	return 0;
 }
 
-cv::Mat ESM::imgJacSE2planar(cv::Mat mIx, cv::Mat mIy, float width, float height,
-		cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
+cv::Mat ESM::imgJacSE2planar(cv::Mat mIx, cv::Mat mIy, float width,
+		float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
 {
 	cv::Mat Jesm;
-
-	/// @todo Constants T{C,V} and T{C,V}^-1
 
 	cv::Mat K4 = cv::Mat::zeros(4, 4, CV_32F);
 	K.copyTo(K4(cv::Rect(0, 0, 3, 3)));
@@ -163,7 +164,7 @@ cv::Mat ESM::imgJacSE2planar(cv::Mat mIx, cv::Mat mIy, float width, float height
 	cv::Mat JTx(9, A.size(), CV_32F);
 	for (int i = 0; i < (int) A.size(); i++)
 	{
-		cv::Mat JTxi = K4 * Veh2Cam * T * A[i] * Veh2Cam.t() * norMat * K4Inv;
+		cv::Mat JTxi = K4 * Veh2Cam * T * A[i] * Veh2Cam.inv() * norMat * K4Inv;
 		JTxi(cv::Rect(0, 0, 3, 3)).clone().reshape(1, 9).copyTo(JTx.col(i));
 	}
 
@@ -198,8 +199,8 @@ cv::Mat ESM::imgJacSE2planar(cv::Mat mIx, cv::Mat mIy, float width, float height
 	return Jesm;
 }
 
-void ESM::minSSDSE3Motion(cv::Mat TIRef, cv::Mat ICur, float width, float height,
-		cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
+void ESM::minSSDSE3Motion(cv::Mat TIRef, cv::Mat ICur, float width,
+		float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
 {
 	int iter = 50;
 	float RMS;
@@ -236,8 +237,9 @@ void ESM::minSSDSE3Motion(cv::Mat TIRef, cv::Mat ICur, float width, float height
 	RMS = bestRMS;
 }
 
-bool ESM::updateSSDSE3Motion(cv::Mat TIRef, cv::Mat ICur, float width, float height,
-		cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T, float &RMS)
+bool ESM::updateSSDSE3Motion(cv::Mat TIRef, cv::Mat ICur, float width,
+		float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T,
+		float &RMS)
 {
 	/// @todo Constants K and K^-1
 
@@ -333,8 +335,8 @@ bool ESM::updateSSDSE3Motion(cv::Mat TIRef, cv::Mat ICur, float width, float hei
 	return 0;
 }
 
-cv::Mat ESM::imgJacSE3planar(cv::Mat mIx, cv::Mat mIy, float width, float height,
-		cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
+cv::Mat ESM::imgJacSE3planar(cv::Mat mIx, cv::Mat mIy, float width,
+		float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
 {
 	cv::Mat J;
 

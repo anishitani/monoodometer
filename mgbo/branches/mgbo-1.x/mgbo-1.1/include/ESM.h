@@ -37,15 +37,9 @@ public:
 	ESM()
 	{
 		dof = 3; //Default number of degrees of freedom
+		initESM();
 
 		// @todo Veh2Cam should be a parameter
-
-		// Camera center
-//		cv::Mat C = (cv::Mat_<float>(4, 1) << 0, 0, 1, 1);
-
-		// Vehicle to Camera Coordinate System
-//		cv::Mat R =
-//				(cv::Mat_<float>(4, 4) << 0, -1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 1);
 
 		// Camera Pitch
 		float rx = -0.03;
@@ -53,7 +47,12 @@ public:
 				rx), 0, 0, -sin(rx), cos(rx), 0, 0, 0, 0, 1);
 
 		cv::Mat(RotX).copyTo(Veh2Cam);
-//		cv::Mat(RotX * C).copyTo(Veh2Cam.col(3));
+	}
+
+	ESM(int DoF)
+	{
+		dof = DoF;
+		initESM();
 	}
 
 	~ESM()
@@ -68,17 +67,23 @@ public:
 
 private:
 
-	int dof;	// Motion degree of freedom
+	/**
+	 * \brief Number of degrees of freedom of the vehicle motion.
+	 */
+	int dof;
 
-	/*
-	 * Lie Algebra Generators
+	/**
+	 * \brief Algebra Lie Generators.
 	 */
 	std::vector<cv::Mat> A;
 
-	/*
-	 * Vehicle to Camera transformation
+	/**
+	 * \brief Tranformation from vehicle coordinate system
+	 * to camera coordinate system.
 	 */
 	cv::Mat Veh2Cam;
+
+	void initESM();
 
 	/*
 	 * Planar Motion SE(2)

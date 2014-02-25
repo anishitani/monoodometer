@@ -1,0 +1,54 @@
+.TH "include/expm.hpp" 3 "Mon Nov 25 2013" "Version 1.1" "MGBO" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+include/expm.hpp \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <boost/numeric/ublas/vector\&.hpp>\fP
+.br
+\fC#include <boost/numeric/ublas/matrix\&.hpp>\fP
+.br
+\fC#include <boost/numeric/ublas/lu\&.hpp>\fP
+.br
+\fC#include <boost/numeric/ublas/traits\&.hpp>\fP
+.br
+\fC#include <boost/numeric/ublas/io\&.hpp>\fP
+.br
+
+.SS "Namespaces"
+
+.in +1c
+.ti -1c
+.RI "namespace \fBboost\fP"
+.br
+.ti -1c
+.RI "namespace \fBboost::numeric\fP"
+.br
+.ti -1c
+.RI "namespace \fBboost::numeric::ublas\fP"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "template<typename MATRIX > MATRIX \fBboost::numeric::ublas::expm_pad\fP (const MATRIX &H, typename type_traits< typename MATRIX::value_type >::real_type t=1\&.0, const int p=6)"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Implement matrix exponential using pade approximation\&.
+.PP
+Copyright (c) 2007 
+.PP
+\fBAuthor:\fP
+.RS 4
+Tsai, Dung-Bang 蔡東邦 
+.RE
+.PP
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MGBO from the source code\&.

@@ -1,0 +1,323 @@
+\hypertarget{classESM}{\section{\-E\-S\-M \-Class \-Reference}
+\label{classESM}\index{\-E\-S\-M@{\-E\-S\-M}}
+}
+
+
+{\ttfamily \#include $<$\-E\-S\-M.\-h$>$}
+
+
+
+\-Inheritance diagram for \-E\-S\-M\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=130pt]{classESM__inherit__graph}
+\end{center}
+\end{figure}
+
+
+\-Collaboration diagram for \-E\-S\-M\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=130pt]{classESM__coll__graph}
+\end{center}
+\end{figure}
+\subsection*{\-Public \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classESM_a8102e5612d0e4324afb6ad7a1f49b521}{\-E\-S\-M} ()
+\item 
+\hyperlink{classESM_a669902e5ba5fcb868d267016459fbd3f}{\-E\-S\-M} (int \-Do\-F)
+\item 
+\hyperlink{classESM_ae4471a84b6b1ef423ad2f477565086ad}{$\sim$\-E\-S\-M} ()
+\item 
+void \hyperlink{classESM_a25a1baab1b965685f1cab290972704eb}{min\-S\-S\-D\-S\-E2\-Motion} (cv\-::\-Mat \-T\-I\-Ref, cv\-::\-Mat \-I\-Cur, float width, float height, cv\-::\-Mat \-K, cv\-::\-Mat nor\-Vec, cv\-::\-Mat \-G0, cv\-::\-Mat \&\-T)
+\item 
+void \hyperlink{classESM_a7b9b9c3d1af56fff9cedfff99c5e5935}{min\-S\-S\-D\-S\-E3\-Motion} (cv\-::\-Mat \-T\-I\-Ref, cv\-::\-Mat \-I\-Cur, float width, float height, cv\-::\-Mat \-K, cv\-::\-Mat nor\-Vec, cv\-::\-Mat \-G0, cv\-::\-Mat \&\-T)
+\end{DoxyCompactItemize}
+\subsection*{\-Private \-Member \-Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{classESM_ad324361009c40120380469ef3550906b}{init\-E\-S\-M} ()
+\item 
+bool \hyperlink{classESM_a9255571df45b2e9a9da9acccbd06f215}{update\-S\-S\-D\-S\-E2\-Motion} (cv\-::\-Mat \-T\-I\-Ref, cv\-::\-Mat \-I\-Cur, float width, float height, cv\-::\-Mat \-K, cv\-::\-Mat nor\-Vec, cv\-::\-Mat \-G0, cv\-::\-Mat \&\-T, float \&\-R\-M\-S)
+\item 
+cv\-::\-Mat \hyperlink{classESM_ab3f22a0e1f5fb746bac8f8cc13d557a8}{img\-Jac\-S\-E2planar} (cv\-::\-Mat m\-Ix, cv\-::\-Mat m\-Iy, float width, float height, cv\-::\-Mat \-K, cv\-::\-Mat nor\-Vec, cv\-::\-Mat \-G0, cv\-::\-Mat \&\-T)
+\item 
+bool \hyperlink{classESM_a33e8bbd28952f91e13ebdf33bda0e7f9}{update\-S\-S\-D\-S\-E3\-Motion} (cv\-::\-Mat \-T\-I\-Ref, cv\-::\-Mat \-I\-Cur, float width, float height, cv\-::\-Mat \-K, cv\-::\-Mat nor\-Vec, cv\-::\-Mat \-G0, cv\-::\-Mat \&\-T, float \&\-R\-M\-S)
+\item 
+cv\-::\-Mat \hyperlink{classESM_a75707ed83ac288a4372f9928b360075a}{img\-Jac\-S\-E3planar} (cv\-::\-Mat m\-Ix, cv\-::\-Mat m\-Iy, float width, float height, cv\-::\-Mat \-K, cv\-::\-Mat nor\-Vec, cv\-::\-Mat \-G0, cv\-::\-Mat \&\-T)
+\item 
+void \hyperlink{classESM_a5689903e99518705af0f6ad839f3b390}{sub\-Sample} (int num, cv\-::\-Mat \-T\-I\-Ref, cv\-::\-Mat \-I\-Cur, float width, float height, cv\-::\-Mat \-K, cv\-::\-Mat nor\-Vec, cv\-::\-Mat \-G0, cv\-::\-Mat \&\-T)
+\end{DoxyCompactItemize}
+\subsection*{\-Private \-Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{classESM_a0a7316fa494eeefbbfcae555fe2fd890}{dof}
+\begin{DoxyCompactList}\small\item\em \-Number of degrees of freedom of the vehicle motion. \end{DoxyCompactList}\item 
+std\-::vector$<$ cv\-::\-Mat $>$ \hyperlink{classESM_a3eb207d38c0dc5c0276b971d257d3351}{\-A}
+\begin{DoxyCompactList}\small\item\em \-Algebra \-Lie \-Generators. \end{DoxyCompactList}\item 
+cv\-::\-Mat \hyperlink{classESM_a49e6933a05d8baa8da4da4aedd87bbcc}{\-Veh2\-Cam}
+\begin{DoxyCompactList}\small\item\em \-Tranformation from vehicle coordinate system to camera coordinate system. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{\-Constructor \& \-Destructor \-Documentation}
+\hypertarget{classESM_a8102e5612d0e4324afb6ad7a1f49b521}{\index{\-E\-S\-M@{\-E\-S\-M}!\-E\-S\-M@{\-E\-S\-M}}
+\index{\-E\-S\-M@{\-E\-S\-M}!ESM@{\-E\-S\-M}}
+\subsubsection[{\-E\-S\-M}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-E\-S\-M\-::\-E\-S\-M} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{classESM_a8102e5612d0e4324afb6ad7a1f49b521}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{classESM_a8102e5612d0e4324afb6ad7a1f49b521_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{classESM_a669902e5ba5fcb868d267016459fbd3f}{\index{\-E\-S\-M@{\-E\-S\-M}!\-E\-S\-M@{\-E\-S\-M}}
+\index{\-E\-S\-M@{\-E\-S\-M}!ESM@{\-E\-S\-M}}
+\subsubsection[{\-E\-S\-M}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-E\-S\-M\-::\-E\-S\-M} (
+\begin{DoxyParamCaption}
+\item[{int}]{\-Do\-F}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{classESM_a669902e5ba5fcb868d267016459fbd3f}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=262pt]{classESM_a669902e5ba5fcb868d267016459fbd3f_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{classESM_ae4471a84b6b1ef423ad2f477565086ad}{\index{\-E\-S\-M@{\-E\-S\-M}!$\sim$\-E\-S\-M@{$\sim$\-E\-S\-M}}
+\index{$\sim$\-E\-S\-M@{$\sim$\-E\-S\-M}!ESM@{\-E\-S\-M}}
+\subsubsection[{$\sim$\-E\-S\-M}]{\setlength{\rightskip}{0pt plus 5cm}{\bf \-E\-S\-M\-::$\sim$\-E\-S\-M} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{classESM_ae4471a84b6b1ef423ad2f477565086ad}
+
+
+\subsection{\-Member \-Function \-Documentation}
+\hypertarget{classESM_ab3f22a0e1f5fb746bac8f8cc13d557a8}{\index{\-E\-S\-M@{\-E\-S\-M}!img\-Jac\-S\-E2planar@{img\-Jac\-S\-E2planar}}
+\index{img\-Jac\-S\-E2planar@{img\-Jac\-S\-E2planar}!ESM@{\-E\-S\-M}}
+\subsubsection[{img\-Jac\-S\-E2planar}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Mat {\bf \-E\-S\-M\-::img\-Jac\-S\-E2planar} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{m\-Ix, }
+\item[{cv\-::\-Mat}]{m\-Iy, }
+\item[{float}]{width, }
+\item[{float}]{height, }
+\item[{cv\-::\-Mat}]{\-K, }
+\item[{cv\-::\-Mat}]{nor\-Vec, }
+\item[{cv\-::\-Mat}]{\-G0, }
+\item[{cv\-::\-Mat \&}]{\-T}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_ab3f22a0e1f5fb746bac8f8cc13d557a8}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=294pt]{classESM_ab3f22a0e1f5fb746bac8f8cc13d557a8_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{classESM_a75707ed83ac288a4372f9928b360075a}{\index{\-E\-S\-M@{\-E\-S\-M}!img\-Jac\-S\-E3planar@{img\-Jac\-S\-E3planar}}
+\index{img\-Jac\-S\-E3planar@{img\-Jac\-S\-E3planar}!ESM@{\-E\-S\-M}}
+\subsubsection[{img\-Jac\-S\-E3planar}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Mat {\bf \-E\-S\-M\-::img\-Jac\-S\-E3planar} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{m\-Ix, }
+\item[{cv\-::\-Mat}]{m\-Iy, }
+\item[{float}]{width, }
+\item[{float}]{height, }
+\item[{cv\-::\-Mat}]{\-K, }
+\item[{cv\-::\-Mat}]{nor\-Vec, }
+\item[{cv\-::\-Mat}]{\-G0, }
+\item[{cv\-::\-Mat \&}]{\-T}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_a75707ed83ac288a4372f9928b360075a}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=294pt]{classESM_a75707ed83ac288a4372f9928b360075a_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{classESM_ad324361009c40120380469ef3550906b}{\index{\-E\-S\-M@{\-E\-S\-M}!init\-E\-S\-M@{init\-E\-S\-M}}
+\index{init\-E\-S\-M@{init\-E\-S\-M}!ESM@{\-E\-S\-M}}
+\subsubsection[{init\-E\-S\-M}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-E\-S\-M\-::init\-E\-S\-M} (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_ad324361009c40120380469ef3550906b}
+\hypertarget{classESM_a25a1baab1b965685f1cab290972704eb}{\index{\-E\-S\-M@{\-E\-S\-M}!min\-S\-S\-D\-S\-E2\-Motion@{min\-S\-S\-D\-S\-E2\-Motion}}
+\index{min\-S\-S\-D\-S\-E2\-Motion@{min\-S\-S\-D\-S\-E2\-Motion}!ESM@{\-E\-S\-M}}
+\subsubsection[{min\-S\-S\-D\-S\-E2\-Motion}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-E\-S\-M\-::min\-S\-S\-D\-S\-E2\-Motion} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{\-T\-I\-Ref, }
+\item[{cv\-::\-Mat}]{\-I\-Cur, }
+\item[{float}]{width, }
+\item[{float}]{height, }
+\item[{cv\-::\-Mat}]{\-K, }
+\item[{cv\-::\-Mat}]{nor\-Vec, }
+\item[{cv\-::\-Mat}]{\-G0, }
+\item[{cv\-::\-Mat \&}]{\-T}
+\end{DoxyParamCaption}
+)}}\label{classESM_a25a1baab1b965685f1cab290972704eb}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classESM_a25a1baab1b965685f1cab290972704eb_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{classESM_a7b9b9c3d1af56fff9cedfff99c5e5935}{\index{\-E\-S\-M@{\-E\-S\-M}!min\-S\-S\-D\-S\-E3\-Motion@{min\-S\-S\-D\-S\-E3\-Motion}}
+\index{min\-S\-S\-D\-S\-E3\-Motion@{min\-S\-S\-D\-S\-E3\-Motion}!ESM@{\-E\-S\-M}}
+\subsubsection[{min\-S\-S\-D\-S\-E3\-Motion}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-E\-S\-M\-::min\-S\-S\-D\-S\-E3\-Motion} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{\-T\-I\-Ref, }
+\item[{cv\-::\-Mat}]{\-I\-Cur, }
+\item[{float}]{width, }
+\item[{float}]{height, }
+\item[{cv\-::\-Mat}]{\-K, }
+\item[{cv\-::\-Mat}]{nor\-Vec, }
+\item[{cv\-::\-Mat}]{\-G0, }
+\item[{cv\-::\-Mat \&}]{\-T}
+\end{DoxyParamCaption}
+)}}\label{classESM_a7b9b9c3d1af56fff9cedfff99c5e5935}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classESM_a7b9b9c3d1af56fff9cedfff99c5e5935_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{classESM_a5689903e99518705af0f6ad839f3b390}{\index{\-E\-S\-M@{\-E\-S\-M}!sub\-Sample@{sub\-Sample}}
+\index{sub\-Sample@{sub\-Sample}!ESM@{\-E\-S\-M}}
+\subsubsection[{sub\-Sample}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf \-E\-S\-M\-::sub\-Sample} (
+\begin{DoxyParamCaption}
+\item[{int}]{num, }
+\item[{cv\-::\-Mat}]{\-T\-I\-Ref, }
+\item[{cv\-::\-Mat}]{\-I\-Cur, }
+\item[{float}]{width, }
+\item[{float}]{height, }
+\item[{cv\-::\-Mat}]{\-K, }
+\item[{cv\-::\-Mat}]{nor\-Vec, }
+\item[{cv\-::\-Mat}]{\-G0, }
+\item[{cv\-::\-Mat \&}]{\-T}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_a5689903e99518705af0f6ad839f3b390}
+\hypertarget{classESM_a9255571df45b2e9a9da9acccbd06f215}{\index{\-E\-S\-M@{\-E\-S\-M}!update\-S\-S\-D\-S\-E2\-Motion@{update\-S\-S\-D\-S\-E2\-Motion}}
+\index{update\-S\-S\-D\-S\-E2\-Motion@{update\-S\-S\-D\-S\-E2\-Motion}!ESM@{\-E\-S\-M}}
+\subsubsection[{update\-S\-S\-D\-S\-E2\-Motion}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf \-E\-S\-M\-::update\-S\-S\-D\-S\-E2\-Motion} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{\-T\-I\-Ref, }
+\item[{cv\-::\-Mat}]{\-I\-Cur, }
+\item[{float}]{width, }
+\item[{float}]{height, }
+\item[{cv\-::\-Mat}]{\-K, }
+\item[{cv\-::\-Mat}]{nor\-Vec, }
+\item[{cv\-::\-Mat}]{\-G0, }
+\item[{cv\-::\-Mat \&}]{\-T, }
+\item[{float \&}]{\-R\-M\-S}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_a9255571df45b2e9a9da9acccbd06f215}
+\begin{DoxyRefDesc}{\-Todo}
+\item[\hyperlink{todo__todo000001}{\-Todo}]\-Constants \-K and \-K$^\wedge$-\/1 \end{DoxyRefDesc}
+
+
+\begin{DoxyRefDesc}{\-Todo}
+\item[\hyperlink{todo__todo000002}{\-Todo}]\-What happens with the points out of the mask? \end{DoxyRefDesc}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classESM_a9255571df45b2e9a9da9acccbd06f215_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{classESM_a33e8bbd28952f91e13ebdf33bda0e7f9}{\index{\-E\-S\-M@{\-E\-S\-M}!update\-S\-S\-D\-S\-E3\-Motion@{update\-S\-S\-D\-S\-E3\-Motion}}
+\index{update\-S\-S\-D\-S\-E3\-Motion@{update\-S\-S\-D\-S\-E3\-Motion}!ESM@{\-E\-S\-M}}
+\subsubsection[{update\-S\-S\-D\-S\-E3\-Motion}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf \-E\-S\-M\-::update\-S\-S\-D\-S\-E3\-Motion} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{\-T\-I\-Ref, }
+\item[{cv\-::\-Mat}]{\-I\-Cur, }
+\item[{float}]{width, }
+\item[{float}]{height, }
+\item[{cv\-::\-Mat}]{\-K, }
+\item[{cv\-::\-Mat}]{nor\-Vec, }
+\item[{cv\-::\-Mat}]{\-G0, }
+\item[{cv\-::\-Mat \&}]{\-T, }
+\item[{float \&}]{\-R\-M\-S}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_a33e8bbd28952f91e13ebdf33bda0e7f9}
+\begin{DoxyRefDesc}{\-Todo}
+\item[\hyperlink{todo__todo000003}{\-Todo}]\-Constants \-K and \-K$^\wedge$-\/1 \end{DoxyRefDesc}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{classESM_a33e8bbd28952f91e13ebdf33bda0e7f9_cgraph}
+\end{center}
+\end{figure}
+
+
+
+
+\subsection{\-Member \-Data \-Documentation}
+\hypertarget{classESM_a3eb207d38c0dc5c0276b971d257d3351}{\index{\-E\-S\-M@{\-E\-S\-M}!\-A@{\-A}}
+\index{\-A@{\-A}!ESM@{\-E\-S\-M}}
+\subsubsection[{\-A}]{\setlength{\rightskip}{0pt plus 5cm}std\-::vector$<$cv\-::\-Mat$>$ {\bf \-E\-S\-M\-::\-A}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_a3eb207d38c0dc5c0276b971d257d3351}
+
+
+\-Algebra \-Lie \-Generators. 
+
+\hypertarget{classESM_a0a7316fa494eeefbbfcae555fe2fd890}{\index{\-E\-S\-M@{\-E\-S\-M}!dof@{dof}}
+\index{dof@{dof}!ESM@{\-E\-S\-M}}
+\subsubsection[{dof}]{\setlength{\rightskip}{0pt plus 5cm}int {\bf \-E\-S\-M\-::dof}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_a0a7316fa494eeefbbfcae555fe2fd890}
+
+
+\-Number of degrees of freedom of the vehicle motion. 
+
+\hypertarget{classESM_a49e6933a05d8baa8da4da4aedd87bbcc}{\index{\-E\-S\-M@{\-E\-S\-M}!\-Veh2\-Cam@{\-Veh2\-Cam}}
+\index{\-Veh2\-Cam@{\-Veh2\-Cam}!ESM@{\-E\-S\-M}}
+\subsubsection[{\-Veh2\-Cam}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Mat {\bf \-E\-S\-M\-::\-Veh2\-Cam}\hspace{0.3cm}{\ttfamily  \mbox{[}private\mbox{]}}}}\label{classESM_a49e6933a05d8baa8da4da4aedd87bbcc}
+
+
+\-Tranformation from vehicle coordinate system to camera coordinate system. 
+
+
+
+\-The documentation for this class was generated from the following files\-:\begin{DoxyCompactItemize}
+\item 
+include/\hyperlink{ESM_8h}{\-E\-S\-M.\-h}\item 
+src/\hyperlink{ESM_8cpp}{\-E\-S\-M.\-cpp}\end{DoxyCompactItemize}

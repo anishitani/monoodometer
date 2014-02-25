@@ -7,19 +7,29 @@
 
 #include <ESM.h>
 
+void ESM::initESM()
+{
+	A = std::vector<cv::Mat>(dof);
+
+	if (dof > 2)
+	{
+		A[0] =
+				(cv::Mat_<float>(4, 4) << 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		A[1] =
+				(cv::Mat_<float>(4, 4) << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
+		A[2] =
+				(cv::Mat_<float>(4, 4) << 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0);
+	}
+	if (dof > 3)
+	{
+		A[3] =
+				(cv::Mat_<float>(4, 4) << 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+	}
+}
+
 void ESM::minSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width,
 		float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)
 {
-	A = std::vector<cv::Mat>(dof + 1);
-	A[0] =
-			(cv::Mat_<float>(4, 4) << 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-	A[1] =
-			(cv::Mat_<float>(4, 4) << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0);
-	A[2] =
-			(cv::Mat_<float>(4, 4) << 0, 0, 1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 0, 0, 0);
-	A[3] =
-			(cv::Mat_<float>(4, 4) << 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0);
-
 	int iter = 50;
 	float RMS;
 
@@ -30,6 +40,7 @@ void ESM::minSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width,
 	int i;
 	for (i = 0; i < iter; i++)
 	{
+
 		TNew = TOld.clone();
 		bool converged = updateSSDSE2Motion(TIRef, ICur, width, height, K,
 				norVec, G0, TNew, RMS);
@@ -40,16 +51,12 @@ void ESM::minSSDSE2Motion(cv::Mat TIRef, cv::Mat ICur, float width,
 			bestRMS = RMS;
 			TOld.copyTo(TBest);
 		}
-		else
-		{
-//			printf("RMS: %f\n", RMS);
-		}
 
 		if (converged)
 			break;
 		TOld = TNew;
 	}
-//	printf("%d iterations\n", i);
+	printf("%d iterations\n", i);
 
 	T = TBest;
 	RMS = bestRMS;

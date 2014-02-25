@@ -1,0 +1,115 @@
+.TH "ESM" 3 "Mon Nov 25 2013" "Version 1.1" "MGBO" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ESM \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <ESM\&.h>\fP
+.PP
+Inherits \fBTracker\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBESM\fP ()"
+.br
+.ti -1c
+.RI "\fBESM\fP (int DoF)"
+.br
+.ti -1c
+.RI "\fB~ESM\fP ()"
+.br
+.ti -1c
+.RI "void \fBminSSDSE2Motion\fP (cv::Mat TIRef, cv::Mat ICur, float width, float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)"
+.br
+.ti -1c
+.RI "void \fBminSSDSE3Motion\fP (cv::Mat TIRef, cv::Mat ICur, float width, float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)"
+.br
+.in -1c
+.SS "Private Member Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBinitESM\fP ()"
+.br
+.ti -1c
+.RI "bool \fBupdateSSDSE2Motion\fP (cv::Mat TIRef, cv::Mat ICur, float width, float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T, float &RMS)"
+.br
+.ti -1c
+.RI "cv::Mat \fBimgJacSE2planar\fP (cv::Mat mIx, cv::Mat mIy, float width, float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)"
+.br
+.ti -1c
+.RI "bool \fBupdateSSDSE3Motion\fP (cv::Mat TIRef, cv::Mat ICur, float width, float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T, float &RMS)"
+.br
+.ti -1c
+.RI "cv::Mat \fBimgJacSE3planar\fP (cv::Mat mIx, cv::Mat mIy, float width, float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)"
+.br
+.ti -1c
+.RI "void \fBsubSample\fP (int num, cv::Mat TIRef, cv::Mat ICur, float width, float height, cv::Mat K, cv::Mat norVec, cv::Mat G0, cv::Mat &T)"
+.br
+.in -1c
+.SS "Private Attributes"
+
+.in +1c
+.ti -1c
+.RI "int \fBdof\fP"
+.br
+.RI "\fINumber of degrees of freedom of the vehicle motion\&. \fP"
+.ti -1c
+.RI "std::vector< cv::Mat > \fBA\fP"
+.br
+.RI "\fIAlgebra Lie Generators\&. \fP"
+.ti -1c
+.RI "cv::Mat \fBVeh2Cam\fP"
+.br
+.RI "\fITranformation from vehicle coordinate system to camera coordinate system\&. \fP"
+.in -1c
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "\fBESM::ESM\fP ()\fC [inline]\fP"
+.SS "\fBESM::ESM\fP (intDoF)\fC [inline]\fP"
+.SS "\fBESM::~ESM\fP ()\fC [inline]\fP"
+.SH "Member Function Documentation"
+.PP 
+.SS "cv::Mat \fBESM::imgJacSE2planar\fP (cv::MatmIx, cv::MatmIy, floatwidth, floatheight, cv::MatK, cv::MatnorVec, cv::MatG0, cv::Mat &T)\fC [private]\fP"
+.SS "cv::Mat \fBESM::imgJacSE3planar\fP (cv::MatmIx, cv::MatmIy, floatwidth, floatheight, cv::MatK, cv::MatnorVec, cv::MatG0, cv::Mat &T)\fC [private]\fP"
+.SS "void \fBESM::initESM\fP ()\fC [private]\fP"
+.SS "void \fBESM::minSSDSE2Motion\fP (cv::MatTIRef, cv::MatICur, floatwidth, floatheight, cv::MatK, cv::MatnorVec, cv::MatG0, cv::Mat &T)"
+.SS "void \fBESM::minSSDSE3Motion\fP (cv::MatTIRef, cv::MatICur, floatwidth, floatheight, cv::MatK, cv::MatnorVec, cv::MatG0, cv::Mat &T)"
+.SS "void \fBESM::subSample\fP (intnum, cv::MatTIRef, cv::MatICur, floatwidth, floatheight, cv::MatK, cv::MatnorVec, cv::MatG0, cv::Mat &T)\fC [private]\fP"
+.SS "bool \fBESM::updateSSDSE2Motion\fP (cv::MatTIRef, cv::MatICur, floatwidth, floatheight, cv::MatK, cv::MatnorVec, cv::MatG0, cv::Mat &T, float &RMS)\fC [private]\fP"\fBTodo\fP
+.RS 4
+Constants K and K^-1 
+.RE
+.PP
+.PP
+\fBTodo\fP
+.RS 4
+What happens with the points out of the mask? 
+.RE
+.PP
+
+.SS "bool \fBESM::updateSSDSE3Motion\fP (cv::MatTIRef, cv::MatICur, floatwidth, floatheight, cv::MatK, cv::MatnorVec, cv::MatG0, cv::Mat &T, float &RMS)\fC [private]\fP"\fBTodo\fP
+.RS 4
+Constants K and K^-1 
+.RE
+.PP
+
+.SH "Member Data Documentation"
+.PP 
+.SS "std::vector<cv::Mat> \fBESM::A\fP\fC [private]\fP"
+.PP
+Algebra Lie Generators\&. 
+.SS "int \fBESM::dof\fP\fC [private]\fP"
+.PP
+Number of degrees of freedom of the vehicle motion\&. 
+.SS "cv::Mat \fBESM::Veh2Cam\fP\fC [private]\fP"
+.PP
+Tranformation from vehicle coordinate system to camera coordinate system\&. 
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MGBO from the source code\&.

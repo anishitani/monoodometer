@@ -60,6 +60,10 @@ int main(int argc, char** argv)
 	bool logging = false;
 	bool imaging = true;
 
+	bool do_mono = true;
+	bool do_esm = do_mono;
+	bool do_stereo = true;
+
 	int seq = 1;
 	int i = 0;
 
@@ -96,8 +100,10 @@ int main(int argc, char** argv)
 	}
 
 	cv::Mat monoMotion = cv::Mat::eye(4, 4, CV_32F);
+	cv::Mat stereoMotion = cv::Mat::eye(4, 4, CV_32F);
 	cv::Mat esmMotion = cv::Mat::eye(4, 4, CV_32F);
 	cv::Mat monoPose = cv::Mat::eye(4, 4, CV_32F);
+	cv::Mat stereoPose = cv::Mat::eye(4, 4, CV_32F);
 	cv::Mat esmPose = cv::Mat::eye(4, 4, CV_32F);
 
 	// Manual ROI definition
@@ -117,27 +123,29 @@ int main(int argc, char** argv)
 			cam_pitch), 0, sin(cam_pitch), cos(cam_pitch));
 	norm_vec = Rx * norm_vec;
 
+	/* ********************
+	 * Window declaration
+	 * ********************/
 	std::vector<std::string> win;
+	win.push_back("ESM");
 	win.push_back("Mono");
 	win.push_back("Stereo");
-	win.push_back("ESM");
+	cv::namedWindow("Warped", cv::WINDOW_NORMAL);
 
- 	// load input images
-	cv::Mat I0, I1;
+	/* ********************
+	 * load input images
+	 * ********************/
+	cv::Mat I0;
+	cv::Mat I1;
+
+	cv::Mat _I0;
+	cv::Mat _I1;
+
 	cv::Mat last;
-	cv::VideoCapture Seq0(left_path + "%06d.png");
-	cv::VideoCapture Seq1(right_path + "%06d.png");
 
-	if (!Seq0.read(I0) && !Seq1.read(I1))
-	{
-		fprintf(stderr,"Error: Could not open images sequences\n");
-		return -1;
-	}
-
-
-	/*
+	/* ********************
 	 * Mono/Stereo Odometer
-	 */
+	 * ********************/
 	VisualOdometryMono::parameters monoParam;
 	VisualOdometryStereo::parameters stereoParam;
 
@@ -152,19 +160,24 @@ int main(int argc, char** argv)
 	stereoParam.calib.cv = K.at<float>(1, 2);
 	stereoParam.base = cam_baseline;
 
-	// init visual odometers
+	// init visual odometry
 	VisualOdometryMono monoOdom(monoParam);
 	VisualOdometryStereo stereoOdom(stereoParam);
+
 	ESM esmOdom;
 
+	sprintf(filename, "%06d.png", i);
+	_I0 = cv::imread(dir + "/image_rect_0/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
+	_I1 = cv::imread(dir + "/image_rect_1/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
+
 	// image dimensions
-	int32_t width = I0.cols;
-	int32_t height = I0.rows;
+	int32_t width = _I0.cols;
+	int32_t height = _I0.rows;
 
 	int32_t dims[] =
 	{ width, height, width };
 
-	last = I0;
+	last = _I0;
 
 	/* ***************************
 	 * File
@@ -181,79 +194,144 @@ int main(int argc, char** argv)
 
 		for (int k = 0; k < 12; k++)
 		{
-			fprintf(fileMotion[1], "%f ", esmMotion.at<float>(k));
-			fprintf(filePose[1], "%f ", esmPose.at<float>(k));
+			fprintf(fileMotion[1], "%f ", stereoMotion.at<float>(k));
+			fprintf(filePose[1], "%f ", stereoPose.at<float>(k));
 		}
 		fprintf(fileMotion[1], "\n");
 		fprintf(filePose[1], "\n");
+
+		for (int k = 0; k < 12; k++)
+		{
+			fprintf(fileMotion[2], "%f ", esmMotion.at<float>(k));
+			fprintf(filePose[2], "%f ", esmPose.at<float>(k));
+		}
+		fprintf(fileMotion[2], "\n");
+		fprintf(filePose[2], "\n");
 	}
 	/* ***************************
 	 * End File
 	 * **************************/
 
-	for (; !I0.empty();)
+	for (; !_I0.empty();)
 	{
 		// convert input images to uint8_t buffer
-		uint8_t* I0data = (uint8_t*) I0.data;
+		uint8_t* I0data = (uint8_t*) _I0.data;
+		uint8_t* I1data = (uint8_t*) _I1.data;
 
-		/* ************************************
-		 * MONOCULAR
-		 * ************************************/
-		if (monoOdom.process(I0data, dims))
+		// The difference of frequence gives the KITT method
+		// a better disparity in the images
+		if (do_mono && !(seq % 20))
 		{
-			Matrix _motion = monoOdom.getMotion();
-			monoMotion = cv::Mat(_motion.m, _motion.n, CV_32F);
-			for (int j = 0; j < _motion.m; j++)
+			if (monoOdom.process(I0data, dims))
 			{
-				for (int k = 0; k < _motion.n; k++)
+				Matrix _motion = monoOdom.getMotion();
+				monoMotion = cv::Mat(_motion.m, _motion.n, CV_32F);
+				for (int j = 0; j < _motion.m; j++)
 				{
-					monoMotion.at<float>(j, k) = _motion.val[j][k];
+					for (int k = 0; k < _motion.n; k++)
+					{
+						monoMotion.at<float>(j, k) = _motion.val[j][k];
+					}
 				}
-			}
 
-			monoPose *= monoMotion.inv();
+				monoPose *= monoMotion.inv();
+
+				if (logging)
+				{
+					for (int k = 0; k < 12; k++)
+					{
+						fprintf(fileMotion[0], "%f ", monoMotion.at<float>(k));
+						fprintf(filePose[0], "%f ", monoPose.at<float>(k));
+					}
+					fprintf(fileMotion[0], "\n");
+					fprintf(filePose[0], "\n");
+				}
+
+				int inliers = monoOdom.getNumberOfInliers();
+				int outliers = monoOdom.getNumberOfMatches() - inliers;
+				printf("Mono Odometer:\n");
+				printf("\tInliers: %d",inliers);
+				printf("\tOutliers: %d\n",outliers);
+			}
+			else
+			{
+				monoMotion = cv::Mat::eye(4, 4, CV_32F);
+				TRef = _I0;
+				std::cout << "Monocular Odometer failed!" << std::endl;
+			}
+		}
+
+		if (do_stereo)
+		{
+			if (stereoOdom.process(I0data, I1data, dims))
+			{
+				Matrix _motion = stereoOdom.getMotion();
+				stereoMotion = cv::Mat(_motion.m, _motion.n, CV_32F);
+				for (int j = 0; j < _motion.m; j++)
+				{
+					for (int k = 0; k < _motion.n; k++)
+					{
+						stereoMotion.at<float>(j, k) = _motion.val[j][k];
+					}
+				}
+
+				stereoPose *= stereoMotion.inv();
+
+				if (logging)
+				{
+					for (int k = 0; k < 12; k++)
+					{
+						fprintf(fileMotion[1], "%f ",
+								stereoMotion.at<float>(k));
+						fprintf(filePose[1], "%f ", stereoPose.at<float>(k));
+					}
+					fprintf(fileMotion[1], "\n");
+					fprintf(filePose[1], "\n");
+				}
+
+				int inliers = stereoOdom.getNumberOfInliers();
+				int outliers = stereoOdom.getNumberOfMatches() - inliers;
+				printf("Stereo Odometer:\n");
+				printf("\tInliers: %d",inliers);
+				printf("\tOutliers: %d\n",outliers);
+
+			}
+			else
+			{
+				stereoMotion = cv::Mat::eye(4, 4, CV_32F);
+				TRef = _I0;
+				std::cout << "Stereo Odometer failed!" << std::endl;
+			}
+		}
+
+		if (do_esm)
+		{
+			cv::warpPerspective(last, TRef, Warp, cv::Size(sizx, sizy),
+					cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+
+			esmMotion = cv::Mat::eye(4, 4, CV_32F);
+//			cv::Mat(stereoMotion).copyTo(esmMotion);
+
+			esmOdom.minSSDSE2Motion(TRef, _I0, TRef.cols, TRef.rows, K,
+					(norm_vec / cam_height), Warp, esmMotion);
+
+			esmPose *= esmMotion.inv();
 
 			if (logging)
 			{
 				for (int k = 0; k < 12; k++)
 				{
-					fprintf(fileMotion[0], "%f ", monoMotion.at<float>(k));
-					fprintf(filePose[0], "%f ", monoPose.at<float>(k));
+					fprintf(fileMotion[2], "%f ", esmMotion.at<float>(k));
+					fprintf(filePose[2], "%f ", esmPose.at<float>(k));
 				}
-				fprintf(fileMotion[0], "\n");
-				fprintf(filePose[0], "\n");
+				fprintf(fileMotion[2], "\n");
+				fprintf(filePose[2], "\n");
 			}
 		}
 		else
 		{
-			monoMotion = cv::Mat::eye(4, 4, CV_32F);
-			TRef = I0;
-			std::cout << "Monocular Odometer failed!" << std::endl;
-		}
-
-		/* ************************************
-		 * ESM
-		 * ************************************/
-		cv::warpPerspective(last, TRef, Warp, cv::Size(sizx, sizy),
-				cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
-
-		esmMotion = cv::Mat::eye(4, 4, CV_32F);
-		cv::Mat(monoMotion).copyTo(esmMotion);
-
-		esmOdom.minSSDSE2Motion(TRef, I0, TRef.cols, TRef.rows, K,
-				norm_vec / cam_height, Warp, esmMotion);
-
-		esmPose *= esmMotion.inv();
-
-		if (logging)
-		{
-			for (int k = 0; k < 12; k++)
-			{
-				fprintf(fileMotion[1], "%f ", esmMotion.at<float>(k));
-				fprintf(filePose[1], "%f ", esmPose.at<float>(k));
-			}
-			fprintf(fileMotion[1], "\n");
-			fprintf(filePose[1], "\n");
+			esmMotion = cv::Mat::eye(4, 4, CV_32F);
+//			std::cout << "ESM Odometer failed!" << std::endl;
 		}
 
 		if (imaging)
@@ -261,9 +339,9 @@ int main(int argc, char** argv)
 			/* **********************************
 			 * BEGIN TESTING
 			 * **********************************/
-			cv::Mat diff(2 * sizy, 3 * sizx, CV_8U);
-			cv::Mat R[2], t[2];
-			cv::Mat TICur[2], TIRef;
+			cv::Mat diff(3 * sizy, 3 * sizx, CV_8U);
+			cv::Mat R[3], t[3];
+			cv::Mat TICur[3], TIRef;
 
 			cv::warpPerspective(last, TIRef, Warp, cv::Size(sizx, sizy),
 					cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
@@ -271,17 +349,20 @@ int main(int argc, char** argv)
 			R[0] = monoMotion(cv::Rect(0, 0, 3, 3));
 			t[0] = monoMotion(cv::Rect(3, 0, 1, 3));
 
-			R[1] = esmMotion(cv::Rect(0, 0, 3, 3));
-			t[1] = esmMotion(cv::Rect(3, 0, 1, 3));
+			R[1] = stereoMotion(cv::Rect(0, 0, 3, 3));
+			t[1] = stereoMotion(cv::Rect(3, 0, 1, 3));
 
-			for (int i = 0; i < 2; i++)
+			R[2] = esmMotion(cv::Rect(0, 0, 3, 3));
+			t[2] = esmMotion(cv::Rect(3, 0, 1, 3));
+
+			for (int i = 0; i < 3; i++)
 			{
 				cv::Rect win1(0 * sizx, i * sizy, sizx, sizy);
 				cv::Rect win2(1 * sizx, i * sizy, sizx, sizy);
 				cv::Rect win3(2 * sizx, i * sizy, sizx, sizy);
 
 				H = K * (R[i] - t[i] * norm_vec.t() / cam_height) * K.inv();
-				cv::warpPerspective(I0, TICur[i], H * Warp,
+				cv::warpPerspective(_I0, TICur[i], H * Warp,
 						cv::Size(sizx, sizy),
 						cv::INTER_LINEAR + cv::WARP_INVERSE_MAP,
 						cv::BORDER_CONSTANT, cv::Scalar(-1));
@@ -313,6 +394,7 @@ int main(int argc, char** argv)
 			 * END TESTING
 			 * **********************************/
 		}
+
 		cv::Mat Warped;
 		H = K
 				* (esmMotion(cv::Rect(0, 0, 3, 3))
@@ -320,15 +402,22 @@ int main(int argc, char** argv)
 								/ cam_height) * K.inv();
 		cv::warpPerspective(last, Warped, H, cv::Size(width, height),
 				cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+		cv::imshow("Warped", Warped);
 
-		cv::imshow("Current", Warped);
-		char key = cv::waitKey(0);
+//		cv::Mat Cur(_I0);
+//		cv::rectangle(Cur, cv::Point(posx, posy),
+//				cv::Point(posx + sizx, posy + sizy), cv::Scalar(255));
+//		cv::imshow("Current", Cur);
+		char key = cv::waitKey(10);
 		if (key == 'q')
 			break;
 
-		last = I0;
-		sprintf(filename, "image%04d.png", ++i);
-		I0 = cv::imread(dir + "/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
+		last = _I0;
+		sprintf(filename, "%06d.png", ++i);
+		_I0 = cv::imread(dir + "/image_rect_0/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
+		_I1 = cv::imread(dir + "/image_rect_1/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
+
+		seq++;
 	}
 
 	// output
@@ -336,14 +425,14 @@ int main(int argc, char** argv)
 
 	if (logging)
 	{
-		for (int i = 0; i < 2; i++)
+		for (int i = 0; i < 3; i++)
 		{
 			fclose(filePose[i]);
 			fclose(fileMotion[i]);
 		}
 	}
 
-// exit
+	// exit
 	return 0;
 }
 

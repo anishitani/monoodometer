@@ -1,0 +1,98 @@
+\hypertarget{math__tools_8h}{\section{include/math\-\_\-tools.h \-File \-Reference}
+\label{math__tools_8h}\index{include/math\-\_\-tools.\-h@{include/math\-\_\-tools.\-h}}
+}
+{\ttfamily \#include $<$climits$>$}\*
+{\ttfamily \#include $<$opencv2/opencv.\-hpp$>$}\*
+{\ttfamily \#include $<$expm.\-hpp$>$}\*
+\-Include dependency graph for math\-\_\-tools.\-h\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{math__tools_8h__incl}
+\end{center}
+\end{figure}
+\-This graph shows which files directly or indirectly include this file\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{math__tools_8h__dep__incl}
+\end{center}
+\end{figure}
+\subsection*{\-Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \hyperlink{math__tools_8h_a23d1e9f92583a462081ea1dceffa594f}{gradient} (cv\-::\-Mat \-I, cv\-::\-Mat \&\-Ix, cv\-::\-Mat \&\-Iy)
+\item 
+void \hyperlink{math__tools_8h_a05bee403b98e60b4c03a8fe69694c8ee}{meshgrid} (int x0, int y0, int width, int height, cv\-::\-Mat \&gridx, cv\-::\-Mat \&gridy)
+\item 
+cv\-::\-Mat \hyperlink{math__tools_8h_a94e53dd43c3f8d875732b923fc0430fd}{skew} (cv\-::\-Mat a)
+\item 
+cv\-::\-Mat \hyperlink{math__tools_8h_a2b5be58c75fdcb541510b855d7560a94}{expm} (cv\-::\-Mat x)
+\item 
+bool \hyperlink{math__tools_8h_af89ec3ef50f181097cc681769775ab18}{\-Is\-Number} (double x)
+\item 
+bool \hyperlink{math__tools_8h_a984641c9b146cb5a7d2b05a3d5360a39}{\-Is\-Finite\-Number} (double x)
+\end{DoxyCompactItemize}
+
+
+\subsection{\-Function \-Documentation}
+\hypertarget{math__tools_8h_a2b5be58c75fdcb541510b855d7560a94}{\index{math\-\_\-tools.\-h@{math\-\_\-tools.\-h}!expm@{expm}}
+\index{expm@{expm}!math_tools.h@{math\-\_\-tools.\-h}}
+\subsubsection[{expm}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Mat {\bf expm} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{x}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{math__tools_8h_a2b5be58c75fdcb541510b855d7560a94}
+
+
+\-Here is the call graph for this function\-:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=320pt]{math__tools_8h_a2b5be58c75fdcb541510b855d7560a94_cgraph}
+\end{center}
+\end{figure}
+
+
+\hypertarget{math__tools_8h_a23d1e9f92583a462081ea1dceffa594f}{\index{math\-\_\-tools.\-h@{math\-\_\-tools.\-h}!gradient@{gradient}}
+\index{gradient@{gradient}!math_tools.h@{math\-\_\-tools.\-h}}
+\subsubsection[{gradient}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf gradient} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{\-I, }
+\item[{cv\-::\-Mat \&}]{\-Ix, }
+\item[{cv\-::\-Mat \&}]{\-Iy}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{math__tools_8h_a23d1e9f92583a462081ea1dceffa594f}
+\hypertarget{math__tools_8h_a984641c9b146cb5a7d2b05a3d5360a39}{\index{math\-\_\-tools.\-h@{math\-\_\-tools.\-h}!\-Is\-Finite\-Number@{\-Is\-Finite\-Number}}
+\index{\-Is\-Finite\-Number@{\-Is\-Finite\-Number}!math_tools.h@{math\-\_\-tools.\-h}}
+\subsubsection[{\-Is\-Finite\-Number}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf \-Is\-Finite\-Number} (
+\begin{DoxyParamCaption}
+\item[{double}]{x}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{math__tools_8h_a984641c9b146cb5a7d2b05a3d5360a39}
+\hypertarget{math__tools_8h_af89ec3ef50f181097cc681769775ab18}{\index{math\-\_\-tools.\-h@{math\-\_\-tools.\-h}!\-Is\-Number@{\-Is\-Number}}
+\index{\-Is\-Number@{\-Is\-Number}!math_tools.h@{math\-\_\-tools.\-h}}
+\subsubsection[{\-Is\-Number}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf \-Is\-Number} (
+\begin{DoxyParamCaption}
+\item[{double}]{x}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{math__tools_8h_af89ec3ef50f181097cc681769775ab18}
+\hypertarget{math__tools_8h_a05bee403b98e60b4c03a8fe69694c8ee}{\index{math\-\_\-tools.\-h@{math\-\_\-tools.\-h}!meshgrid@{meshgrid}}
+\index{meshgrid@{meshgrid}!math_tools.h@{math\-\_\-tools.\-h}}
+\subsubsection[{meshgrid}]{\setlength{\rightskip}{0pt plus 5cm}void {\bf meshgrid} (
+\begin{DoxyParamCaption}
+\item[{int}]{x0, }
+\item[{int}]{y0, }
+\item[{int}]{width, }
+\item[{int}]{height, }
+\item[{cv\-::\-Mat \&}]{gridx, }
+\item[{cv\-::\-Mat \&}]{gridy}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{math__tools_8h_a05bee403b98e60b4c03a8fe69694c8ee}
+\hypertarget{math__tools_8h_a94e53dd43c3f8d875732b923fc0430fd}{\index{math\-\_\-tools.\-h@{math\-\_\-tools.\-h}!skew@{skew}}
+\index{skew@{skew}!math_tools.h@{math\-\_\-tools.\-h}}
+\subsubsection[{skew}]{\setlength{\rightskip}{0pt plus 5cm}cv\-::\-Mat {\bf skew} (
+\begin{DoxyParamCaption}
+\item[{cv\-::\-Mat}]{a}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}\label{math__tools_8h_a94e53dd43c3f8d875732b923fc0430fd}

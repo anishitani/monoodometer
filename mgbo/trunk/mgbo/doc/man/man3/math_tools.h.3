@@ -1,0 +1,48 @@
+.TH "include/math_tools.h" 3 "Mon Nov 25 2013" "Version 1.1" "MGBO" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+include/math_tools.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <climits>\fP
+.br
+\fC#include <opencv2/opencv\&.hpp>\fP
+.br
+\fC#include <expm\&.hpp>\fP
+.br
+
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBgradient\fP (cv::Mat I, cv::Mat &Ix, cv::Mat &Iy)"
+.br
+.ti -1c
+.RI "void \fBmeshgrid\fP (int x0, int y0, int width, int height, cv::Mat &gridx, cv::Mat &gridy)"
+.br
+.ti -1c
+.RI "cv::Mat \fBskew\fP (cv::Mat a)"
+.br
+.ti -1c
+.RI "cv::Mat \fBexpm\fP (cv::Mat x)"
+.br
+.ti -1c
+.RI "bool \fBIsNumber\fP (double x)"
+.br
+.ti -1c
+.RI "bool \fBIsFiniteNumber\fP (double x)"
+.br
+.in -1c
+.SH "Function Documentation"
+.PP 
+.SS "cv::Mat \fBexpm\fP (cv::Matx)\fC [inline]\fP"
+.SS "void \fBgradient\fP (cv::MatI, cv::Mat &Ix, cv::Mat &Iy)\fC [inline]\fP"
+.SS "bool \fBIsFiniteNumber\fP (doublex)\fC [inline]\fP"
+.SS "bool \fBIsNumber\fP (doublex)\fC [inline]\fP"
+.SS "void \fBmeshgrid\fP (intx0, inty0, intwidth, intheight, cv::Mat &gridx, cv::Mat &gridy)\fC [inline]\fP"
+.SS "cv::Mat \fBskew\fP (cv::Mata)\fC [inline]\fP"
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for MGBO from the source code\&.

@@ -56,7 +56,7 @@ target_link_libraries( LRM
     esm 
     ${OpenCV_LIBS}  
     ${VISO2_LIBS} 
-    ${CAMERA_TOOL_LIBS} 
+    #${CAMERA_TOOL_LIBS} 
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY} )
 #target_link_libraries( calibration ${OpenCV_LIBS} ${CAMERA_TOOL_LIBS} )

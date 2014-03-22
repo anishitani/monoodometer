@@ -5,6 +5,10 @@ project( mgbo )
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT ON)
 
+# Compilation flags
+# msse3 needed for libviso2
+set(CMAKE_CXX_FLAGS "-Wall -O3 -pg -msse3")
+
 #############################
 # Finding system libraries
 ############################# 
@@ -25,29 +29,43 @@ ExternalProject_Add (
        BUILD_IN_SOURCE true
        INSTALL_COMMAND "" )
 
-#set the default path for built executables to the "bin" directory
+# Set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
+# Set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-#set the tool src
-set(TOOL src/tool)
+# Folder with the source code for a set of tools for
+# used for testing, debugging, profiling and other
+# funcionalities.
+set(TOOLS src/tool)
 
-set(CMAKE_CXX_FLAGS "-Wall -O3 -pg -msse3")
-
+# Directory with the project headers
 include_directories( include )
 
+# Include the camera tools headers if needed
 if(CAMERA_TOOL_FOUND)
     include_directories( ${CAMERA_TOOL_INCLUDE_DIR} )
 endif(CAMERA_TOOL_FOUND)
 
-add_library( esm src/ESM.cpp include/math_tools.h )
+# Build a library for some operations like Matlab expm,
+# matrix skew operation and others 
+add_library( math_tools ${TOOLS}/math_tools.cpp  )
+set( LIBS ${LIBS} math_tools )
 
-# Tools for proofing
-#add_executable( write_xml ${TOOL}/write_xml.cpp )
-add_executable( error_map ${TOOL}/error_map.cpp )
+# Library for the ESM methods
+add_library( esm src/ESM.cpp )
+set( LIBS ${LIBS} esm )
 
-#target_link_libraries( write_xml ${OpenCV_LIBS} )
+# Something about writing a XML file with OpenCV
+add_executable( write_xml ${TOOLS}/write_xml.cpp )
+set( BINS ${BINS} write_xml )
+
+# Generates error maps from the motion of two images
+add_executable( error_map ${TOOLS}/error_map.cpp )
+set( BINS ${BINS} error_map )
+
+target_link_libraries( esm math_tools )
+target_link_libraries( write_xml ${OpenCV_LIBS} )
 target_link_libraries( error_map ${OpenCV_LIBS} )
 
 
@@ -73,3 +91,13 @@ target_link_libraries( error_map ${OpenCV_LIBS} )
 #target_link_libraries( calibration ${OpenCV_LIBS} ${CAMERA_TOOL_LIBS} )
 #target_link_libraries( birdeyeview ${OpenCV_LIBS} ${CAMERA_TOOL_LIBS} ${VISO2_LIBS} )
 #target_link_libraries( odom_validation ${OpenCV_LIBS} ${VISO2_LIBS} ${CAMERA_TOOL_LIBS} )
+
+####################
+# Installing libs
+####################
+
+# No installation rule defined
+install( TARGETS 
+    RUNTIME DESTINATION ${PROJECT_SOURCE_DIR}/bin 
+    LIBRARY DESTINATION ${PROJECT_SOURCE_DIR}/lib 
+    ARCHIVE DESTINATION ${PROJECT_SOURCE_DIR}/lib )

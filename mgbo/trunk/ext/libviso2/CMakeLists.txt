@@ -6,7 +6,7 @@ project (libviso2)
 set (LIBVISO2_SRC_DIR src)
 set (LIBVISO2_INCLUDE_DIR include)
 
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+#set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # include directory
 include_directories("${LIBVISO2_INCLUDE_DIR}")
@@ -21,6 +21,8 @@ FILE(GLOB LIBVISO2_SRC_FILES "src/*.cpp")
 set(CMAKE_BUILD_TYPE Release)
 
 add_library( viso2 ${LIBVISO2_SRC_FILES} ) 
+
+install ( TARGETS viso2 DESTINATION lib )
 
 # demo program
 #add_executable(viso2 ${LIBVISO2_SRC_FILES})

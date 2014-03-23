@@ -6,7 +6,7 @@ project (libviso2)
 set (LIBVISO2_SRC_DIR src)
 set (LIBVISO2_INCLUDE_DIR include)
 
-#set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 # include directory
 include_directories("${LIBVISO2_INCLUDE_DIR}")

@@ -130,20 +130,6 @@ int main(int argc, char **argv)
 				"string");
 		cmd.add(sizeArg);
 
-		/*
-		 * sizeArg
-		 *
-		 * This argument gets the window position and size of
-		 * the ROI used for the error map calculation.
-		 * The ROI is defined on the first image.
-		 */
-		TCLAP::ValueArg<std::string> sizeArg("s", "size",
-				"Coordinates of the upper-left corner of the ROI followed "
-						"by the width and height. The parameters should be separated"
-						"by commas (x,y,width,height)", false, "0,0,240,320",
-				"string");
-		cmd.add(sizeArg);
-
 		// Parsing the args
 		cmd.parse(argc, argv);
 
@@ -178,7 +164,7 @@ int main(int argc, char **argv)
 				POSX, POSY, SIZX, SIZY);
 
 		// ROI of the last image
-		roi = new cv::Rect(POSX, POSY, SIZX, SIZY);
+//		roi = new cv::Rect(POSX, POSY, SIZX, SIZY);
 
 	} catch (TCLAP::ArgException &e)
 	{

@@ -21,6 +21,8 @@ find_package( Boost COMPONENTS system filesystem REQUIRED )
 # External libraries
 #######################
 set( MGBO_EXTERNAL_PACKAGES_DIR "${PROJECT_SOURCE_DIR}/ext" )
+
+# LIBVISO2
 #add_subdirectory(${MGBO_EXTERNAL_PACKAGES_DIR}/libviso2)
 include( ExternalProject )
 ExternalProject_Add (
@@ -28,6 +30,16 @@ ExternalProject_Add (
        SOURCE_DIR ${MGBO_EXTERNAL_PACKAGES_DIR}/libviso2
        BUILD_IN_SOURCE true
        INSTALL_COMMAND "" )
+
+ExternalProject_Add (
+       relative-pose-estimation
+       GIT_REPOSITORY https://github.com/prclibo/relative-pose-estimation.git
+       GIT_TAG master
+       SOURCE_DIR ${MGBO_EXTERNAL_PACKAGES_DIR}/relative-pose-estimation
+       BUILD_IN_SOURCE true 
+       INSTALL_COMMAND "" )
+
+
 
 # Set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

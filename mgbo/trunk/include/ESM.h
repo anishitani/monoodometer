@@ -15,22 +15,7 @@
 
 #include <math_tools.h>
 
-/*
- * Tracker Class
- * Later this class should be moved to convenient file.
- */
-class Tracker
-{
-protected:
-	Tracker()
-	{
-	}
-	virtual ~Tracker()
-	{
-	}
-};
-
-class ESM: public Tracker
+class ESM
 {
 
 public:

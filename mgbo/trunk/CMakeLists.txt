@@ -67,19 +67,12 @@ set( LIBS ${LIBS} math_tools )
 # Library for the ESM methods
 add_library( esm src/ESM.cpp )
 set( LIBS ${LIBS} esm )
+target_link_libraries( esm math_tools )
 
 # Something about writing a XML file with OpenCV
 add_executable( write_xml ${TOOLS}/write_xml.cpp )
 set( BINS ${BINS} write_xml )
-
-# Generates error maps from the motion of two images
-add_executable( error_map ${TOOLS}/error_map.cpp )
-set( BINS ${BINS} error_map )
-
-target_link_libraries( esm math_tools )
 target_link_libraries( write_xml ${OpenCV_LIBS} )
-target_link_libraries( error_map ${OpenCV_LIBS} )
-
 
 # Odometry runners and loggers
 #add_executable( KITTI src/KITTI.cpp )

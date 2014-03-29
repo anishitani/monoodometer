@@ -27,13 +27,14 @@
 
 #include "ESM.h"
 
+#include <tclap/CmdLine.h>
+
 #define N_ODOM 3
 
 using namespace boost::filesystem;
 
 int main(int argc, char** argv)
 {
-
 	// No need for this section if there's a configuration file.
 	if (argc < 1)
 	{
@@ -44,15 +45,15 @@ int main(int argc, char** argv)
 	}
 
 	// Directories
-	std::string sequence_path("/home/nishitani/Windows/nishitani/usp/dataset/LRM/rua/estacionamento");
-	std::string left_path(sequence_path+"/image_rect_0/");
-	std::string right_path(sequence_path+"/image_rect_1/");
+	std::string sequence_path(
+			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/rua/estacionamento");
+	std::string left_path(sequence_path + "/image_rect_0/");
+	std::string right_path(sequence_path + "/image_rect_1/");
 	std::string calib_left_path(
 			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/calib/bumblebee2/00b09d0100be241e_left.yaml");
 	std::string calib_right_path(
 			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/calib/bumblebee2/00b09d0100be241e_right.yaml");
 	std::string output_path("data");
-
 
 	/*
 	 * Logging options
@@ -68,7 +69,8 @@ int main(int argc, char** argv)
 	int i = 0;
 
 	char seq_path[256];
-	sprintf(seq_path, "/home/nishitani/Windows/nishitani/usp/dataset/LRM/rua/estacionamento");
+	sprintf(seq_path,
+			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/rua/estacionamento");
 	std::string dir(seq_path);
 	char *filename = new char[256];
 
@@ -167,8 +169,10 @@ int main(int argc, char** argv)
 	ESM esmOdom;
 
 	sprintf(filename, "%06d.png", i);
-	_I0 = cv::imread(dir + "/image_rect_0/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
-	_I1 = cv::imread(dir + "/image_rect_1/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
+	_I0 = cv::imread(dir + "/image_rect_0/" + filename,
+			CV_LOAD_IMAGE_GRAYSCALE);
+	_I1 = cv::imread(dir + "/image_rect_1/" + filename,
+			CV_LOAD_IMAGE_GRAYSCALE);
 
 	// image dimensions
 	int32_t width = _I0.cols;
@@ -250,8 +254,8 @@ int main(int argc, char** argv)
 				int inliers = monoOdom.getNumberOfInliers();
 				int outliers = monoOdom.getNumberOfMatches() - inliers;
 				printf("Mono Odometer:\n");
-				printf("\tInliers: %d",inliers);
-				printf("\tOutliers: %d\n",outliers);
+				printf("\tInliers: %d", inliers);
+				printf("\tOutliers: %d\n", outliers);
 			}
 			else
 			{
@@ -292,8 +296,8 @@ int main(int argc, char** argv)
 				int inliers = stereoOdom.getNumberOfInliers();
 				int outliers = stereoOdom.getNumberOfMatches() - inliers;
 				printf("Stereo Odometer:\n");
-				printf("\tInliers: %d",inliers);
-				printf("\tOutliers: %d\n",outliers);
+				printf("\tInliers: %d", inliers);
+				printf("\tOutliers: %d\n", outliers);
 
 			}
 			else
@@ -414,8 +418,10 @@ int main(int argc, char** argv)
 
 		last = _I0;
 		sprintf(filename, "%06d.png", ++i);
-		_I0 = cv::imread(dir + "/image_rect_0/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
-		_I1 = cv::imread(dir + "/image_rect_1/" + filename, CV_LOAD_IMAGE_GRAYSCALE);
+		_I0 = cv::imread(dir + "/image_rect_0/" + filename,
+				CV_LOAD_IMAGE_GRAYSCALE);
+		_I1 = cv::imread(dir + "/image_rect_1/" + filename,
+				CV_LOAD_IMAGE_GRAYSCALE);
 
 		seq++;
 	}

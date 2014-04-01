@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 project( mgbo )
 
+include( ExternalProject )
+
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_ECLIPSE_GENERATE_SOURCE_PROJECT ON)
 
@@ -23,14 +25,19 @@ find_package( Boost COMPONENTS system filesystem REQUIRED )
 set( MGBO_EXTERNAL_PACKAGES_DIR "${PROJECT_SOURCE_DIR}/ext" )
 
 # LIBVISO2
-#add_subdirectory(${MGBO_EXTERNAL_PACKAGES_DIR}/libviso2)
-include( ExternalProject )
+#add_subdirectory( ${LIBVISO2} )
 ExternalProject_Add (
        libviso2
        SOURCE_DIR ${MGBO_EXTERNAL_PACKAGES_DIR}/libviso2
        BUILD_IN_SOURCE true
        INSTALL_COMMAND "" )
+ExternalProject_Get_Property(libviso2 SOURCE_DIR)
+include_directories( ${SOURCE_DIR}/include )
+link_directories( ${SOURCE_DIR}/lib )
 
+# Relative Pose Estimation
+# Biblioteca de métodos de estimação da pose relativa
+# baseado em SfM
 ExternalProject_Add (
        relative-pose-estimation
        GIT_REPOSITORY https://github.com/prclibo/relative-pose-estimation.git
@@ -38,8 +45,8 @@ ExternalProject_Add (
        SOURCE_DIR ${MGBO_EXTERNAL_PACKAGES_DIR}/relative-pose-estimation
        BUILD_IN_SOURCE true 
        INSTALL_COMMAND "" )
-
-
+ExternalProject_Get_Property(relative-pose-estimation SOURCE_DIR)
+include_directories(${SOURCE_DIR}/include)
 
 # Set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -66,19 +73,28 @@ set( LIBS ${LIBS} math_tools )
 
 # Library for the ESM methods
 add_library( esm src/ESM.cpp )
-set( LIBS ${LIBS} esm )
 target_link_libraries( esm math_tools )
+set( LIBS ${LIBS} esm )
 
 # Something about writing a XML file with OpenCV
-add_executable( write_xml ${TOOLS}/write_xml.cpp )
-set( BINS ${BINS} write_xml )
-target_link_libraries( write_xml ${OpenCV_LIBS} )
+#add_executable( write_xml ${TOOLS}/write_xml.cpp )
+#set( BINS ${BINS} write_xml )
+#target_link_libraries( write_xml ${OpenCV_LIBS} )
+
+add_executable( LRM src/LRM.cpp )
+target_link_libraries( LRM 
+    esm
+    viso2
+    ${OpenCV_LIBS}   
+    ${Boost_FILESYSTEM_LIBRARY}
+    ${Boost_SYSTEM_LIBRARY} )
+add_dependencies( LRM libviso2 )
 
 # Odometry runners and loggers
 #add_executable( KITTI src/KITTI.cpp )
 #add_executable( alberta src/alberta.cpp )
 #add_executable( malaga src/malaga.cpp )
-#add_executable( LRM src/LRM.cpp )
+
 #add_executable( calibration src/vertical_pattern_calibration.cpp )
 #add_executable( birdeyeview src/birdeyeview.cpp )
 #add_executable( odom_validation src/odom_validation.cpp )
@@ -86,16 +102,11 @@ target_link_libraries( write_xml ${OpenCV_LIBS} )
 #target_link_libraries( KITTI esm ${OpenCV_LIBS}  ${VISO2_LIBS} ${CAMERA_TOOL_LIBS} )
 #target_link_libraries( alberta esm ${OpenCV_LIBS}  ${VISO2_LIBS} ${CAMERA_TOOL_LIBS} )
 #target_link_libraries( malaga esm ${OpenCV_LIBS}  ${VISO2_LIBS} ${CAMERA_TOOL_LIBS} )
-#target_link_libraries( LRM 
-#    esm 
-#    ${OpenCV_LIBS}  
-#    ${VISO2_LIBS} 
-#    #${CAMERA_TOOL_LIBS} 
-#    ${Boost_FILESYSTEM_LIBRARY}
-#    ${Boost_SYSTEM_LIBRARY} )
 #target_link_libraries( calibration ${OpenCV_LIBS} ${CAMERA_TOOL_LIBS} )
 #target_link_libraries( birdeyeview ${OpenCV_LIBS} ${CAMERA_TOOL_LIBS} ${VISO2_LIBS} )
 #target_link_libraries( odom_validation ${OpenCV_LIBS} ${VISO2_LIBS} ${CAMERA_TOOL_LIBS} )
+
+
 
 ####################
 # Installing libs

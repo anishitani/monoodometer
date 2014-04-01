@@ -5,33 +5,16 @@
  *      Author: nishitani
  */
 
-/**
- * LRM is a collection of
- */
-
 #include <iostream>
 #include <fstream>
 #include <cstdio>
 #include <string>
 
-#include <vector>
-#include <algorithm>
-
-#include <boost/filesystem.hpp>
-
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
-#include <viso_mono.h>
-#include <viso_stereo.h>
-
-#include "ESM.h"
-
-#include <tclap/CmdLine.h>
-
-#define N_ODOM 3
+#include <LRM.h>
 
 using namespace boost::filesystem;
+using namespace boost::property_tree;
+using namespace boost::foreach;
 
 int main(int argc, char** argv)
 {
@@ -44,22 +27,43 @@ int main(int argc, char** argv)
 		return -1;
 	}
 
-	// Directories
-	std::string sequence_path(
-			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/rua/estacionamento");
-	std::string left_path(sequence_path + "/image_rect_0/");
-	std::string right_path(sequence_path + "/image_rect_1/");
-	std::string calib_left_path(
-			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/calib/bumblebee2/00b09d0100be241e_left.yaml");
-	std::string calib_right_path(
-			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/calib/bumblebee2/00b09d0100be241e_right.yaml");
-	std::string output_path("data");
+	/*
+	 * Inicializa um boost::property_tree a partir de um
+	 * arquivo de configuração (hoje escrito em JSON)
+	 */
+	ptree config;
+	read_json(CONFIGURATION_FILE,config);
 
 	/*
-	 * Logging options
+	 * Opções do projeto
+	 * logging: A opção logging define se os dados de
+	 * 		odometria serão armazenados ou não
+	 *
+	 * imaging: A opção imaging define se as imagens
+	 * 		utilizadas pelos métodos serão apresentadas
+	 * 		ao usuário.
 	 */
-	bool logging = false;
-	bool imaging = true;
+	bool logging = config.get<bool>(OPTION_LOG);	// Os dados processados serão gravaods
+	bool imaging = config.get<bool>(OPTION_IMAGE);	// As imagens geradas serão apresentadas
+
+	/*
+	 * Caminhos para arquivos necessário
+	 *
+	 * Imagens:
+	 * 	image_left: Pasta com as imagens da câmera esquerda
+	 * 	image_right: Pasta com as imagens da câmera direita
+	 *
+	 * Calibração:
+	 * 	calib_left: Arquivo de calibração da câmera esquerda
+	 * 	calib_right: Arquivo de calibração da câmera direita
+	 */
+	// @todo testar se os diretórios existem
+	std::string image_left = get_path("image_sequence","left",config);
+	std::string image_right = get_path("image_sequence","right",config);
+	std::string calib_left = get_path("calibration","left",config);
+	std::string calib_right = get_path("calibration","right",config);
+
+	std::string output_path("data");
 
 	bool do_mono = true;
 	bool do_esm = do_mono;
@@ -441,4 +445,3 @@ int main(int argc, char** argv)
 	// exit
 	return 0;
 }
-

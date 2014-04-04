@@ -58,8 +58,8 @@ int main(int argc, char** argv)
 	 * 	calib_right: Arquivo de calibração da câmera direita
 	 */
 	// @todo testar se os diretórios existem
-	std::string image_left = get_path("image_sequence","left",config);
-	std::string image_right = get_path("image_sequence","right",config);
+	std::string left_sequence_path = get_path("image_sequence","left",config);
+	std::string right_sequence_path = get_path("image_sequence","right",config);
 	std::string calib_left = get_path("calibration","left",config);
 	std::string calib_right = get_path("calibration","right",config);
 
@@ -71,11 +71,11 @@ int main(int argc, char** argv)
 
 	int seq = 1;
 	int i = 0;
-
-	char seq_path[256];
-	sprintf(seq_path,
-			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/rua/estacionamento");
-	std::string dir(seq_path);
+//
+//	char seq_path[256];
+//	sprintf(seq_path,
+//			"/home/nishitani/Windows/nishitani/usp/dataset/LRM/rua/estacionamento");
+//	std::string dir(seq_path);
 	char *filename = new char[256];
 
 	char odomType[N_ODOM][256] =
@@ -172,59 +172,29 @@ int main(int argc, char** argv)
 
 	ESM esmOdom;
 
-	sprintf(filename, "%06d.png", i);
-	_I0 = cv::imread(dir + "/image_rect_0/" + filename,
-			CV_LOAD_IMAGE_GRAYSCALE);
-	_I1 = cv::imread(dir + "/image_rect_1/" + filename,
-			CV_LOAD_IMAGE_GRAYSCALE);
+	cv::VideoCapture left(left_sequence_path);
+	cv::VideoCapture right(right_sequence_path);
+	if(!left.read(I0) || !right.read(I1)){
+		fprintf(stderr, "Error: Failed to open images\n");
+		exit(-1);
+	}
 
-	// image dimensions
-	int32_t width = _I0.cols;
-	int32_t height = _I0.rows;
-
-	int32_t dims[] =
+	/*
+	 * Recupera as dimensões da imagem para armazenamendo de
+	 * espaço para as imagens utilizadas no odômetro da VISO2
+	 */
+	int32_t width = left.get(CV_CAP_PROP_FRAME_WIDTH);
+	int32_t height = left.get(CV_CAP_PROP_FRAME_HEIGHT);
+	int32_t dims[3] =
 	{ width, height, width };
 
-	last = _I0;
+	last = I0;
 
-	/* ***************************
-	 * File
-	 * **************************/
-	if (logging)
-	{
-		for (int k = 0; k < 12; k++)
-		{
-			fprintf(fileMotion[0], "%f ", monoMotion.at<float>(k));
-			fprintf(filePose[0], "%f ", monoPose.at<float>(k));
-		}
-		fprintf(fileMotion[0], "\n");
-		fprintf(filePose[0], "\n");
-
-		for (int k = 0; k < 12; k++)
-		{
-			fprintf(fileMotion[1], "%f ", stereoMotion.at<float>(k));
-			fprintf(filePose[1], "%f ", stereoPose.at<float>(k));
-		}
-		fprintf(fileMotion[1], "\n");
-		fprintf(filePose[1], "\n");
-
-		for (int k = 0; k < 12; k++)
-		{
-			fprintf(fileMotion[2], "%f ", esmMotion.at<float>(k));
-			fprintf(filePose[2], "%f ", esmPose.at<float>(k));
-		}
-		fprintf(fileMotion[2], "\n");
-		fprintf(filePose[2], "\n");
-	}
-	/* ***************************
-	 * End File
-	 * **************************/
-
-	for (; !_I0.empty();)
+	for (; left.read(I0) && right.read(I1) ;)
 	{
 		// convert input images to uint8_t buffer
-		uint8_t* I0data = (uint8_t*) _I0.data;
-		uint8_t* I1data = (uint8_t*) _I1.data;
+		uint8_t* I0data = (uint8_t*) I0.data;
+		uint8_t* I1data = (uint8_t*) I1.data;
 
 		// The difference of frequence gives the KITT method
 		// a better disparity in the images
@@ -420,12 +390,7 @@ int main(int argc, char** argv)
 		if (key == 'q')
 			break;
 
-		last = _I0;
-		sprintf(filename, "%06d.png", ++i);
-		_I0 = cv::imread(dir + "/image_rect_0/" + filename,
-				CV_LOAD_IMAGE_GRAYSCALE);
-		_I1 = cv::imread(dir + "/image_rect_1/" + filename,
-				CV_LOAD_IMAGE_GRAYSCALE);
+		last = I0;
 
 		seq++;
 	}

@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS "-Wall -O3 -pg -msse3")
 ############################# 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/CMakeModules/")
 find_package( OpenCV REQUIRED )
-find_package( CameraTool REQUIRED )
+#find_package( CameraTool REQUIRED )
 find_package( Boost COMPONENTS system filesystem REQUIRED )
 
 #######################
@@ -38,33 +38,33 @@ link_directories( ${SOURCE_DIR}/lib )
 # Relative Pose Estimation
 # Biblioteca de métodos de estimação da pose relativa
 # baseado em SfM
-ExternalProject_Add (
-       relative-pose-estimation
-       GIT_REPOSITORY https://github.com/prclibo/relative-pose-estimation.git
-       GIT_TAG master
-       SOURCE_DIR ${MGBO_EXTERNAL_PACKAGES_DIR}/relative-pose-estimation
-       BUILD_IN_SOURCE true 
-       INSTALL_COMMAND "" )
-ExternalProject_Get_Property(relative-pose-estimation SOURCE_DIR)
-include_directories(${SOURCE_DIR}/include)
+#ExternalProject_Add (
+#       relative-pose-estimation
+#       GIT_REPOSITORY https://github.com/prclibo/relative-pose-estimation.git
+#       GIT_TAG master
+#       SOURCE_DIR ${MGBO_EXTERNAL_PACKAGES_DIR}/relative-pose-estimation
+#       BUILD_IN_SOURCE true 
+#       INSTALL_COMMAND "" )
+#ExternalProject_Get_Property(relative-pose-estimation SOURCE_DIR)
+#include_directories(${SOURCE_DIR}/include)
 
 # Set the default path for built executables to the "bin" directory
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 # Set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-# Folder with the source code for a set of tools for
-# used for testing, debugging, profiling and other
-# funcionalities.
-set(TOOLS src/tool)
-
 # Directory with the project headers
 include_directories( include )
 
 # Include the camera tools headers if needed
-if(CAMERA_TOOL_FOUND)
-    include_directories( ${CAMERA_TOOL_INCLUDE_DIR} )
-endif(CAMERA_TOOL_FOUND)
+#if(CAMERA_TOOL_FOUND)
+#    include_directories( ${CAMERA_TOOL_INCLUDE_DIR} )
+#endif(CAMERA_TOOL_FOUND)
+
+# Folder with the source code for a set of tools for
+# used for testing, debugging, profiling and other
+# funcionalities.
+set(TOOLS src/tool)
 
 # Build a library for some operations like Matlab expm,
 # matrix skew operation and others 

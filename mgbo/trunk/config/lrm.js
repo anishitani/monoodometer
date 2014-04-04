@@ -5,7 +5,7 @@
 	},
 	"path":{
 		"image_sequence":{
-			"base": ["mnt","dataset","LRM","rua","estacionamento"],
+			"base": ["home","nishitani","dataset","LRM","rua","estacionamento"],
 			"left": "image_0",
 			"right": "image_1"	
 		},

@@ -7,7 +7,8 @@
 		"image_sequence":{
 			"base": ["home","nishitani","dataset","LRM","rua","estacionamento"],
 			"left": "image_0",
-			"right": "image_1"	
+			"right": "image_1",
+			"format": "%06.png"
 		},
 		"calibration":{
 			"base": ["mnt","dataset","LRM","bumblebee"],

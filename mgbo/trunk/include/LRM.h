@@ -35,9 +35,10 @@
 #define OPTION_LOG "option.log"
 #define OPTION_IMAGE "option.image"
 
-#define PATH_SEQUENCE_BASE "path.sequence.base"
-#define PATH_SEQUENCE_LEFT "path.sequence.left"
-#define PATH_SEQUENCE_RIGHT "path.sequence.right"
+#define PATH_SEQUENCE_FORMAT "path.image_sequence.format"
+#define PATH_SEQUENCE_BASE "path.image_sequence.base"
+#define PATH_SEQUENCE_LEFT "path.image_sequence.left"
+#define PATH_SEQUENCE_RIGHT "path.image_sequence.right"
 
 /**
  * Os tipos path são definidos com uma base e os demais diretórios e arquivos

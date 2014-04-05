@@ -50,6 +50,7 @@ int main(int argc, char** argv)
 	 * Caminhos para arquivos necessário
 	 *
 	 * Imagens:
+	 *  format: Formato do nome das imagens com a extensão inclusa
 	 * 	image_left: Pasta com as imagens da câmera esquerda
 	 * 	image_right: Pasta com as imagens da câmera direita
 	 *
@@ -58,6 +59,7 @@ int main(int argc, char** argv)
 	 * 	calib_right: Arquivo de calibração da câmera direita
 	 */
 	// @todo testar se os diretórios existem
+	std::string format = config.get<std::string>(PATH_SEQUENCE_FORMAT);
 	std::string left_sequence_path = get_path("image_sequence","left",config);
 	std::string right_sequence_path = get_path("image_sequence","right",config);
 	std::string calib_left = get_path("calibration","left",config);
@@ -172,8 +174,9 @@ int main(int argc, char** argv)
 
 	ESM esmOdom;
 
-	cv::VideoCapture left(left_sequence_path);
-	cv::VideoCapture right(right_sequence_path);
+	cv::VideoCapture left(left_sequence_path+"/"+format);
+	cv::VideoCapture right(right_sequence_path+"/"+format);
+	printf("%d",left.isOpened());
 	if(!left.read(I0) || !right.read(I1)){
 		fprintf(stderr, "Error: Failed to open images\n");
 		exit(-1);
